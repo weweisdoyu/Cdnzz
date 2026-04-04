@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    
+    <!-- PRIMARY SEO HARDENING -->
+    <title>INS CLOUD — Brankas Digital Pribadi & CDN</title>
+    <meta name="description" content="Penyimpanan cloud rahasia dengan isolasi IP dan enkripsi server-side oleh INS IT Developer.">
+    <meta name="keywords" content="INS CLOUD, CDN Indonesia, Brankas IP, INS IT Developer, Sanjaya, Private Storage">
+    <link rel="icon" type="image/png" href="https://${DOMAIN}/media/VyxgtLfLbfkOiMgJkM1BaAdhrjTATRPPsYLO">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #050507; --card: #0d0d11; --primary: #fbbf24; --border: #1e1e24; --text: #ffffff; --dim: #71717a; }
+        * { box-sizing: border-box; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        nav { 
+            display: flex; gap: 8px; justify-content: center; background: rgba(13,13,17,0.9); padding: 8px; border-radius: 20px; border: 1px solid var(--border); 
+            width: fit-content; margin: 0 auto 30px; position: sticky; top: 15px; z-index: 1000; backdrop-filter: blur(20px); 
+        }
+        nav button { background: none; border: none; color: var(--dim); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 14px; }
+        nav button.active { background: var(--primary); color: #000; box-shadow: 0 5px 20px rgba(251,191,36,0.2); }
+
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 36px; padding: 60px 40px; box-shadow: 0 50px 100px rgba(0,0,0,0.8); display: none; animation: slideUp 0.7s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1 { font-size: 48px; font-weight: 800; text-align: center; margin: 0; letter-spacing: -2.5px; }
+        .grad { background: linear-gradient(135deg, var(--primary) 0%, #fff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .uploader { margin-top: 40px; border: 2px dashed var(--border); border-radius: 30px; padding: 100px 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.01); }
+        .uploader:hover { border-color: var(--primary); background: rgba(251,191,36,0.05); }
+        .uploader svg { width: 70px; height: 70px; color: var(--primary); margin-bottom: 30px; }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 20px 40px; border-radius: 20px; background: var(--primary); color: #000; font-weight: 800; border: none; cursor: pointer; width: 100%; font-size: 16px; margin-top: 35px; }
+        
+        .vault-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; margin-top: 40px; }
+        .item { background: #141418; border: 1px solid var(--border); border-radius: 28px; padding: 24px; transition: 0.4s; }
+        .item:hover { border-color: var(--primary); transform: translateY(-12px); }
+
+        .thumb { width: 100%; height: 160px; background: #000; border-radius: 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--border); }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+        .badge { display: inline-block; padding: 10px 24px; background: var(--border); border-radius: 50px; font-size: 13px; color: var(--dim); margin-top: 50px; font-weight: 700; }
+        footer { text-align: center; margin-top: auto; padding: 80px 0; color: var(--dim); font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <nav>
+        <button onclick="show('home')" id="n-home" class="active">Beranda</button>
+        <button onclick="show('upload')" id="n-upload">Unggah</button>
+        <button onclick="show('vault')" id="n-vault">Koleksi Saya</button>
+    </nav>
+
+    <div id="home" class="card" style="display:block; text-align:center">
+        <h1><span class="grad">INS CLOUD VAULT</span></h1>
+        <p style="color:var(--dim); margin-top:25px; font-size:20px; max-width:700px; margin-inline:auto;">Brankas digital pribadi yang mengenali identitas koneksi Anda. Data disimpan secara rahasia dan aman.</p>
+        <div class="badge">IP ANDA SAAT INI: ${USER_IP}</div>
+    </div>
+
+    <div id="upload" class="card">
+        <h3 style="text-align:center; margin:0; font-weight:800;">Simpan Berkas Baru</h3>
+        <div class="uploader" onclick="document.getElementById('fi').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p id="la" style="font-weight:700; font-size:18px;">Klik untuk memilih berkas asli</p>
+            <input type="file" id="fi" hidden>
+        </div>
+        <button id="upBtn" class="btn" style="display:none">MULAI UNGGAH</button>
+        <div id="prog" style="display:none; margin-top:30px; height:10px; background:var(--border); border-radius:15px; overflow:hidden">
+            <div id="bar" style="height:100%; width:0%; background:var(--primary); box-shadow: 0 0 15px var(--primary)"></div>
+        </div>
+    </div>
+
+    <div id="vault" class="card">
+        <h3 style="margin:0; font-weight:800;">Riwayat Khusus IP Anda</h3>
+        <p style="font-size:13px; color:var(--dim); margin-bottom:30px">Hanya Anda yang dapat melihat berkas ini dari koneksi ini.</p>
+        <div id="list" class="vault-grid"></div>
+    </div>
+
+    <footer>
+        &copy; 2026 <b>INS CLOUD</b> &bull; Managed by <b>INS IT Developer</b> &bull; SSR Stealth Active
+    </footer>
+</div>
+
+<script>
+    const _VAULT_RAW = "/*{{DATA_INJECTION}}*/";
+    let _VAULT_DATA = [];
+    
+    try {
+        if(_VAULT_RAW && !_VAULT_RAW.includes("DATA_INJECTION")) {
+            _VAULT_DATA = JSON.parse(decodeURIComponent(escape(atob(_VAULT_RAW))));
+        }
+    } catch(e) { console.error("Integrity error."); }
+
+    function show(id) {
+        document.querySelectorAll('.card').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).style.display = 'block';
+        document.getElementById('n-' + id).classList.add('active');
+        if(id === 'vault') render();
+    }
+
+    const fi = document.getElementById('fi');
+    const upBtn = document.getElementById('upBtn');
+
+    fi.onchange = () => {
+        if(fi.files[0]) {
+            document.getElementById('la').innerText = fi.files[0].name;
+            upBtn.style.display = 'flex';
+        }
+    };
+
+    upBtn.onclick = async () => {
+        const formData = new FormData();
+        formData.append("file", fi.files[0]);
+        upBtn.disabled = true;
+        document.getElementById('prog').style.display = 'block';
+
+        const xhr = new XMLHttpRequest();
+        xhr.upload.onprogress = (e) => {
+            if(e.lengthComputable) document.getElementById('bar').style.width = (e.loaded/e.total*100) + '%';
+        };
+
+        xhr.onload = () => {
+            if(xhr.status === 200) {
+                alert("Sukses! Brankas sedang diupdate oleh server.");
+                window.location.reload(); 
+            } else { alert("Gagal!"); }
+            upBtn.disabled = false;
+        };
+        xhr.open("POST", "/sys-exec-push");
+        xhr.send(formData);
+    };
+
+    function render() {
+        const list = document.getElementById('list');
+        list.innerHTML = _VAULT_DATA.length ? '' : '<div style="grid-column:1/-1; text-align:center; padding:80px; color:var(--dim);">Kosong.</div>';
+        
+        _VAULT_DATA.forEach(i => {
+            const isImg = i.type && i.type.startsWith('image/');
+            const d = document.createElement('div');
+            d.className = 'item';
+            d.innerHTML = `
+                <div class="thumb">${isImg ? '<img src="'+i.url+'" loading="lazy">' : '<span style="font-size:50px">📄</span>'}</div>
+                <div style="font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis">${i.name}</div>
+                <div style="font-size:11px; color:var(--dim); margin-top:5px">${new Date(i.time).toLocaleString()}</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px">
+                    <a href="${i.url}" target="_blank" style="display:block; background:var(--primary); color:#000; text-align:center; padding:12px; border-radius:15px; text-decoration:none; font-weight:800; font-size:12px">BUKA</a>
+                    <button onclick="navigator.clipboard.writeText('${i.url}'); alert('Link Disalin!')" style="background:var(--border); color:#fff; border:none; border-radius:15px; cursor:pointer; font-weight:700; font-size:12px">SALIN</button>
+                </div>
+            `;
+            list.appendChild(d);
+        });
+    }
+
+    window.onhashchange = () => show(window.location.hash.slice(1) || 'home');
+</script>
+</body>
+</html>
+
