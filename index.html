@@ -1,375 +1,176 @@
-<!DOCTYPE html>
-<html lang="id" class="dark">
+<!DOCTYPE html><html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>INS Cloud | Unlimited Storage</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: #fafafa; }
-        .glass { background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
-        .nav-link.active { background: #fbbf24; color: #000; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
-        .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Pulse effect for Unlimited Status */
-        .infinity-glow {
-            box-shadow: 0 0 15px rgba(251, 191, 36, 0.1);
-            animation: pulse-border 3s infinite;
-        }
-        @keyframes pulse-border {
-            0%, 100% { border-color: rgba(39, 39, 42, 1); }
-            50% { border-color: rgba(251, 191, 36, 0.4); }
-        }
-        
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INS Cloud | Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: #fafafa; }
+    .glass { background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
+    .nav-link.active { background: #fbbf24; color: #000; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
+    .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
+  </style>
 </head>
-<body class="antialiased overflow-x-hidden">
+<body class="antialiased">
+  <div class="min-h-screen flex items-center justify-center p-6">
+    <div class="glass rounded-[3rem] p-12 max-w-2xl w-full">
+      <div class="text-center mb-12">
+        <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="cloud" class="text-black w-10 h-10"></i>
+        </div>
+        <h1 class="text-4xl font-black mb-2">INS Cloud Upload</h1>
+        <p class="text-zinc-500">Upload file ke Vondy via INS API</p>
+      </div>  <div id="loginSection">
+    <div id="userInfo" class="glass bg-amber-500/10 border-amber-500/30 rounded-2xl p-6 mb-6 flex items-center justify-between" style="display: none;">
+      <div>
+        <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Logged in as</p>
+        <p class="text-2xl font-black text-amber-500" id="currentUsername"></p>
+      </div>
+      <button onclick="logout()" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition-all">Logout</button>
+    </div>
 
-<!-- Toast Notification -->
-<div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border-amber-500/30 text-amber-500 font-bold shadow-2xl hidden items-center gap-3 transition-all scale-95 opacity-0">
-    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-    <span id="toast-msg">Tersalin!</span>
+    <form id="loginForm" class="space-y-6" style="display: none;">
+      <div>
+        <label class="block text-zinc-400 font-bold mb-2">Username</label>
+        <input type="text" id="username" placeholder="Masukkan username kamu" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-amber-500 transition-all" required>
+      </div>
+      <button type="submit" class="w-full bg-amber-500 text-black px-12 py-4 rounded-xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all">🔐 Login / Register</button>
+    </form>
+  </div>
+
+  <div id="uploadSection" style="display: none;">
+    <div class="glass bg-zinc-900/50 rounded-2xl p-6 mb-6">
+      <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Current User</p>
+      <p class="text-xl font-black text-amber-500" id="uploadUsername"></p>
+    </div>
+
+    <form id="uploadForm" class="space-y-6">
+      <div>
+        <label class="block text-zinc-400 font-bold mb-2">Select File</label>
+        <input type="file" id="file" name="file" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-black hover:file:bg-amber-600 transition-all" required>
+      </div>
+      <button type="submit" id="submitBtn" class="w-full bg-amber-500 text-black px-12 py-4 rounded-xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all">📤 Upload File</button>
+    </form>
+  </div>
+
+  <div id="loading" class="text-center py-12 hidden">
+    <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+    <p class="text-zinc-400 font-bold">Mengupload...</p>
+  </div>
+
+  <div id="result" class="hidden">
+    <div id="resultSuccess" class="glass bg-green-500/10 border-green-500/30 rounded-2xl p-6">
+      <div class="flex items-center gap-3 mb-4">
+        <i data-lucide="check-circle-2" class="text-green-500 w-8 h-8"></i>
+        <h3 class="text-2xl font-black text-green-500">Upload Berhasil!</h3>
+      </div>
+      <pre id="resultData" class="bg-zinc-900 rounded-xl p-4 text-xs overflow-x-auto text-zinc-300"></pre>
+      <div class="mt-6">
+        <p class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Direct Link</p>
+        <div class="flex gap-3">
+          <input id="finalUrl" readonly class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-300">
+          <button onclick="copyToClipboard(document.getElementById('finalUrl').value)" class="bg-amber-500 text-black px-6 py-3 rounded-xl font-bold hover:bg-amber-600 transition-all">SALIN</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="resultError" class="hidden glass bg-red-500/10 border-red-500/30 rounded-2xl p-6">
+      <div class="flex items-center gap-3">
+        <i data-lucide="alert-circle" class="text-red-500 w-8 h-8"></i>
+        <h3 class="text-xl font-black text-red-500">Upload Gagal</h3>
+      </div>
+      <pre id="errorMessage" class="bg-zinc-900 rounded-xl p-4 text-xs mt-4 text-zinc-300"></pre>
+    </div>
+  </div>
 </div>
 
-<div class="min-h-screen flex flex-col lg:flex-row">
-    <!-- Sidebar -->
-    <aside class="w-full lg:w-72 glass border-r border-zinc-900 p-8 flex flex-col gap-10">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center rotate-3 shadow-2xl shadow-amber-500/20">
-                <i data-lucide="infinity" class="text-black w-7 h-7"></i>
-            </div>
-            <div>
-                <span class="block text-xl font-black tracking-tighter leading-none">INS CLOUD</span>
-                <span class="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase">Pro Storage</span>
-            </div>
-        </div>
+  </div>  <script>
+    let currentUser = localStorage.getItem('ins_username');
 
-        <nav class="flex flex-col gap-1.5">
-            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="layout-grid" class="w-5 h-5"></i> Dashboard
-            </button>
-            <button onclick="switchTab('upload')" id="btn-upload" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="cloud-upload" class="w-5 h-5"></i> Upload
-            </button>
-            <button onclick="switchTab('history')" id="btn-history" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="folder-search" class="w-5 h-5"></i> My Files
-            </button>
-        </nav>
-
-        <div class="mt-auto glass infinity-glow rounded-[2rem] p-6 border-zinc-800 flex flex-col items-center text-center">
-            <div class="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3">
-                <i data-lucide="lock-keyhole" class="w-4 h-4 text-amber-500"></i>
-            </div>
-            <p class="text-[11px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Status Akun</p>
-            <h4 class="text-sm font-black text-white mb-3">UNLIMITED CAPACITY</h4>
-            <div class="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black border border-amber-500/20">AKTIF SELAMANYA</div>
-        </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full">
-        
-        <!-- Dashboard View -->
-        <section id="view-dashboard" class="tab-content">
-            <header class="mb-12">
-                <h1 class="text-5xl font-black tracking-tighter mb-3 leading-tight">Halo, <span class="text-amber-500">Master.</span></h1>
-                <p class="text-zinc-500 font-medium text-lg">Penyimpanan tanpa batas ada di tangan Anda.</p>
-            </header>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5 group hover:border-amber-500/40 transition-all">
-                    <div class="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                        <i data-lucide="database" class="w-7 h-7"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-black leading-none mb-2" id="stat-files">0</h3>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
-                    </div>
-                </div>
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5 border-amber-500/20 bg-amber-500/[0.02]">
-                    <div class="w-14 h-14 bg-amber-500 text-black rounded-2xl flex items-center justify-center">
-                        <i data-lucide="infinity" class="w-7 h-7"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-black leading-none mb-2">Unlimited</h3>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Kapasitas Sisa</p>
-                    </div>
-                </div>
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5 group hover:border-amber-500/40 transition-all">
-                    <div class="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400">
-                        <i data-lucide="cpu" class="w-7 h-7"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-3xl font-black leading-none mb-2">Enterprise</h3>
-                        <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Node Server</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-zinc-900 to-black rounded-[3rem] p-10 border border-zinc-800 flex flex-col lg:flex-row items-center gap-10 justify-between">
-                <div class="max-w-md">
-                    <h2 class="text-3xl font-bold mb-4 tracking-tight">Butuh Link Instan?</h2>
-                    <p class="text-zinc-500 leading-relaxed font-medium">Unggah file Anda sekarang dan dapatkan CDN link pribadi yang bisa diakses dari mana saja.</p>
-                </div>
-                <button onclick="switchTab('upload')" class="bg-white text-black px-10 py-5 rounded-3xl font-black text-lg hover:scale-105 transition-all shadow-2xl shadow-white/10 active:scale-95">
-                    UPLOAD SEKARANG
-                </button>
-            </div>
-        </section>
-
-        <!-- Upload View -->
-        <section id="view-upload" class="tab-content">
-            <div class="flex items-center gap-4 mb-10">
-                <i data-lucide="upload" class="w-10 h-10 text-amber-500"></i>
-                <h2 class="text-4xl font-black tracking-tight">Upload Center</h2>
-            </div>
-            
-            <div id="dropzone" class="glass rounded-[3rem] p-20 border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center transition-all cursor-pointer group hover:bg-zinc-900/40">
-                <input type="file" id="fileInput" class="hidden">
-                <div class="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center mb-8 border border-zinc-800 shadow-inner group-hover:bg-amber-500 group-hover:text-black transition-all duration-500">
-                    <i data-lucide="plus" class="w-12 h-12"></i>
-                </div>
-                <h3 class="text-2xl font-black mb-3">Pilih atau Taruh File</h3>
-                <p class="text-zinc-500 font-medium">Batas file individu: 50MB (Enterprise Edition)</p>
-                
-                <div id="fileInfo" class="mt-10 hidden flex flex-col items-center w-full max-w-md">
-                    <div class="flex items-center gap-3 px-6 py-4 bg-zinc-800/50 rounded-2xl border border-amber-500/20 w-full">
-                        <i data-lucide="file-check" class="text-amber-500 w-5 h-5"></i>
-                        <span id="selectedFileName" class="text-sm font-bold truncate flex-1"></span>
-                    </div>
-                    <button id="uploadBtn" class="mt-8 bg-amber-500 text-black px-12 py-5 rounded-2xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all w-full">UPLOAD KE CLOUD</button>
-                </div>
-            </div>
-
-            <!-- Upload Progress Card -->
-            <div id="progressArea" class="mt-10 hidden glass rounded-[2.5rem] p-8">
-                <div class="flex justify-between items-end mb-5">
-                    <div>
-                        <p class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1">Status Pengiriman</p>
-                        <h4 class="text-lg font-bold">Mengenkripsi & Mengunggah...</h4>
-                    </div>
-                    <span id="progressPercent" class="text-4xl font-black text-white italic">0%</span>
-                </div>
-                <div class="w-full h-4 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800 shadow-inner">
-                    <div id="progressBar" class="h-full bg-amber-500 w-0 transition-all duration-300 shadow-[0_0_20px_rgba(251,191,36,0.4)]"></div>
-                </div>
-            </div>
-
-            <!-- Final Result Card -->
-            <div id="successArea" class="mt-10 hidden glass rounded-[2.5rem] p-10 border-amber-500/20 text-center animate-[bounce_2s_infinite]">
-                <div class="w-20 h-20 bg-amber-500 text-black rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i data-lucide="check" class="w-10 h-10"></i>
-                </div>
-                <h3 class="text-2xl font-black mb-6 italic">FILE SIAP DIGUNAKAN</h3>
-                <div class="flex gap-3 max-w-2xl mx-auto">
-                    <input id="finalUrl" readonly class="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl px-6 py-4 text-zinc-300 font-bold focus:outline-none focus:border-amber-500">
-                    <button onclick="copyToClipboard(document.getElementById('finalUrl').value)" class="bg-zinc-100 text-black px-8 rounded-2xl font-black hover:bg-amber-500 transition-all">SALIN</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Files Library View -->
-        <section id="view-history" class="tab-content">
-            <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-6 mb-12">
-                <div>
-                    <h2 class="text-4xl font-black tracking-tight mb-2 italic">My Files</h2>
-                    <p class="text-zinc-500 font-semibold">Semua file yang diunggah tersimpan secara lokal.</p>
-                </div>
-                <button onclick="clearHistory()" class="group flex items-center gap-2 text-zinc-600 hover:text-red-500 font-bold text-xs transition-all uppercase tracking-widest bg-zinc-900/50 px-6 py-3 rounded-full border border-zinc-800">
-                    <i data-lucide="zap-off" class="w-4 h-4 group-hover:animate-pulse"></i> Wipe Data
-                </button>
-            </div>
-
-            <div id="historyGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                <!-- Data will appear here -->
-            </div>
-
-            <div id="emptyState" class="hidden py-40 text-center glass rounded-[4rem] border-zinc-900">
-                <div class="w-24 h-24 bg-zinc-900/50 rounded-full flex items-center justify-center mx-auto mb-8">
-                    <i data-lucide="inbox" class="w-10 h-10 text-zinc-800"></i>
-                </div>
-                <h3 class="text-2xl font-black text-zinc-700">LIBRARY KOSONG</h3>
-                <p class="text-zinc-800 font-bold mt-2">Mulai isi penyimpanan unlimited Anda sekarang.</p>
-            </div>
-        </section>
-
-    </main>
-</div>
-
-<script>
-    lucide.createIcons();
-    
-    // Smooth Tab Navigation
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-
-        document.getElementById('view-' + tabId).classList.add('active');
-        const activeBtn = document.getElementById('btn-' + tabId);
-        if(activeBtn) activeBtn.classList.add('active');
-
-        if(tabId === 'history') loadHistory();
-        if(tabId === 'dashboard') updateStats();
-        window.location.hash = tabId;
+    function showUI() {
+      if (currentUser) {
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('uploadSection').style.display = 'block';
+        document.getElementById('currentUsername').textContent = currentUser;
+        document.getElementById('uploadUsername').textContent = currentUser;
+      } else {
+        document.getElementById('loginSection').style.display = 'block';
+        document.getElementById('uploadSection').style.display = 'none';
+      }
     }
 
-    // Modern Dropzone Interaction
-    const dropzone = document.getElementById('dropzone');
-    const fileInput = document.getElementById('fileInput');
+    function login(username) {
+      localStorage.setItem('ins_username', username);
+      currentUser = username;
+      showUI();
+    }
 
-    dropzone.onclick = () => fileInput.click();
-    dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('bg-zinc-900/80', 'border-amber-500/50'); });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('bg-zinc-900/80', 'border-amber-500/50'));
-    dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('bg-zinc-900/80', 'border-amber-500/50');
-        if(e.dataTransfer.files.length) handleFileSelect(e.dataTransfer.files[0]);
+    function logout() {
+      localStorage.removeItem('ins_username');
+      location.reload();
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      if (username) login(username);
     });
 
-    fileInput.onchange = () => { if(fileInput.files.length) handleFileSelect(fileInput.files[0]); };
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-    function handleFileSelect(file) {
-        document.getElementById('selectedFileName').textContent = file.name;
-        document.getElementById('fileInfo').classList.remove('hidden');
-        document.querySelector('#dropzone h3').classList.add('hidden');
-        document.querySelector('#dropzone p').classList.add('hidden');
-        document.querySelector('#dropzone .w-24').classList.add('hidden');
-    }
+      if (!currentUser) return alert('Login dulu!');
+      const file = document.getElementById('file').files[0];
+      if (!file) return alert('Pilih file dulu!');
 
-    // Optimized Upload Process
-    document.getElementById('uploadBtn').onclick = async (e) => {
-        e.stopPropagation();
-        const file = fileInput.files[0];
-        if(!file) return;
+      const submitBtn = document.getElementById('submitBtn');
+      const loading = document.getElementById('loading');
+      const result = document.getElementById('result');
 
+      submitBtn.disabled = true;
+      loading.classList.remove('hidden');
+      result.classList.add('hidden');
+
+      try {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append('file', file);
+        formData.append('user_id', currentUser);
 
-        const xhr = new XMLHttpRequest();
-        document.getElementById('fileInfo').classList.add('hidden');
-        document.getElementById('progressArea').classList.remove('hidden');
+        const response = await fetch('/upload-send', { method: 'POST', body: formData });
+        const data = await response.json();
 
-        xhr.upload.onprogress = (ev) => {
-            if(ev.lengthComputable) {
-                const p = Math.round((ev.loaded / ev.total) * 100);
-                document.getElementById('progressBar').style.width = p + '%';
-                document.getElementById('progressPercent').textContent = p + '%';
-            }
-        };
+        if (!response.ok) throw new Error(data.error || 'Upload gagal');
 
-        xhr.onload = () => {
-            if(xhr.status === 200) {
-                try {
-                    const res = JSON.parse(xhr.responseText);
-                    const url = res.fileUrl || res.url || (res.data && res.data.fileUrl);
-                    if(url) {
-                        document.getElementById('progressArea').classList.add('hidden');
-                        document.getElementById('successArea').classList.remove('hidden');
-                        document.getElementById('finalUrl').value = url;
-                        saveToHistory({ id: Date.now(), name: file.name, url, size: file.size, type: file.type, date: new Date().toISOString() });
-                    }
-                } catch(err) { showToast("Gagal memproses data", true); }
-            } else { showToast("Gagal mengunggah file", true); }
-        };
+        const mediaUrl = data.media_url || data.url || data.fileUrl || \`/media/\${data.evo_data}\`;
 
-        xhr.open("POST", "/upload-send");
-        xhr.send(formData);
-    };
-
-    // Data Management
-    function saveToHistory(item) {
-        const h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        h.unshift(item);
-        localStorage.setItem('ins_unlimited', JSON.stringify(h));
-        updateStats();
-    }
-
-    function loadHistory() {
-        const h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        const grid = document.getElementById('historyGrid');
-        const empty = document.getElementById('emptyState');
-        
-        grid.innerHTML = '';
-        if(h.length === 0) { empty.classList.remove('hidden'); return; }
-        empty.classList.add('hidden');
-
-        h.forEach(item => {
-            const isImg = item.type.startsWith('image/');
-            const card = document.createElement('div');
-            card.className = "glass rounded-[2.5rem] p-6 border-zinc-900 hover:border-amber-500/20 hover:bg-zinc-900/30 transition-all flex flex-col group";
-            card.innerHTML = `
-                <div class="w-full h-52 bg-black rounded-3xl mb-6 overflow-hidden border border-zinc-800/50 flex items-center justify-center relative">
-                    ${isImg ? `<img src="${item.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000">` : `<i data-lucide="file-text" class="w-16 h-16 text-zinc-800 group-hover:text-amber-500 transition-colors"></i>`}
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all backdrop-blur-[2px] flex items-center justify-center gap-3">
-                        <button onclick="copyToClipboard('${item.url}')" class="p-4 bg-amber-500 rounded-2xl text-black shadow-2xl scale-75 group-hover:scale-100 transition-all duration-300 font-bold"><i data-lucide="copy" class="w-6 h-6"></i></button>
-                        <a href="${item.url}" target="_blank" class="p-4 bg-white rounded-2xl text-black shadow-2xl scale-75 group-hover:scale-100 transition-all duration-300 font-bold"><i data-lucide="eye" class="w-6 h-6"></i></a>
-                    </div>
-                </div>
-                <div class="px-2">
-                    <h4 class="font-black text-sm mb-2 truncate" title="${item.name}">${item.name}</h4>
-                    <div class="flex justify-between items-center py-4 border-t border-zinc-900">
-                        <span class="text-[10px] font-black uppercase text-zinc-600 tracking-tighter">${formatSize(item.size)}</span>
-                        <button onclick="deleteItem(${item.id})" class="text-zinc-700 hover:text-red-500 transition-all p-1"><i data-lucide="trash" class="w-4 h-4"></i></button>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-        lucide.createIcons();
-    }
-
-    function deleteItem(id) {
-        let h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        localStorage.setItem('ins_unlimited', JSON.stringify(h.filter(i => i.id !== id)));
-        loadHistory();
-        updateStats();
-    }
-
-    function clearHistory() { if(confirm('Wipe semua data library? Ini tidak bisa dibatalkan.')) { localStorage.setItem('ins_unlimited', '[]'); loadHistory(); updateStats(); } }
-
-    function updateStats() {
-        const h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        const el = document.getElementById('stat-files');
-        if(el) el.textContent = h.length;
-    }
-
-    function formatSize(b) {
-        if(b === 0) return '0 B';
-        const i = Math.floor(Math.log(b) / Math.log(1024));
-        return (b / Math.pow(1024, i)).toFixed(1) + ' ' + ['B','KB','MB','GB'][i];
-    }
+        document.getElementById('resultData').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('finalUrl').value = mediaUrl;
+        document.getElementById('resultSuccess').classList.remove('hidden');
+        document.getElementById('resultError').classList.add('hidden');
+        result.classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('resultSuccess').classList.add('hidden');
+        document.getElementById('resultError').classList.remove('hidden');
+        result.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        loading.classList.add('hidden');
+      }
+    });
 
     function copyToClipboard(text) {
-        const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        showToast("Tautan Berhasil Disalin!");
+      navigator.clipboard.writeText(text).then(() => alert('URL berhasil disalin!'));
     }
 
-    function showToast(msg, isError = false) {
-        const t = document.getElementById('toast');
-        const m = document.getElementById('toast-msg');
-        m.textContent = msg;
-        t.classList.remove('hidden', 'opacity-0', 'scale-95');
-        t.classList.add('flex', 'opacity-100', 'scale-100');
-        setTimeout(() => { 
-            t.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => t.classList.add('hidden'), 3000);
-        }, 3000);
-    }
-
-    // Default Tab
-    const h = window.location.hash.slice(1);
-    switchTab(h || 'dashboard');
-</script>
+    lucide.createIcons();
+    showUI();
+  <\/script>
 </body>
 </html>
