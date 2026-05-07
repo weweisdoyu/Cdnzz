@@ -1,176 +1,142 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html><html lang="id" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>INS Cloud | Upload</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: #fafafa; }
-    .glass { background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
-    .nav-link.active { background: #fbbf24; color: #000; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
-    .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-    .tab-content.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
-  </style>
-</head>
-<body class="antialiased">
-  <div class="min-h-screen flex items-center justify-center p-6">
-    <div class="glass rounded-[3rem] p-12 max-w-2xl w-full">
-      <div class="text-center mb-12">
-        <div class="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <i data-lucide="cloud" class="text-black w-10 h-10"></i>
-        </div>
-        <h1 class="text-4xl font-black mb-2">INS Cloud Upload</h1>
-        <p class="text-zinc-500">Upload file ke Vondy via INS API</p>
-      </div>  <div id="loginSection">
-    <div id="userInfo" class="glass bg-amber-500/10 border-amber-500/30 rounded-2xl p-6 mb-6 flex items-center justify-between" style="display: none;">
-      <div>
-        <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Logged in as</p>
-        <p class="text-2xl font-black text-amber-500" id="currentUsername"></p>
-      </div>
-      <button onclick="logout()" class="bg-red-500 text-white px-6 py-3 rounded-xl font-bold hover:bg-red-600 transition-all">Logout</button>
-    </div>
-
-    <form id="loginForm" class="space-y-6" style="display: none;">
-      <div>
-        <label class="block text-zinc-400 font-bold mb-2">Username</label>
-        <input type="text" id="username" placeholder="Masukkan username kamu" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-amber-500 transition-all" required>
-      </div>
-      <button type="submit" class="w-full bg-amber-500 text-black px-12 py-4 rounded-xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all">🔐 Login / Register</button>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INS Cloud | Unlimited Storage</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script><style>
+body { font-family: 'Plus Jakarta Sans', sans-serif; background:#050505; color:#fafafa; }
+.glass { background: rgba(15,15,18,.6); backdrop-filter: blur(14px); border:1px solid rgba(255,255,255,.06); }
+.nav-link.active { background:#fbbf24; color:#000; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+</style></head><body><!-- LOGIN LAYER --><div id="authLayer" class="fixed inset-0 bg-black flex items-center justify-center z-[999]">
+  <div class="glass p-10 rounded-[2rem] w-full max-w-md">
+    <h2 class="text-2xl font-black mb-6 text-center">Login INS Cloud</h2>
+    <form id="loginForm" class="space-y-4">
+      <input id="username" type="text" placeholder="Username"
+        class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-4 text-white" required>
+      <button class="w-full bg-amber-500 text-black py-4 rounded-xl font-bold">
+        Masuk
+      </button>
     </form>
   </div>
+</div><div class="min-h-screen flex"><!-- SIDEBAR --><aside class="w-64 glass p-6 flex flex-col gap-6">
+  <h1 class="text-xl font-black">INS CLOUD</h1><button onclick="switchTab('dashboard')" class="nav-link active" id="btn-dashboard">Dashboard</button>
+<button onclick="switchTab('upload')" class="nav-link" id="btn-upload">Upload</button>
+<button onclick="switchTab('history')" class="nav-link" id="btn-history">Files</button>
 
-  <div id="uploadSection" style="display: none;">
-    <div class="glass bg-zinc-900/50 rounded-2xl p-6 mb-6">
-      <p class="text-xs text-zinc-500 uppercase tracking-wider mb-1">Current User</p>
-      <p class="text-xl font-black text-amber-500" id="uploadUsername"></p>
-    </div>
+<button onclick="logout()" class="mt-auto text-red-500">Logout</button>
 
-    <form id="uploadForm" class="space-y-6">
-      <div>
-        <label class="block text-zinc-400 font-bold mb-2">Select File</label>
-        <input type="file" id="file" name="file" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-6 py-4 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-black hover:file:bg-amber-600 transition-all" required>
-      </div>
-      <button type="submit" id="submitBtn" class="w-full bg-amber-500 text-black px-12 py-4 rounded-xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all">📤 Upload File</button>
-    </form>
+</aside><!-- MAIN --><main class="flex-1 p-6"><!-- DASHBOARD --><section id="view-dashboard" class="tab-content active">
+  <h1 class="text-3xl font-black mb-6" id="welcome">Halo</h1>
+  <p>Total file: <span id="stat-files">0</span></p>
+</section><!-- UPLOAD --><section id="view-upload" class="tab-content">
+  <input type="file" id="fileInput">
+  <button id="uploadBtn" class="bg-amber-500 text-black px-6 py-3 mt-4">Upload</button>  <div id="result" class="mt-6 hidden">
+    <input id="finalUrl" class="w-full bg-zinc-900 p-3">
   </div>
+</section><!-- HISTORY --><section id="view-history" class="tab-content">
+  <div id="history"></div>
+</section></main>
+</div><script>
+lucide.createIcons();
 
-  <div id="loading" class="text-center py-12 hidden">
-    <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-    <p class="text-zinc-400 font-bold">Mengupload...</p>
-  </div>
+let currentUser = localStorage.getItem("ins_user");
 
-  <div id="result" class="hidden">
-    <div id="resultSuccess" class="glass bg-green-500/10 border-green-500/30 rounded-2xl p-6">
-      <div class="flex items-center gap-3 mb-4">
-        <i data-lucide="check-circle-2" class="text-green-500 w-8 h-8"></i>
-        <h3 class="text-2xl font-black text-green-500">Upload Berhasil!</h3>
-      </div>
-      <pre id="resultData" class="bg-zinc-900 rounded-xl p-4 text-xs overflow-x-auto text-zinc-300"></pre>
-      <div class="mt-6">
-        <p class="text-xs text-zinc-500 uppercase tracking-wider mb-2">Direct Link</p>
-        <div class="flex gap-3">
-          <input id="finalUrl" readonly class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-300">
-          <button onclick="copyToClipboard(document.getElementById('finalUrl').value)" class="bg-amber-500 text-black px-6 py-3 rounded-xl font-bold hover:bg-amber-600 transition-all">SALIN</button>
-        </div>
-      </div>
-    </div>
+// ================= AUTH =================
+function initAuth() {
+  if (!currentUser) {
+    document.getElementById("authLayer").style.display = "flex";
+  } else {
+    document.getElementById("authLayer").style.display = "none";
+    document.getElementById("welcome").innerHTML =
+      "Halo, <span class='text-amber-500'>" + currentUser + "</span>";
+  }
+}
 
-    <div id="resultError" class="hidden glass bg-red-500/10 border-red-500/30 rounded-2xl p-6">
-      <div class="flex items-center gap-3">
-        <i data-lucide="alert-circle" class="text-red-500 w-8 h-8"></i>
-        <h3 class="text-xl font-black text-red-500">Upload Gagal</h3>
-      </div>
-      <pre id="errorMessage" class="bg-zinc-900 rounded-xl p-4 text-xs mt-4 text-zinc-300"></pre>
-    </div>
-  </div>
-</div>
+document.getElementById("loginForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const u = document.getElementById("username").value.trim();
+  if (!u) return;
 
-  </div>  <script>
-    let currentUser = localStorage.getItem('ins_username');
+  localStorage.setItem("ins_user", u);
+  currentUser = u;
+  initAuth();
+});
 
-    function showUI() {
-      if (currentUser) {
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('uploadSection').style.display = 'block';
-        document.getElementById('currentUsername').textContent = currentUser;
-        document.getElementById('uploadUsername').textContent = currentUser;
-      } else {
-        document.getElementById('loginSection').style.display = 'block';
-        document.getElementById('uploadSection').style.display = 'none';
-      }
-    }
+function logout() {
+  localStorage.removeItem("ins_user");
+  location.reload();
+}
 
-    function login(username) {
-      localStorage.setItem('ins_username', username);
-      currentUser = username;
-      showUI();
-    }
+// ================= NAV =================
+function switchTab(tab) {
+  document.querySelectorAll(".tab-content").forEach(e => e.classList.remove("active"));
+  document.querySelectorAll(".nav-link").forEach(e => e.classList.remove("active"));
 
-    function logout() {
-      localStorage.removeItem('ins_username');
-      location.reload();
-    }
+  document.getElementById("view-" + tab).classList.add("active");
+  document.getElementById("btn-" + tab).classList.add("active");
 
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      if (username) login(username);
-    });
+  if (tab === "history") loadHistory();
+}
 
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+// ================= UPLOAD =================
+document.getElementById("uploadBtn").onclick = async () => {
+  if (!currentUser) return alert("Login dulu!");
 
-      if (!currentUser) return alert('Login dulu!');
-      const file = document.getElementById('file').files[0];
-      if (!file) return alert('Pilih file dulu!');
+  const file = document.getElementById("fileInput").files[0];
+  if (!file) return alert("Pilih file!");
 
-      const submitBtn = document.getElementById('submitBtn');
-      const loading = document.getElementById('loading');
-      const result = document.getElementById('result');
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("user_id", currentUser);
 
-      submitBtn.disabled = true;
-      loading.classList.remove('hidden');
-      result.classList.add('hidden');
+  const res = await fetch("/upload-send", {
+    method: "POST",
+    body: fd
+  });
 
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('user_id', currentUser);
+  const data = await res.json();
 
-        const response = await fetch('/upload-send', { method: 'POST', body: formData });
-        const data = await response.json();
+  if (res.ok) {
+    const url = data.media_url || data.url || "/media/" + data.evo_data;
 
-        if (!response.ok) throw new Error(data.error || 'Upload gagal');
+    document.getElementById("finalUrl").value = url;
+    document.getElementById("result").classList.remove("hidden");
 
-        const mediaUrl = data.media_url || data.url || data.fileUrl || \`/media/\${data.evo_data}\`;
+    saveHistory({ name: file.name, url });
+  } else {
+    alert("Upload gagal");
+  }
+};
 
-        document.getElementById('resultData').textContent = JSON.stringify(data, null, 2);
-        document.getElementById('finalUrl').value = mediaUrl;
-        document.getElementById('resultSuccess').classList.remove('hidden');
-        document.getElementById('resultError').classList.add('hidden');
-        result.classList.remove('hidden');
-      } catch (err) {
-        document.getElementById('errorMessage').textContent = err.message;
-        document.getElementById('resultSuccess').classList.add('hidden');
-        document.getElementById('resultError').classList.remove('hidden');
-        result.classList.remove('hidden');
-      } finally {
-        submitBtn.disabled = false;
-        loading.classList.add('hidden');
-      }
-    });
+// ================= HISTORY =================
+function saveHistory(item) {
+  let h = JSON.parse(localStorage.getItem("ins_history") || "[]");
+  h.unshift(item);
+  localStorage.setItem("ins_history", JSON.stringify(h));
+  updateStats();
+}
 
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => alert('URL berhasil disalin!'));
-    }
+function loadHistory() {
+  let h = JSON.parse(localStorage.getItem("ins_history") || "[]");
+  const el = document.getElementById("history");
+  el.innerHTML = "";
 
-    lucide.createIcons();
-    showUI();
-  <\/script>
-</body>
+  h.forEach(i => {
+    const d = document.createElement("div");
+    d.innerHTML = `<a href="${i.url}" target="_blank">${i.name}</a>`;
+    el.appendChild(d);
+  });
+}
+
+function updateStats() {
+  let h = JSON.parse(localStorage.getItem("ins_history") || "[]");
+  document.getElementById("stat-files").textContent = h.length;
+}
+
+// ================= INIT =================
+initAuth();
+updateStats();
+</script></body>
 </html>
