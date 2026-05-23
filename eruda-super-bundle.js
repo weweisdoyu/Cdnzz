@@ -1,1 +1,493 @@
-javascript:/* ============================================================  ⚡ INS IT Developer Tools v5.1 — Standalone Web Console  Replacement for Eruda-addon. No CDN dependency.  Drag, resize, minimize, F12 toggle. Full features.  ============================================================ */ (async function() {  'use strict';  if (window.__INS_DEVTOOLS__) return;  window.__INS_DEVTOOLS__ = true;  const W = window, D = document;  const $ = (s, c = D) => c.querySelector(s);  const $$ = (s, c = D) => [...c.querySelectorAll(s)];  const E = (t, c, h) => { const e = D.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));  const now = () => new Date().toLocaleTimeString('id-ID', {hour12:false});  const notify = m => {   const n = E('div', '', `<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f1117;border:1px solid #2563eb;color:#60a5fa;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483649;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:insFadeIn .3s ease">${esc(m)}</div>`);   D.body.appendChild(n.firstElementChild);   setTimeout(() => n.firstElementChild?.remove(), 1800);  };  const copy = t => navigator.clipboard?.writeText(String(t)).then(() => notify('✅ Disalin')).catch(() => prompt('Salin:', t));  const hdrToObj = h => { const o = {}; try { if (!h) return o; if (h instanceof Headers) h.forEach((v, k) => o[k] = v); else if (Array.isArray(h)) h.forEach(x => o[x[0]] = x[1]); else if (typeof h === 'object') Object.assign(o, h); } catch(_) {} return o; };  const sel = el => { if (!el) return ''; if (el.id) return '#' + CSS.escape(el.id); const out = []; while (el && el.nodeType === 1 && el !== D.body) { let s = el.tagName.toLowerCase(); if (el.className && typeof el.className === 'string') s += '.' + el.className.trim().split(/\s+/).slice(0, 2).map(CSS.escape).join('.'); const n = [...(el.parentNode?.children || [])].filter(x => x.tagName === el.tagName).indexOf(el) + 1; s += `:nth-of-type(${n})`; out.unshift(s); el = el.parentElement; } return out.join(' > '); };  // ─── STATE ───  const S = {   logs: [], net: [], con: [], tab: 'console', filter: '', live: true,   pick: false, min: false, drag: false, resize: false,   pos: { x: 10, y: 10 }, size: { w: 400, h: 560 }, off: { x: 0, y: 0 }  };  // ─── CSS ───  const CSS = `   #ins-devtools,#ins-devtools *{box-sizing:border-box;margin:0;padding:0}   #ins-devtools{position:fixed;z-index:2147483647;font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:13px;color:#e2e8f0;background:#0f1117;border:1px solid #2d3748;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);overflow:hidden;display:flex;flex-direction:column;min-width:320px;min-height:260px;transition:opacity .2s,transform .2s;user-select:none}   #ins-devtools.ins-min{height:44px!important;min-height:44px!important;overflow:hidden}   #ins-devtools.ins-min .ins-body{display:none}   #ins-devtools.ins-hide{opacity:0;pointer-events:none;transform:scale(.95)}   .ins-head{background:linear-gradient(135deg,#1a1d29,#11131a);padding:10px 14px;border-bottom:1px solid #2d3748;display:flex;align-items:center;gap:8px;cursor:move;flex-shrink:0}   .ins-logo{font-weight:900;font-size:15px;color:#60a5fa;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}   .ins-logo::before{content:"⚡";font-size:16px}   .ins-tabs{display:flex;gap:3px;margin-left:auto;overflow-x:auto;scrollbar-width:none}   .ins-tabs::-webkit-scrollbar{display:none}   .ins-tab{padding:5px 10px;border-radius:8px;border:none;background:transparent;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}   .ins-tab:hover{background:#252b3a;color:#e2e8f0}   .ins-tab.on{background:#2563eb;color:#fff}   .ins-wb{width:26px;height:26px;border-radius:6px;border:none;background:#252b3a;color:#94a3b8;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}   .ins-wb:hover{background:#374151;color:#fff}   .ins-body{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}   .ins-bar{padding:8px 12px;border-bottom:1px solid #2d3748;display:flex;gap:6px;align-items:center;background:#13161f;flex-shrink:0}   .ins-in{flex:1;background:#0a0c12;border:1px solid #2d3748;border-radius:10px;padding:7px 12px;color:#e2e8f0;font-size:12px;outline:none;font-family:inherit}   .ins-in:focus{border-color:#2563eb}   .ins-b{padding:7px 12px;border-radius:10px;border:none;background:#252b3a;color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;font-family:inherit}   .ins-b:hover{background:#374151}   .ins-b.p{background:#2563eb;color:#fff}.ins-b.p:hover{background:#3b82f6}   .ins-b.d{background:#dc2626;color:#fff}.ins-b.d:hover{background:#ef4444}   .ins-b.s{background:#16a34a;color:#fff}.ins-b.s:hover{background:#22c55e}   .ins-b.w{background:#ea580c;color:#fff}.ins-b.w:hover{background:#f97316}   .ins-b.pu{background:#7c3aed;color:#fff}.ins-b.pu:hover{background:#8b5cf6}   .ins-c{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;-webkit-overflow-scrolling:touch}   .ins-c::-webkit-scrollbar{width:6px}.ins-c::-webkit-scrollbar-track{background:transparent}.ins-c::-webkit-scrollbar-thumb{background:#374151;border-radius:3px}   .ins-empty{text-align:center;color:#64748b;padding:40px 20px;font-size:13px}   .ins-card{background:#161922;border:1px solid #252b3a;border-radius:12px;padding:10px;margin-bottom:8px;word-break:break-all;animation:insFadeIn .3s ease}   @keyframes insFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}   .ins-ch{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}   .ins-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;background:#1e293b;color:#94a3b8;font-size:11px;font-weight:700;border:1px solid #2d3748}   .ins-pill.mg{background:#064e3b;color:#34d399;border-color:#065f46}   .ins-pill.mp{background:#1e3a8a;color:#60a5fa;border-color:#1e40af}   .ins-pill.mu{background:#713f12;color:#fbbf24;border-color:#854d0e}   .ins-pill.md{background:#7f1d1d;color:#f87171;border-color:#991b1b}   .ins-pill.ok{background:#064e3b;color:#34d399}   .ins-pill.er{background:#7f1d1d;color:#f87171}   .ins-url{color:#60a5fa;font-size:12px;font-weight:500;word-break:break-all}   .ins-sm{color:#64748b;font-size:11px;margin-top:4px}   .ins-pre{background:#0a0c12;border:1px solid #1e293b;border-radius:8px;padding:8px;margin-top:6px;font-family:'Fira Code',Consolas,monospace;font-size:11px;color:#cbd5e1;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto}   .ins-pre::-webkit-scrollbar{width:4px;height:4px}.ins-pre::-webkit-scrollbar-thumb{background:#374151;border-radius:2px}   .ins-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}   .ins-foot{padding:8px 12px;border-top:1px solid #2d3748;background:#13161f;font-size:11px;color:#64748b;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}   .ins-foot a{color:#60a5fa;text-decoration:none}.ins-foot a:hover{text-decoration:underline}   .ins-log{padding:6px 8px;border-radius:8px;margin-bottom:4px;font-size:12px;display:flex;gap:8px;animation:insFadeIn .2s ease}   .ins-log:hover{background:#1e293b}   .ins-lt{color:#475569;font-size:11px;font-family:monospace;flex-shrink:0}   .ins-lm{flex:1;word-break:break-all}   .ins-log.lg .ins-lm{color:#e2e8f0}   .ins-log.lw{background:rgba(234,179,8,.08);border-left:2px solid #eab308}   .ins-log.lw .ins-lm{color:#fbbf24}   .ins-log.le{background:rgba(239,68,68,.08);border-left:2px solid #ef4444}   .ins-log.le .ins-lm{color:#f87171}   .ins-log.li .ins-lm{color:#60a5fa}   .ins-log.ld .ins-lm{color:#a78bfa}   .ins-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}   .ins-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}   .ins-st{background:#161922;border:1px solid #252b3a;border-radius:10px;padding:10px;text-align:center}   .ins-sv{font-size:18px;font-weight:800;color:#60a5fa}   .ins-sl{font-size:11px;color:#64748b;margin-top:2px}   .ins-det{background:#161922;border:1px solid #252b3a;border-radius:10px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px;animation:insFadeIn .3s ease}   .ins-dic{font-size:20px}.ins-din{flex:1}.ins-din div:first-child{font-weight:700;color:#e2e8f0;font-size:13px}.ins-din div:last-child{color:#64748b;font-size:11px;margin-top:2px;word-break:break-all}   .ins-rz{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,#475569 50%);border-bottom-right-radius:14px}   .ins-pov{position:fixed;inset:0;z-index:2147483646;cursor:crosshair;background:rgba(37,99,235,.05);pointer-events:all}   .ins-phl{position:absolute;background:rgba(37,99,235,.25);border:2px solid #3b82f6;border-radius:4px;pointer-events:none;transition:.05s;box-shadow:0 0 0 4px rgba(37,99,235,.1)}   .ins-pinf{position:absolute;background:#0f1117;border:1px solid #2563eb;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:12px;font-weight:600;pointer-events:none;z-index:2147483648;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:300px;word-break:break-all}   .ins-spon{background:linear-gradient(135deg,#1a1d29,#11131a);border-color:#2563eb!important}   .ins-spon .ins-row a{text-decoration:none;color:#fff}  `;  // ─── BUILD DOM ───  const R = E('div', ''); R.id = 'ins-devtools';  R.style.left = S.pos.x + 'px'; R.style.top = S.pos.y + 'px';  R.style.width = S.size.w + 'px'; R.style.height = S.size.h + 'px';  const ST = E('style', ''); ST.textContent = CSS; R.appendChild(ST);  const H = E('div', 'ins-head');  H.innerHTML = `<div class="ins-logo">INS IT DevTools</div>   <div class="ins-tabs">    <button class="ins-tab on" data-t="console">Console</button>    <button class="ins-tab" data-t="network">Network</button>    <button class="ins-tab" data-t="elements">Elements</button>    <button class="ins-tab" data-t="resources">Resources</button>    <button class="ins-tab" data-t="storage">Storage</button>    <button class="ins-tab" data-t="secrets">Secrets</button>    <button class="ins-tab" data-t="info">Info</button>   </div>   <button class="ins-wb" id="ins-min">─</button>   <button class="ins-wb" id="ins-x">✕</button>`;  R.appendChild(H);  const B = E('div', 'ins-body'); B.id = 'ins-body'; R.appendChild(B);  const RZ = E('div', 'ins-rz'); R.appendChild(RZ);  D.body.appendChild(R);  // ─── DETECT SECRETS ───  const detectSecrets = text => {   const found = [];   const pats = [    {n:'JWT Token',i:'🔐',r:/eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/g},    {n:'Bearer Token',i:'🛡️',r:/Bearer\s+[a-zA-Z0-9_\-\.]+/gi},    {n:'AWS Access Key',i:'☁️',r:/AKIA[0-9A-Z]{16}/g},    {n:'GitHub Token',i:'🐙',r:/ghp_[a-zA-Z0-9]{36}/g},    {n:'Firebase Key',i:'🔥',r:/AIza[0-9A-Za-z_-]{35}/g},    {n:'Private Key',i:'🔒',r:/-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/g},    {n:'Stripe Key',i:'💳',r:/sk_(live|test)_[0-9a-zA-Z]{24,}/g},    {n:'Slack Token',i:'💬',r:/xox[baprs]-[0-9a-zA-Z-]+/g},    {n:'API Key',i:'🔑',r:/[a-zA-Z0-9_-]{32,64}/g},    {n:'Password/Secret',i:'🗝️',r:/(password|secret|token|api[_-]?key)\s*[:=]\s*["'][^"']{8,}["']/gi}   ];   pats.forEach(p => { (text.match(p.r) || []).forEach(m => { if (!found.some(f => f.v === m)) found.push({...p,v:m}); }); });   return found;  };  // ─── RENDERERS ───  const TABS = {};  TABS.console = () => {   const logs = S.con.filter(l => !S.filter || l.m.toLowerCase().includes(S.filter.toLowerCase())).slice(-200);   return `<div class="ins-bar">    <input class="ins-in" placeholder="Filter log..." value="${esc(S.filter)}" oninput="INS.f(this.value)">    <button class="ins-b" onclick="INS.cc()">🧹 Clear</button>    <button class="ins-b p" onclick="INS.rc()">▶ Run</button>   </div>   <div class="ins-c" id="ins-con-c">    ${logs.length ? logs.map(l => `<div class="ins-log l${l.t[0]}"><span class="ins-lt">${esc(l.tm)}</span><span class="ins-lm">${esc(l.m)}</span></div>`).join('') : '<div class="ins-empty">Console kosong.</div>'}   </div>   <div style="padding:8px 12px;border-top:1px solid #2d3748;background:#0a0c12;display:flex;gap:6px">    <span style="color:#475569;font-family:monospace;font-size:12px;padding-top:7px">❯</span>    <input class="ins-in" id="ins-repl" placeholder="JavaScript... (Enter)" style="background:#161922" onkeydown="if(event.key==='Enter'){INS.ev(this.value);this.value=''}">   </div>`;  };  TABS.network = () => {   const q = (S.filter || '').toLowerCase();   const logs = S.net.map((x, i) => ({...x,i})).filter(x => !q || [x.url,x.method,x.status,x.type,x.ct,JSON.stringify(x.rh),JSON.stringify(x.sh)].join(' ').toLowerCase().includes(q)).slice(-100).reverse();   return `<div class="ins-bar">    <input class="ins-in" placeholder="Filter: api, json, xhr, m3u8..." value="${esc(S.filter)}" oninput="INS.f(this.value)">    <button class="ins-b ${S.live ? 's' : 'd'}" onclick="INS.tl()">${S.live ? '🟢 Live' : '🔴 Paused'}</button>    <button class="ins-b" onclick="INS.cn()">🧹 Clear</button>    <button class="ins-b p" onclick="INS.en()">📋 Export</button>   </div>   <div class="ins-c">    <div class="ins-sm" style="margin-bottom:8px">Total: ${S.net.length} | Tampil: ${logs.length}</div>    ${logs.length ? logs.map(x => `<div class="ins-card">     <div class="ins-ch">      <span class="ins-pill m${x.method.toLowerCase()[0]}">${esc(x.method)}</span>      <span class="ins-pill ${x.ok ? 'ok' : 'er'}">${esc(x.status)}</span>      <span class="ins-pill">${esc(x.type)}</span>      <span class="ins-pill">${esc(x.dur)}ms</span>      <span class="ins-pill">${esc(x.tm)}</span>     </div>     <div class="ins-url">${esc(x.url)}</div>     <div class="ins-sm">${esc(x.ct || 'unknown')}</div>     <div class="ins-row">      <button class="ins-b p" onclick="INS.cf(${x.i})">fetch()</button>      <button class="ins-b pu" onclick="INS.ca(${x.i})">Axios</button>      <button class="ins-b w" onclick="INS.ccu(${x.i})">cURL</button>      <button class="ins-b" onclick="INS.cb(${x.i})">Copy Body</button>     </div>     <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Request Headers</b>     <pre class="ins-pre">${esc(JSON.stringify(x.rh || {}, null, 2))}</pre>     <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Response Headers</b>     <pre class="ins-pre">${esc(JSON.stringify(x.sh || {}, null, 2))}</pre>     ${x.rb ? `<b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Request Body</b><pre class="ins-pre">${esc(x.rb)}</pre>` : ''}     <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Response Body</b>     <pre class="ins-pre">${esc(x.bd).slice(0, 3000)}${x.bd.length > 3000 ? '...' : ''}</pre>    </div>`).join('') : '<div class="ins-empty">Belum ada request.</div>'}   </div>`;  };  TABS.elements = () => `<div class="ins-bar">   <button class="ins-b p" onclick="INS.pk()">🎯 Pick</button>   <button class="ins-b" onclick="INS.ch()">📄 HTML</button>   <button class="ins-b" onclick="INS.cl()">🔗 Links</button>   <button class="ins-b" onclick="INS.ci()">🖼 Images</button>  </div>  <div class="ins-c">   <div class="ins-card">    <div style="font-weight:800;color:#fff;margin-bottom:6px">📄 Page</div>    <div class="ins-sm">Title: ${esc(D.title)}</div>    <div class="ins-sm">URL: <span class="ins-url">${esc(location.href)}</span></div>    <div class="ins-sm">Viewport: ${esc(W.innerWidth + 'x' + W.innerHeight)}</div>   </div>   <div class="ins-card">    <div style="font-weight:800;color:#fff;margin-bottom:10px">📊 DOM Stats</div>    <div class="ins-g3">     <div class="ins-st"><div class="ins-sv">${esc($$('*').length)}</div><div class="ins-sl">Elements</div></div>     <div class="ins-st"><div class="ins-sv">${esc($$('script').length)}</div><div class="ins-sl">Scripts</div></div>     <div class="ins-st"><div class="ins-sv">${esc($$('style,link[rel=stylesheet]').length)}</div><div class="ins-sl">Styles</div></div>     <div class="ins-st"><div class="ins-sv">${esc($$('img').length)}</div><div class="ins-sl">Images</div></div>     <div class="ins-st"><div class="ins-sv">${esc($$('a').length)}</div><div class="ins-sl">Links</div></div>     <div class="ins-st"><div class="ins-sv">${esc($$('iframe').length)}</div><div class="ins-sl">Iframes</div></div>    </div>   </div>   <div class="ins-card">    <div style="font-weight:800;color:#fff;margin-bottom:6px">📝 Forms</div>    ${$$('form').map((f, i) => `<div class="ins-sm">#${i} ${esc(f.method || 'GET')} → ${esc(f.action || location.href)} (${esc($$('input', f).length)} inputs)</div>`).join('') || '<div class="ins-sm">No forms</div>'}   </div>  </div>`;  TABS.resources = () => {   const urls = $$('script,img,video,audio,source,link[href],a[href],iframe').map(x => x.src || x.href).filter(Boolean);   const js = urls.filter(u => /\.js(\?|$)/i.test(u));   const css = urls.filter(u => /\.css(\?|$)/i.test(u));   const media = urls.filter(u => /\.(mp4|m3u8|mp3|webm|ogg|wav|jpg|jpeg|png|webp|gif|svg|ico)(\?|$)/i.test(u));   const json = urls.filter(u => /\.json(\?|$)/i.test(u));   return `<div class="ins-bar">    <button class="ins-b" onclick="INS.cp(${JSON.stringify(urls.join('\n'))})">All (${urls.length})</button>    <button class="ins-b p" onclick="INS.cp(${JSON.stringify(js.join('\n'))})">JS (${js.length})</button>    <button class="ins-b w" onclick="INS.cp(${JSON.stringify(css.join('\n'))})">CSS (${css.length})</button>    <button class="ins-b s" onclick="INS.cp(${JSON.stringify(media.join('\n'))})">Media (${media.length})</button>    <button class="ins-b pu" onclick="INS.cp(${JSON.stringify(json.join('\n'))})">JSON (${json.length})</button>   </div>   <div class="ins-c">    ${urls.length ? urls.slice(0, 300).map(u => `<div style="padding:7px 10px;border-bottom:1px solid #1e293b;word-break:break-all;font-size:12px;color:#94a3b8"><span style="color:#60a5fa">${esc(u)}</span></div>`).join('') : '<div class="ins-empty">Tidak ada resource.</div>'}   </div>`;  };  TABS.storage = () => {   let ls = {}, ss = {};   try { ls = { ...localStorage }; } catch(_) {}   try { ss = { ...sessionStorage }; } catch(_) {}   return `<div class="ins-bar">    <button class="ins-b" onclick="INS.cp(document.cookie)">🍪 Cookies</button>    <button class="ins-b p" onclick="INS.cp(JSON.stringify(localStorage,null,2))">LocalStorage</button>    <button class="ins-b s" onclick="INS.cp(JSON.stringify(sessionStorage,null,2))">SessionStorage</button>   </div>   <div class="ins-c">    <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">🍪 Cookies (${esc((D.cookie || '').split(';').filter(Boolean).length)})</div><pre class="ins-pre">${esc(D.cookie || 'none')}</pre></div>    <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">💾 LocalStorage (${esc(Object.keys(ls).length)})</div><pre class="ins-pre">${esc(JSON.stringify(ls, null, 2))}</pre></div>    <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">📂 SessionStorage (${esc(Object.keys(ss).length)})</div><pre class="ins-pre">${esc(JSON.stringify(ss, null, 2))}</pre></div>   </div>`;  };  TABS.secrets = () => {   const all = S.net.map(x => [JSON.stringify(x.rh), JSON.stringify(x.sh), x.bd, x.url].join(' ')).join(' ') + ' ' + D.documentElement.outerHTML;   const sec = detectSecrets(all);   return `<div class="ins-bar">    <button class="ins-b p" onclick="INS.rs()">🔍 Rescan</button>    <button class="ins-b" onclick="INS.cp(${JSON.stringify(sec.map(s => s.n + ': ' + s.v).join('\n'))})">📋 Copy All</button>   </div>   <div class="ins-c">    <div class="ins-sm" style="margin-bottom:10px">Scanning: Network + DOM</div>    ${sec.length ? sec.map(s => `<div class="ins-det">     <div class="ins-dic">${esc(s.i)}</div>     <div class="ins-din"><div>${esc(s.n)}</div><div>${esc(s.v)}</div></div>     <button class="ins-b" onclick="INS.cp(${JSON.stringify(s.v)})">Copy</button>    </div>`).join('') : '<div class="ins-empty">Tidak ada secret terdeteksi.</div>'}   </div>`;  };  TABS.info = () => {   const nav = navigator, perf = performance?.timing || {};   return `<div class="ins-bar"><button class="ins-b p" onclick="location.reload()">🔄 Reload</button></div>   <div class="ins-c">    <div class="ins-card">     <div style="font-weight:800;color:#fff;margin-bottom:10px">🌐 Browser</div>     <div class="ins-g2">      <div class="ins-st"><div class="ins-sv">${esc(nav.userAgent?.match(/\b(Chrome|Firefox|Safari|Edge)\b/i)?.[0] || 'Unknown')}</div><div class="ins-sl">Browser</div></div>      <div class="ins-st"><div class="ins-sv">${esc(nav.platform)}</div><div class="ins-sl">Platform</div></div>      <div class="ins-st"><div class="ins-sv">${esc(nav.language)}</div><div class="ins-sl">Language</div></div>      <div class="ins-st"><div class="ins-sv">${esc(nav.hardwareConcurrency || '?')}</div><div class="ins-sl">Cores</div></div>     </div>     <div style="margin-top:10px;color:#64748b;font-size:11px;word-break:break-all">${esc(nav.userAgent)}</div>    </div>    <div class="ins-card">     <div style="font-weight:800;color:#fff;margin-bottom:10px">⚡ Performance</div>     <div class="ins-g2">      <div class="ins-st"><div class="ins-sv">${esc(perf.loadEventEnd && perf.navigationStart ? (perf.loadEventEnd - perf.navigationStart) + 'ms' : 'N/A')}</div><div class="ins-sl">Load Time</div></div>      <div class="ins-st"><div class="ins-sv">${esc(perf.domContentLoadedEventEnd && perf.navigationStart ? (perf.domContentLoadedEventEnd - perf.navigationStart) + 'ms' : 'N/A')}</div><div class="ins-sl">DOM Ready</div></div>     </div>    </div>    <div class="ins-card">     <div style="font-weight:800;color:#fff;margin-bottom:10px">📱 Screen</div>     <div class="ins-g2">      <div class="ins-st"><div class="ins-sv">${esc(screen.width + 'x' + screen.height)}</div><div class="ins-sl">Resolution</div></div>      <div class="ins-st"><div class="ins-sv">${esc(screen.colorDepth + 'bit')}</div><div class="ins-sl">Color Depth</div></div>      <div class="ins-st"><div class="ins-sv">${esc(W.devicePixelRatio || 1)}x</div><div class="ins-sl">DPR</div></div>      <div class="ins-st"><div class="ins-sv">${esc(W.innerWidth + 'x' + W.innerHeight)}</div><div class="ins-sl">Viewport</div></div>     </div>    </div>    <div class="ins-card ins-spon">     <div style="font-weight:800;color:#60a5fa;margin-bottom:10px;font-size:14px">💖 Dukung INS IT Developer Tools</div>     <div style="color:#94a3b8;font-size:12px;line-height:1.6;margin-bottom:10px">      Proyek open-source untuk debugging web mobile & desktop. Dukungan Anda membantu pengembangan fitur baru.     </div>     <div class="ins-row">      <a class="ins-b p" href="https://opencollective.com/insitdeveloper" target="_blank">🌐 Open Collective</a>      <a class="ins-b w" href="https://ko-fi.com/insitdeveloper" target="_blank">☕ Ko-fi</a>      <a class="ins-b s" href="https://insitdeveloper.com/donate" target="_blank">💳 Donasi</a>     </div>    </div>   </div>`;  };  // ─── RENDER ───  function render() {   const b = $('#ins-body'); if (!b) return;   b.innerHTML = TABS[S.tab] ? TABS[S.tab]() : '';   if (S.tab === 'console') { const c = $('#ins-con-c'); if (c) c.scrollTop = c.scrollHeight; }  }  // ─── GLOBAL API ───  W.INS = {   f(v) { S.filter = v; render(); },   tl() { S.live = !S.live; render(); },   cc() { S.con = []; render(); },   cn() { S.net = []; render(); },   en() { copy(JSON.stringify(S.net, null, 2)); },   cp(t) { copy(t); },   ch() { copy(D.documentElement.outerHTML); },   cl() { copy($$('a').map(a => a.href).filter(Boolean).join('\n')); },   ci() { copy($$('img').map(i => i.src).filter(Boolean).join('\n')); },   rs() { render(); notify('Secret scanner diperbarui'); },   rc() { const c = prompt('JavaScript:'); if (!c) return; try { const r = eval(c); INS.lg('result', String(r)); notify('Executed: ' + String(r).slice(0, 50)); } catch(e) { INS.lg('error', 'Error: ' + e.message); } },   ev(c) { if (!c) return; try { const r = eval(c); INS.lg('log', '❯ ' + String(r)); } catch(e) { INS.lg('error', 'Error: ' + e.message); } },   lg(t, m) { S.con.push({ t, m: String(m), tm: now() }); if (S.con.length > 500) S.con.shift(); if (S.tab === 'console') render(); },   cf(i) { const x = S.net[i]; if (!x) return; copy(`fetch(${JSON.stringify(x.url)}, {\n method: ${JSON.stringify(x.method)},\n headers: ${JSON.stringify(x.rh || {}, null, 2)}${x.rb ? `,\n body: ${JSON.stringify(x.rb)}` : ''}\n})\n.then(r => r.text())\n.then(console.log);`); },   ca(i) { const x = S.net[i]; if (!x) return; copy(`axios({\n method: ${JSON.stringify(String(x.method).toLowerCase())},\n url: ${JSON.stringify(x.url)},\n headers: ${JSON.stringify(x.rh || {}, null, 2)}${x.rb ? `,\n data: ${JSON.stringify(x.rb)}` : ''}\n})\n.then(r => console.log(r.data));`); },   ccu(i) { const x = S.net[i]; if (!x) return; const hs = Object.entries(x.rh || {}).map(([k, v]) => ` \\n -H ${JSON.stringify(k + ': ' + v)}`).join(''); copy(`curl -L ${JSON.stringify(x.url)} \  -X ${JSON.stringify(x.method)}${hs}${x.rb ? ` \  --data-raw ${JSON.stringify(x.rb)}` : ''}`); },   cb(i) { const x = S.net[i]; if (!x) return; copy(x.bd); },   pk() {    if (S.pick) return; S.pick = true;    const ov = E('div', 'ins-pov');    const hl = E('div', 'ins-phl');    const inf = E('div', 'ins-pinf');    ov.appendChild(hl); ov.appendChild(inf); D.body.appendChild(ov);    const mv = e => {     const t = D.elementFromPoint(e.clientX, e.clientY);     if (!t || t === ov || t === hl || t === inf) return;     const r = t.getBoundingClientRect();     hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px';     hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';     const s = sel(t);     inf.textContent = s;     inf.style.left = (e.clientX + 15) + 'px';     inf.style.top = (e.clientY + 15) + 'px';    };    const mc = e => {     e.preventDefault(); e.stopPropagation();     const t = D.elementFromPoint(e.clientX, e.clientY);     if (t) { const s = sel(t); copy(s); INS.lg('info', 'Selector: ' + s); }     S.pick = false; ov.remove();     D.removeEventListener('mousemove', mv);     D.removeEventListener('click', mc, true);     render();    };    D.addEventListener('mousemove', mv);    D.addEventListener('click', mc, true);    notify('Klik elemen untuk copy selector');   }  };  // ─── INTERCEPTORS ───  ['log','warn','error','info','debug'].forEach(m => {   const o = console[m];   console[m] = (...a) => { INS.lg(m === 'log' ? 'log' : m, a.map(x => typeof x === 'object' ? JSON.stringify(x) : String(x)).join(' ')); o.apply(console, a); };  });  const of = W.fetch;  W.fetch = async (...a) => {   const st = performance.now();   const inp = a[0], opt = a[1] || {};   const url = String(inp?.url || inp);   const method = opt.method || inp?.method || 'GET';   const rh = { ...hdrToObj(inp?.headers), ...hdrToObj(opt.headers) };   const rb = opt.body ? String(opt.body).slice(0, 4000) : '';   try {    const res = await of(...a);    try {     const c = res.clone();     const ct = c.headers.get('content-type') || '';     const bd = await c.text();     const sh = {}; c.headers.forEach((v, k) => sh[k] = v);     S.net.push({ id: Date.now() + Math.random(), type: 'fetch', url, method, status: res.status, ok: res.ok, ct, tm: now(), dur: Math.round(performance.now() - st), rh, sh, rb, bd: bd.slice(0, 12000) });     if (S.net.length > 300) S.net.shift();     if (S.tab === 'network' && S.live) render();    } catch(_) {}    return res;   } catch(err) {    S.net.push({ id: Date.now() + Math.random(), type: 'fetch', url, method, status: 0, ok: false, ct: '', tm: now(), dur: Math.round(performance.now() - st), rh, sh: {}, rb, bd: 'Error: ' + err.message });    if (S.tab === 'network' && S.live) render();    throw err;   }  };  const xo = XMLHttpRequest.prototype.open;  const xs = XMLHttpRequest.prototype.send;  const xh = XMLHttpRequest.prototype.setRequestHeader;  XMLHttpRequest.prototype.open = function(m, u) { this.__m = m; this.__u = u; this.__h = {}; this.__st = performance.now(); return xo.apply(this, arguments); };  XMLHttpRequest.prototype.setRequestHeader = function(k, v) { try { this.__h[k] = v; } catch(_) {} return xh.apply(this, arguments); };  XMLHttpRequest.prototype.send = function(b) {   this.addEventListener('loadend', () => {    try {     const raw = this.getAllResponseHeaders() || '';     const sh = {};     raw.trim().split(/[\r\n]+/).forEach(ln => { const i = ln.indexOf(':'); if (i > -1) sh[ln.slice(0, i).trim()] = ln.slice(i + 1).trim(); });     S.net.push({ id: Date.now() + Math.random(), type: 'xhr', url: this.__u, method: this.__m, status: this.status, ok: this.status >= 200 && this.status < 300, ct: this.getResponseHeader('content-type') || '', tm: now(), dur: Math.round(performance.now() - this.__st), rh: this.__h || {}, sh, rb: b ? String(b).slice(0, 4000) : '', bd: String(this.responseText || '').slice(0, 12000) });     if (S.net.length > 300) S.net.shift();     if (S.tab === 'network' && S.live) render();    } catch(_) {}   });   return xs.apply(this, arguments);  };  // ─── EVENTS ───  H.querySelectorAll('.ins-tab').forEach(b => b.addEventListener('click', () => {   H.querySelectorAll('.ins-tab').forEach(x => x.classList.remove('on'));   b.classList.add('on'); S.tab = b.dataset.t; render();  }));  $('#ins-min').addEventListener('click', () => { S.min = !S.min; R.classList.toggle('ins-min', S.min); $('#ins-min').textContent = S.min ? '□' : '─'; });  $('#ins-x').addEventListener('click', () => R.classList.toggle('ins-hide'));  H.addEventListener('mousedown', e => {   if (e.target.closest('.ins-tab') || e.target.closest('.ins-wb')) return;   S.drag = true; S.off.x = e.clientX - R.offsetLeft; S.off.y = e.clientY - R.offsetTop; R.style.transition = 'none';  });  RZ.addEventListener('mousedown', e => { S.resize = true; S.off.x = e.clientX; S.off.y = e.clientY; S.size.w = R.offsetWidth; S.size.h = R.offsetHeight; R.style.transition = 'none'; e.stopPropagation(); });  W.addEventListener('mousemove', e => {   if (S.drag) { let nx = e.clientX - S.off.x, ny = e.clientY - S.off.y; nx = Math.max(0, Math.min(nx, W.innerWidth - R.offsetWidth)); ny = Math.max(0, Math.min(ny, W.innerHeight - R.offsetHeight)); R.style.left = nx + 'px'; R.style.top = ny + 'px'; }   if (S.resize) { const nw = Math.max(320, S.size.w + (e.clientX - S.off.x)); const nh = Math.max(260, S.size.h + (e.clientY - S.off.y)); R.style.width = nw + 'px'; R.style.height = nh + 'px'; }  });  W.addEventListener('mouseup', () => { S.drag = false; S.resize = false; R.style.transition = ''; });  W.addEventListener('keydown', e => {   if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) { e.preventDefault(); R.classList.remove('ins-hide'); }   if (e.key === 'Escape' && S.pick) { S.pick = false; const ov = $('.ins-pov'); if (ov) ov.remove(); }  });  // ─── INIT ───  render();  INS.lg('info', '⚡ INS IT Developer Tools v5.1 aktif!');  INS.lg('info', 'F12 / Ctrl+Shift+I = toggle | Esc = cancel picker');  setInterval(() => { if (S.tab === 'secrets' || S.tab === 'resources') render(); }, 2000); })();
+/* ============================================================
+   ⚡ INS IT Developer Tools v5.2
+   Bookmarklet / Console Paste / Cloudflare Worker
+   No CDN dependency. Draggable. Full features.
+   ============================================================ */
+(function() {
+  'use strict';
+  if (window.__INS_ACTIVE__) return;
+  window.__INS_ACTIVE__ = true;
+
+  const W = window, D = document;
+  const $ = s => D.querySelector(s);
+  const $$ = s => [...D.querySelectorAll(s)];
+  const E = (t, c, h) => { const e = D.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const now = () => new Date().toLocaleTimeString('id-ID',{hour12:false});
+  const copy = t => navigator.clipboard?.writeText(String(t)).then(() => notify('✅ Disalin')).catch(() => prompt('Salin:',t));
+  const notify = m => {
+    const n = E('div','',`<div style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f1117;border:1px solid #2563eb;color:#60a5fa;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:2147483649;box-shadow:0 10px 40px rgba(0,0,0,.5);animation:insFadeIn .3s">${esc(m)}</div>`);
+    D.body.appendChild(n.firstElementChild);
+    setTimeout(() => n.firstElementChild?.remove(), 1800);
+  };
+  const hdrObj = h => { const o={}; try{if(!h)return o; if(h instanceof Headers)h.forEach((v,k)=>o[k]=v); else if(Array.isArray(h))h.forEach(x=>o[x[0]]=x[1]); else if(typeof h==='object')Object.assign(o,h);}catch(_){} return o; };
+  const selector = el => { if(!el)return''; if(el.id)return'#'+CSS.escape(el.id); const out=[]; while(el&&el.nodeType===1&&el!==D.body){ let s=el.tagName.toLowerCase(); if(el.className&&typeof el.className==='string')s+='.'+el.className.trim().split(/\s+/).slice(0,2).map(CSS.escape).join('.'); const n=[...(el.parentNode?.children||[])].filter(x=>x.tagName===el.tagName).indexOf(el)+1; s+=`:nth-of-type(${n})`; out.unshift(s); el=el.parentElement; } return out.join(' > '); };
+
+  // ─── STATE ───
+  const S = { logs:[], net:[], con:[], tab:'console', filter:'', live:true, pick:false, min:false, drag:false, resize:false, pos:{x:10,y:10}, size:{w:420,h:580}, off:{x:0,y:0} };
+
+  // ─── CSS ───
+  const CSS = `
+    #ins-devtools,#ins-devtools *{box-sizing:border-box;margin:0;padding:0}
+    #ins-devtools{position:fixed;z-index:2147483647;font-family:'Segoe UI',Roboto,Arial,sans-serif;font-size:13px;color:#e2e8f0;background:#0f1117;border:1px solid #2d3748;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05);overflow:hidden;display:flex;flex-direction:column;min-width:320px;min-height:260px;transition:opacity .2s,transform .2s;user-select:none}
+    #ins-devtools.ins-min{height:44px!important;min-height:44px!important;overflow:hidden}
+    #ins-devtools.ins-min .ins-body{display:none}
+    #ins-devtools.ins-hide{opacity:0;pointer-events:none;transform:scale(.95)}
+    .ins-head{background:linear-gradient(135deg,#1a1d29,#11131a);padding:10px 14px;border-bottom:1px solid #2d3748;display:flex;align-items:center;gap:8px;cursor:move;flex-shrink:0}
+    .ins-logo{font-weight:900;font-size:15px;color:#60a5fa;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+    .ins-logo::before{content:"⚡";font-size:16px}
+    .ins-tabs{display:flex;gap:3px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+    .ins-tabs::-webkit-scrollbar{display:none}
+    .ins-tab{padding:5px 10px;border-radius:8px;border:none;background:transparent;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.15s}
+    .ins-tab:hover{background:#252b3a;color:#e2e8f0}
+    .ins-tab.on{background:#2563eb;color:#fff}
+    .ins-wb{width:26px;height:26px;border-radius:6px;border:none;background:#252b3a;color:#94a3b8;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+    .ins-wb:hover{background:#374151;color:#fff}
+    .ins-body{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+    .ins-bar{padding:8px 12px;border-bottom:1px solid #2d3748;display:flex;gap:6px;align-items:center;background:#13161f;flex-shrink:0}
+    .ins-in{flex:1;background:#0a0c12;border:1px solid #2d3748;border-radius:10px;padding:7px 12px;color:#e2e8f0;font-size:12px;outline:none;font-family:inherit}
+    .ins-in:focus{border-color:#2563eb}
+    .ins-b{padding:7px 12px;border-radius:10px;border:none;background:#252b3a;color:#e2e8f0;font-size:12px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;font-family:inherit}
+    .ins-b:hover{background:#374151}
+    .ins-b.p{background:#2563eb;color:#fff}.ins-b.p:hover{background:#3b82f6}
+    .ins-b.d{background:#dc2626;color:#fff}.ins-b.d:hover{background:#ef4444}
+    .ins-b.s{background:#16a34a;color:#fff}.ins-b.s:hover{background:#22c55e}
+    .ins-b.w{background:#ea580c;color:#fff}.ins-b.w:hover{background:#f97316}
+    .ins-b.pu{background:#7c3aed;color:#fff}.ins-b.pu:hover{background:#8b5cf6}
+    .ins-c{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px;-webkit-overflow-scrolling:touch}
+    .ins-c::-webkit-scrollbar{width:6px}.ins-c::-webkit-scrollbar-track{background:transparent}.ins-c::-webkit-scrollbar-thumb{background:#374151;border-radius:3px}
+    .ins-empty{text-align:center;color:#64748b;padding:40px 20px;font-size:13px}
+    .ins-card{background:#161922;border:1px solid #252b3a;border-radius:12px;padding:10px;margin-bottom:8px;word-break:break-all;animation:insFadeIn .3s ease}
+    @keyframes insFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+    .ins-ch{display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap}
+    .ins-pill{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;background:#1e293b;color:#94a3b8;font-size:11px;font-weight:700;border:1px solid #2d3748}
+    .ins-pill.mg{background:#064e3b;color:#34d399;border-color:#065f46}
+    .ins-pill.mp{background:#1e3a8a;color:#60a5fa;border-color:#1e40af}
+    .ins-pill.mu{background:#713f12;color:#fbbf24;border-color:#854d0e}
+    .ins-pill.md{background:#7f1d1d;color:#f87171;border-color:#991b1b}
+    .ins-pill.ok{background:#064e3b;color:#34d399}
+    .ins-pill.er{background:#7f1d1d;color:#f87171}
+    .ins-url{color:#60a5fa;font-size:12px;font-weight:500;word-break:break-all}
+    .ins-sm{color:#64748b;font-size:11px;margin-top:4px}
+    .ins-pre{background:#0a0c12;border:1px solid #1e293b;border-radius:8px;padding:8px;margin-top:6px;font-family:'Fira Code',Consolas,monospace;font-size:11px;color:#cbd5e1;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto}
+    .ins-pre::-webkit-scrollbar{width:4px;height:4px}.ins-pre::-webkit-scrollbar-thumb{background:#374151;border-radius:2px}
+    .ins-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+    .ins-foot{padding:8px 12px;border-top:1px solid #2d3748;background:#13161f;font-size:11px;color:#64748b;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .ins-foot a{color:#60a5fa;text-decoration:none}.ins-foot a:hover{text-decoration:underline}
+    .ins-log{padding:6px 8px;border-radius:8px;margin-bottom:4px;font-size:12px;display:flex;gap:8px;animation:insFadeIn .2s ease}
+    .ins-log:hover{background:#1e293b}
+    .ins-lt{color:#475569;font-size:11px;font-family:monospace;flex-shrink:0}
+    .ins-lm{flex:1;word-break:break-all}
+    .ins-log.lg .ins-lm{color:#e2e8f0}
+    .ins-log.lw{background:rgba(234,179,8,.08);border-left:2px solid #eab308}
+    .ins-log.lw .ins-lm{color:#fbbf24}
+    .ins-log.le{background:rgba(239,68,68,.08);border-left:2px solid #ef4444}
+    .ins-log.le .ins-lm{color:#f87171}
+    .ins-log.li .ins-lm{color:#60a5fa}
+    .ins-log.ld .ins-lm{color:#a78bfa}
+    .ins-g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .ins-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+    .ins-st{background:#161922;border:1px solid #252b3a;border-radius:10px;padding:10px;text-align:center}
+    .ins-sv{font-size:18px;font-weight:800;color:#60a5fa}
+    .ins-sl{font-size:11px;color:#64748b;margin-top:2px}
+    .ins-det{background:#161922;border:1px solid #252b3a;border-radius:10px;padding:10px;margin-bottom:6px;display:flex;align-items:center;gap:10px;animation:insFadeIn .3s ease}
+    .ins-dic{font-size:20px}.ins-din{flex:1}.ins-din div:first-child{font-weight:700;color:#e2e8f0;font-size:13px}.ins-din div:last-child{color:#64748b;font-size:11px;margin-top:2px;word-break:break-all}
+    .ins-rz{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,#475569 50%);border-bottom-right-radius:14px}
+    .ins-pov{position:fixed;inset:0;z-index:2147483646;cursor:crosshair;background:rgba(37,99,235,.05);pointer-events:all}
+    .ins-phl{position:absolute;background:rgba(37,99,235,.25);border:2px solid #3b82f6;border-radius:4px;pointer-events:none;transition:.05s;box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+    .ins-pinf{position:absolute;background:#0f1117;border:1px solid #2563eb;border-radius:8px;padding:8px 12px;color:#e2e8f0;font-size:12px;font-weight:600;pointer-events:none;z-index:2147483648;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:300px;word-break:break-all}
+    .ins-spon{background:linear-gradient(135deg,#1a1d29,#11131a);border-color:#2563eb!important}
+    .ins-spon .ins-row a{text-decoration:none;color:#fff}
+  `;
+
+  // ─── BUILD DOM ───
+  const R = E('div',''); R.id = 'ins-devtools';
+  R.style.left = S.pos.x + 'px'; R.style.top = S.pos.y + 'px';
+  R.style.width = S.size.w + 'px'; R.style.height = S.size.h + 'px';
+  const ST = E('style',''); ST.textContent = CSS; R.appendChild(ST);
+
+  const H = E('div','ins-head');
+  H.innerHTML = `<div class="ins-logo">INS IT DevTools</div>
+    <div class="ins-tabs">
+      <button class="ins-tab on" data-t="console">Console</button>
+      <button class="ins-tab" data-t="network">Network</button>
+      <button class="ins-tab" data-t="elements">Elements</button>
+      <button class="ins-tab" data-t="resources">Resources</button>
+      <button class="ins-tab" data-t="storage">Storage</button>
+      <button class="ins-tab" data-t="secrets">Secrets</button>
+      <button class="ins-tab" data-t="info">Info</button>
+    </div>
+    <button class="ins-wb" id="ins-min">─</button>
+    <button class="ins-wb" id="ins-x">✕</button>`;
+  R.appendChild(H);
+
+  const B = E('div','ins-body'); B.id = 'ins-body'; R.appendChild(B);
+  const RZ = E('div','ins-rz'); R.appendChild(RZ);
+  D.body.appendChild(R);
+
+  // ─── SECRET DETECTOR ───
+  const detectSecrets = text => {
+    const found = [];
+    const pats = [
+      {n:'JWT Token',i:'🔐',r:/eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*/g},
+      {n:'Bearer Token',i:'🛡️',r:/Bearer\s+[a-zA-Z0-9_\-\.]+/gi},
+      {n:'AWS Access Key',i:'☁️',r:/AKIA[0-9A-Z]{16}/g},
+      {n:'GitHub Token',i:'🐙',r:/ghp_[a-zA-Z0-9]{36}/g},
+      {n:'Firebase Key',i:'🔥',r:/AIza[0-9A-Za-z_-]{35}/g},
+      {n:'Private Key',i:'🔒',r:/-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----/g},
+      {n:'Stripe Key',i:'💳',r:/sk_(live|test)_[0-9a-zA-Z]{24,}/g},
+      {n:'Slack Token',i:'💬',r:/xox[baprs]-[0-9a-zA-Z-]+/g},
+      {n:'API Key',i:'🔑',r:/[a-zA-Z0-9_-]{32,64}/g},
+      {n:'Password/Secret',i:'🗝️',r:/(password|secret|token|api[_-]?key)\s*[:=]\s*["'][^"']{8,}["']/gi}
+    ];
+    pats.forEach(p => { (text.match(p.r) || []).forEach(m => { if (!found.some(f => f.v === m)) found.push({...p,v:m}); }); });
+    return found;
+  };
+
+  // ─── RENDERERS ───
+  const TABS = {};
+
+  TABS.console = () => {
+    const logs = S.con.filter(l => !S.filter || l.m.toLowerCase().includes(S.filter.toLowerCase())).slice(-200);
+    return `<div class="ins-bar">
+      <input class="ins-in" placeholder="Filter log..." value="${esc(S.filter)}" oninput="INS.f(this.value)">
+      <button class="ins-b" onclick="INS.cc()">🧹 Clear</button>
+      <button class="ins-b p" onclick="INS.rc()">▶ Run</button>
+    </div>
+    <div class="ins-c" id="ins-con-c">
+      ${logs.length ? logs.map(l => `<div class="ins-log l${l.t[0]}"><span class="ins-lt">${esc(l.tm)}</span><span class="ins-lm">${esc(l.m)}</span></div>`).join('') : '<div class="ins-empty">Console kosong.</div>'}
+    </div>
+    <div style="padding:8px 12px;border-top:1px solid #2d3748;background:#0a0c12;display:flex;gap:6px">
+      <span style="color:#475569;font-family:monospace;font-size:12px;padding-top:7px">❯</span>
+      <input class="ins-in" id="ins-repl" placeholder="JavaScript... (Enter)" style="background:#161922" onkeydown="if(event.key==='Enter'){INS.ev(this.value);this.value=''}">
+    </div>`;
+  };
+
+  TABS.network = () => {
+    const q = (S.filter || '').toLowerCase();
+    const logs = S.net.map((x, i) => ({...x,i})).filter(x => !q || [x.url,x.method,x.status,x.type,x.ct,JSON.stringify(x.rh),JSON.stringify(x.sh)].join(' ').toLowerCase().includes(q)).slice(-100).reverse();
+    return `<div class="ins-bar">
+      <input class="ins-in" placeholder="Filter: api, json, xhr, m3u8..." value="${esc(S.filter)}" oninput="INS.f(this.value)">
+      <button class="ins-b ${S.live ? 's' : 'd'}" onclick="INS.tl()">${S.live ? '🟢 Live' : '🔴 Paused'}</button>
+      <button class="ins-b" onclick="INS.cn()">🧹 Clear</button>
+      <button class="ins-b p" onclick="INS.en()">📋 Export</button>
+    </div>
+    <div class="ins-c">
+      <div class="ins-sm" style="margin-bottom:8px">Total: ${S.net.length} | Tampil: ${logs.length}</div>
+      ${logs.length ? logs.map(x => `<div class="ins-card">
+        <div class="ins-ch">
+          <span class="ins-pill m${x.method.toLowerCase()[0]}">${esc(x.method)}</span>
+          <span class="ins-pill ${x.ok ? 'ok' : 'er'}">${esc(x.status)}</span>
+          <span class="ins-pill">${esc(x.type)}</span>
+          <span class="ins-pill">${esc(x.dur)}ms</span>
+          <span class="ins-pill">${esc(x.tm)}</span>
+        </div>
+        <div class="ins-url">${esc(x.url)}</div>
+        <div class="ins-sm">${esc(x.ct || 'unknown')}</div>
+        <div class="ins-row">
+          <button class="ins-b p" onclick="INS.cf(${x.i})">fetch()</button>
+          <button class="ins-b pu" onclick="INS.ca(${x.i})">Axios</button>
+          <button class="ins-b w" onclick="INS.ccu(${x.i})">cURL</button>
+          <button class="ins-b" onclick="INS.cb(${x.i})">Copy Body</button>
+        </div>
+        <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Request Headers</b>
+        <pre class="ins-pre">${esc(JSON.stringify(x.rh || {}, null, 2))}</pre>
+        <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Response Headers</b>
+        <pre class="ins-pre">${esc(JSON.stringify(x.sh || {}, null, 2))}</pre>
+        ${x.rb ? `<b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Request Body</b><pre class="ins-pre">${esc(x.rb)}</pre>` : ''}
+        <b style="color:#94a3b8;font-size:11px;display:block;margin-top:8px">Response Body</b>
+        <pre class="ins-pre">${esc(x.bd).slice(0, 3000)}${x.bd.length > 3000 ? '...' : ''}</pre>
+      </div>`).join('') : '<div class="ins-empty">Belum ada request. Navigasi atau reload halaman.</div>'}
+    </div>`;
+  };
+
+  TABS.elements = () => `<div class="ins-bar">
+    <button class="ins-b p" onclick="INS.pk()">🎯 Pick</button>
+    <button class="ins-b" onclick="INS.ch()">📄 HTML</button>
+    <button class="ins-b" onclick="INS.cl()">🔗 Links</button>
+    <button class="ins-b" onclick="INS.ci()">🖼 Images</button>
+  </div>
+  <div class="ins-c">
+    <div class="ins-card">
+      <div style="font-weight:800;color:#fff;margin-bottom:6px">📄 Page Info</div>
+      <div class="ins-sm">Title: ${esc(D.title)}</div>
+      <div class="ins-sm">URL: <span class="ins-url">${esc(location.href)}</span></div>
+      <div class="ins-sm">Viewport: ${esc(W.innerWidth + 'x' + W.innerHeight)}</div>
+      <div class="ins-sm">Charset: ${esc(D.characterSet)}</div>
+    </div>
+    <div class="ins-card">
+      <div style="font-weight:800;color:#fff;margin-bottom:10px">📊 DOM Stats</div>
+      <div class="ins-g3">
+        <div class="ins-st"><div class="ins-sv">${esc($$('*').length)}</div><div class="ins-sl">Elements</div></div>
+        <div class="ins-st"><div class="ins-sv">${esc($$('script').length)}</div><div class="ins-sl">Scripts</div></div>
+        <div class="ins-st"><div class="ins-sv">${esc($$('style,link[rel=stylesheet]').length)}</div><div class="ins-sl">Styles</div></div>
+        <div class="ins-st"><div class="ins-sv">${esc($$('img').length)}</div><div class="ins-sl">Images</div></div>
+        <div class="ins-st"><div class="ins-sv">${esc($$('a').length)}</div><div class="ins-sl">Links</div></div>
+        <div class="ins-st"><div class="ins-sv">${esc($$('iframe').length)}</div><div class="ins-sl">Iframes</div></div>
+      </div>
+    </div>
+    <div class="ins-card">
+      <div style="font-weight:800;color:#fff;margin-bottom:6px">📝 Forms</div>
+      ${$$('form').map((f, i) => `<div class="ins-sm">#${i} ${esc(f.method || 'GET')} → ${esc(f.action || location.href)} (${esc($$('input', f).length)} inputs)</div>`).join('') || '<div class="ins-sm">No forms</div>'}
+    </div>
+  </div>`;
+
+  TABS.resources = () => {
+    const urls = $$('script,img,video,audio,source,link[href],a[href],iframe').map(x => x.src || x.href).filter(Boolean);
+    const js = urls.filter(u => /\.js(\?|$)/i.test(u));
+    const css = urls.filter(u => /\.css(\?|$)/i.test(u));
+    const media = urls.filter(u => /\.(mp4|m3u8|mp3|webm|ogg|wav|jpg|jpeg|png|webp|gif|svg|ico)(\?|$)/i.test(u));
+    const json = urls.filter(u => /\.json(\?|$)/i.test(u));
+    return `<div class="ins-bar">
+      <button class="ins-b" onclick="INS.cp(${JSON.stringify(urls.join('
+'))})">All (${urls.length})</button>
+      <button class="ins-b p" onclick="INS.cp(${JSON.stringify(js.join('
+'))})">JS (${js.length})</button>
+      <button class="ins-b w" onclick="INS.cp(${JSON.stringify(css.join('
+'))})">CSS (${css.length})</button>
+      <button class="ins-b s" onclick="INS.cp(${JSON.stringify(media.join('
+'))})">Media (${media.length})</button>
+      <button class="ins-b pu" onclick="INS.cp(${JSON.stringify(json.join('
+'))})">JSON (${json.length})</button>
+    </div>
+    <div class="ins-c">
+      ${urls.length ? urls.slice(0, 300).map(u => `<div style="padding:7px 10px;border-bottom:1px solid #1e293b;word-break:break-all;font-size:12px;color:#94a3b8"><span style="color:#60a5fa">${esc(u)}</span></div>`).join('') : '<div class="ins-empty">Tidak ada resource.</div>'}
+    </div>`;
+  };
+
+  TABS.storage = () => {
+    let ls = {}, ss = {};
+    try { ls = { ...localStorage }; } catch(_) {}
+    try { ss = { ...sessionStorage }; } catch(_) {}
+    return `<div class="ins-bar">
+      <button class="ins-b" onclick="INS.cp(document.cookie)">🍪 Cookies</button>
+      <button class="ins-b p" onclick="INS.cp(JSON.stringify(localStorage,null,2))">LocalStorage</button>
+      <button class="ins-b s" onclick="INS.cp(JSON.stringify(sessionStorage,null,2))">SessionStorage</button>
+    </div>
+    <div class="ins-c">
+      <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">🍪 Cookies (${esc((D.cookie || '').split(';').filter(Boolean).length)})</div><pre class="ins-pre">${esc(D.cookie || 'none')}</pre></div>
+      <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">💾 LocalStorage (${esc(Object.keys(ls).length)})</div><pre class="ins-pre">${esc(JSON.stringify(ls, null, 2))}</pre></div>
+      <div class="ins-card"><div style="font-weight:800;color:#fff;margin-bottom:6px">📂 SessionStorage (${esc(Object.keys(ss).length)})</div><pre class="ins-pre">${esc(JSON.stringify(ss, null, 2))}</pre></div>
+    </div>`;
+  };
+
+  TABS.secrets = () => {
+    const all = S.net.map(x => [JSON.stringify(x.rh), JSON.stringify(x.sh), x.bd, x.url].join(' ')).join(' ') + ' ' + D.documentElement.outerHTML;
+    const sec = detectSecrets(all);
+    return `<div class="ins-bar">
+      <button class="ins-b p" onclick="INS.rs()">🔍 Rescan</button>
+      <button class="ins-b" onclick="INS.cp(${JSON.stringify(sec.map(s => s.n + ': ' + s.v).join('
+'))})">📋 Copy All</button>
+    </div>
+    <div class="ins-c">
+      <div class="ins-sm" style="margin-bottom:10px">Scanning: Network logs + DOM HTML</div>
+      ${sec.length ? sec.map(s => `<div class="ins-det">
+        <div class="ins-dic">${esc(s.i)}</div>
+        <div class="ins-din"><div>${esc(s.n)}</div><div>${esc(s.v)}</div></div>
+        <button class="ins-b" onclick="INS.cp(${JSON.stringify(s.v)})">Copy</button>
+      </div>`).join('') : '<div class="ins-empty">Tidak ada secret terdeteksi. Coba navigasi atau klik Rescan.</div>'}
+    </div>`;
+  };
+
+  TABS.info = () => {
+    const nav = navigator, perf = performance?.timing || {};
+    return `<div class="ins-bar"><button class="ins-b p" onclick="location.reload()">🔄 Reload</button></div>
+    <div class="ins-c">
+      <div class="ins-card">
+        <div style="font-weight:800;color:#fff;margin-bottom:10px">🌐 Browser</div>
+        <div class="ins-g2">
+          <div class="ins-st"><div class="ins-sv">${esc(nav.userAgent?.match(/(Chrome|Firefox|Safari|Edge)/i)?.[0] || 'Unknown')}</div><div class="ins-sl">Browser</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(nav.platform)}</div><div class="ins-sl">Platform</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(nav.language)}</div><div class="ins-sl">Language</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(nav.hardwareConcurrency || '?')}</div><div class="ins-sl">Cores</div></div>
+        </div>
+        <div style="margin-top:10px;color:#64748b;font-size:11px;word-break:break-all">${esc(nav.userAgent)}</div>
+      </div>
+      <div class="ins-card">
+        <div style="font-weight:800;color:#fff;margin-bottom:10px">⚡ Performance</div>
+        <div class="ins-g2">
+          <div class="ins-st"><div class="ins-sv">${esc(perf.loadEventEnd && perf.navigationStart ? (perf.loadEventEnd - perf.navigationStart) + 'ms' : 'N/A')}</div><div class="ins-sl">Load Time</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(perf.domContentLoadedEventEnd && perf.navigationStart ? (perf.domContentLoadedEventEnd - perf.navigationStart) + 'ms' : 'N/A')}</div><div class="ins-sl">DOM Ready</div></div>
+        </div>
+      </div>
+      <div class="ins-card">
+        <div style="font-weight:800;color:#fff;margin-bottom:10px">📱 Screen</div>
+        <div class="ins-g2">
+          <div class="ins-st"><div class="ins-sv">${esc(screen.width + 'x' + screen.height)}</div><div class="ins-sl">Resolution</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(screen.colorDepth + 'bit')}</div><div class="ins-sl">Color Depth</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(W.devicePixelRatio || 1)}x</div><div class="ins-sl">DPR</div></div>
+          <div class="ins-st"><div class="ins-sv">${esc(W.innerWidth + 'x' + W.innerHeight)}</div><div class="ins-sl">Viewport</div></div>
+        </div>
+      </div>
+      <div class="ins-card ins-spon">
+        <div style="font-weight:800;color:#60a5fa;margin-bottom:10px;font-size:14px">💖 Dukung INS IT Developer Tools</div>
+        <div style="color:#94a3b8;font-size:12px;line-height:1.6;margin-bottom:10px">
+          Proyek open-source untuk debugging web mobile & desktop. Dukungan Anda membantu pengembangan fitur baru.
+        </div>
+        <div class="ins-row">
+          <a class="ins-b p" href="https://opencollective.com/insitdeveloper" target="_blank">🌐 Open Collective</a>
+          <a class="ins-b w" href="https://ko-fi.com/insitdeveloper" target="_blank">☕ Ko-fi</a>
+          <a class="ins-b s" href="https://insitdeveloper.com/donate" target="_blank">💳 Donasi</a>
+        </div>
+      </div>
+    </div>`;
+  };
+
+  // ─── RENDER ───
+  function render() {
+    const b = $('#ins-body'); if (!b) return;
+    b.innerHTML = TABS[S.tab] ? TABS[S.tab]() : '';
+    if (S.tab === 'console') { const c = $('#ins-con-c'); if (c) c.scrollTop = c.scrollHeight; }
+  }
+
+  // ─── GLOBAL API ───
+  W.INS = {
+    f(v) { S.filter = v; render(); },
+    tl() { S.live = !S.live; render(); },
+    cc() { S.con = []; render(); },
+    cn() { S.net = []; render(); },
+    en() { copy(JSON.stringify(S.net, null, 2)); },
+    cp(t) { copy(t); },
+    ch() { copy(D.documentElement.outerHTML); },
+    cl() { copy($$('a').map(a => a.href).filter(Boolean).join('
+')); },
+    ci() { copy($$('img').map(i => i.src).filter(Boolean).join('
+')); },
+    rs() { render(); notify('Secret scanner diperbarui'); },
+    rc() { const c = prompt('JavaScript:'); if (!c) return; try { const r = eval(c); INS.lg('result', String(r)); notify('Executed: ' + String(r).slice(0, 50)); } catch(e) { INS.lg('error', 'Error: ' + e.message); } },
+    ev(c) { if (!c) return; try { const r = eval(c); INS.lg('log', '❯ ' + String(r)); } catch(e) { INS.lg('error', 'Error: ' + e.message); } },
+    lg(t, m) { S.con.push({ t, m: String(m), tm: now() }); if (S.con.length > 500) S.con.shift(); if (S.tab === 'console') render(); },
+    cf(i) { const x = S.net[i]; if (!x) return; copy(`fetch(${JSON.stringify(x.url)}, {
+  method: ${JSON.stringify(x.method)},
+  headers: ${JSON.stringify(x.rh || {}, null, 2)}${x.rb ? `,
+  body: ${JSON.stringify(x.rb)}` : ''}
+})
+.then(r => r.text())
+.then(console.log);`); },
+    ca(i) { const x = S.net[i]; if (!x) return; copy(`axios({
+  method: ${JSON.stringify(String(x.method).toLowerCase())},
+  url: ${JSON.stringify(x.url)},
+  headers: ${JSON.stringify(x.rh || {}, null, 2)}${x.rb ? `,
+  data: ${JSON.stringify(x.rb)}` : ''}
+})
+.then(r => console.log(r.data));`); },
+    ccu(i) { const x = S.net[i]; if (!x) return; const hs = Object.entries(x.rh || {}).map(([k, v]) => ` \n  -H ${JSON.stringify(k + ': ' + v)}`).join(''); copy(`curl -L ${JSON.stringify(x.url)} \n  -X ${JSON.stringify(x.method)}${hs}${x.rb ? ` \n  --data-raw ${JSON.stringify(x.rb)}` : ''}`); },
+    cb(i) { const x = S.net[i]; if (!x) return; copy(x.bd); },
+    pk() {
+      if (S.pick) return; S.pick = true;
+      const ov = E('div','ins-pov');
+      const hl = E('div','ins-phl');
+      const inf = E('div','ins-pinf');
+      ov.appendChild(hl); ov.appendChild(inf); D.body.appendChild(ov);
+      const mv = e => {
+        const t = D.elementFromPoint(e.clientX, e.clientY);
+        if (!t || t === ov || t === hl || t === inf) return;
+        const r = t.getBoundingClientRect();
+        hl.style.left = r.left + 'px'; hl.style.top = r.top + 'px';
+        hl.style.width = r.width + 'px'; hl.style.height = r.height + 'px';
+        const s = selector(t);
+        inf.textContent = s;
+        inf.style.left = (e.clientX + 15) + 'px';
+        inf.style.top = (e.clientY + 15) + 'px';
+      };
+      const mc = e => {
+        e.preventDefault(); e.stopPropagation();
+        const t = D.elementFromPoint(e.clientX, e.clientY);
+        if (t) { const s = selector(t); copy(s); INS.lg('info', 'Selector: ' + s); }
+        S.pick = false; ov.remove();
+        D.removeEventListener('mousemove', mv);
+        D.removeEventListener('click', mc, true);
+        render();
+      };
+      D.addEventListener('mousemove', mv);
+      D.addEventListener('click', mc, true);
+      notify('Klik elemen untuk copy selector');
+    }
+  };
+
+  // ─── INTERCEPTORS ───
+  ['log','warn','error','info','debug'].forEach(m => {
+    const o = console[m];
+    console[m] = (...a) => { INS.lg(m === 'log' ? 'log' : m, a.map(x => typeof x === 'object' ? JSON.stringify(x) : String(x)).join(' ')); o.apply(console, a); };
+  });
+
+  const of = W.fetch;
+  W.fetch = async (...a) => {
+    const st = performance.now();
+    const inp = a[0], opt = a[1] || {};
+    const url = String(inp?.url || inp);
+    const method = opt.method || inp?.method || 'GET';
+    const rh = { ...hdrObj(inp?.headers), ...hdrObj(opt.headers) };
+    const rb = opt.body ? String(opt.body).slice(0, 4000) : '';
+    try {
+      const res = await of(...a);
+      try {
+        const c = res.clone();
+        const ct = c.headers.get('content-type') || '';
+        const bd = await c.text();
+        const sh = {}; c.headers.forEach((v, k) => sh[k] = v);
+        S.net.push({ id: Date.now() + Math.random(), type: 'fetch', url, method, status: res.status, ok: res.ok, ct, tm: now(), dur: Math.round(performance.now() - st), rh, sh, rb, bd: bd.slice(0, 12000) });
+        if (S.net.length > 300) S.net.shift();
+        if (S.tab === 'network' && S.live) render();
+      } catch(_) {}
+      return res;
+    } catch(err) {
+      S.net.push({ id: Date.now() + Math.random(), type: 'fetch', url, method, status: 0, ok: false, ct: '', tm: now(), dur: Math.round(performance.now() - st), rh, sh: {}, rb, bd: 'Error: ' + err.message });
+      if (S.tab === 'network' && S.live) render();
+      throw err;
+    }
+  };
+
+  const xo = XMLHttpRequest.prototype.open;
+  const xs = XMLHttpRequest.prototype.send;
+  const xh = XMLHttpRequest.prototype.setRequestHeader;
+  XMLHttpRequest.prototype.open = function(m, u) { this.__m = m; this.__u = u; this.__h = {}; this.__st = performance.now(); return xo.apply(this, arguments); };
+  XMLHttpRequest.prototype.setRequestHeader = function(k, v) { try { this.__h[k] = v; } catch(_) {} return xh.apply(this, arguments); };
+  XMLHttpRequest.prototype.send = function(b) {
+    this.addEventListener('loadend', () => {
+      try {
+        const raw = this.getAllResponseHeaders() || '';
+        const sh = {};
+        raw.trim().split(/[
+]+/).forEach(ln => { const i = ln.indexOf(':'); if (i > -1) sh[ln.slice(0, i).trim()] = ln.slice(i + 1).trim(); });
+        S.net.push({ id: Date.now() + Math.random(), type: 'xhr', url: this.__u, method: this.__m, status: this.status, ok: this.status >= 200 && this.status < 300, ct: this.getResponseHeader('content-type') || '', tm: now(), dur: Math.round(performance.now() - this.__st), rh: this.__h || {}, sh, rb: b ? String(b).slice(0, 4000) : '', bd: String(this.responseText || '').slice(0, 12000) });
+        if (S.net.length > 300) S.net.shift();
+        if (S.tab === 'network' && S.live) render();
+      } catch(_) {}
+    });
+    return xs.apply(this, arguments);
+  };
+
+  // ─── EVENTS ───
+  H.querySelectorAll('.ins-tab').forEach(b => b.addEventListener('click', () => {
+    H.querySelectorAll('.ins-tab').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); S.tab = b.dataset.t; render();
+  }));
+
+  $('#ins-min').addEventListener('click', () => { S.min = !S.min; R.classList.toggle('ins-min', S.min); $('#ins-min').textContent = S.min ? '□' : '─'; });
+  $('#ins-x').addEventListener('click', () => R.classList.toggle('ins-hide'));
+
+  H.addEventListener('mousedown', e => {
+    if (e.target.closest('.ins-tab') || e.target.closest('.ins-wb')) return;
+    S.drag = true; S.off.x = e.clientX - R.offsetLeft; S.off.y = e.clientY - R.offsetTop; R.style.transition = 'none';
+  });
+  RZ.addEventListener('mousedown', e => { S.resize = true; S.off.x = e.clientX; S.off.y = e.clientY; S.size.w = R.offsetWidth; S.size.h = R.offsetHeight; R.style.transition = 'none'; e.stopPropagation(); });
+
+  W.addEventListener('mousemove', e => {
+    if (S.drag) { let nx = e.clientX - S.off.x, ny = e.clientY - S.off.y; nx = Math.max(0, Math.min(nx, W.innerWidth - R.offsetWidth)); ny = Math.max(0, Math.min(ny, W.innerHeight - R.offsetHeight)); R.style.left = nx + 'px'; R.style.top = ny + 'px'; }
+    if (S.resize) { const nw = Math.max(320, S.size.w + (e.clientX - S.off.x)); const nh = Math.max(260, S.size.h + (e.clientY - S.off.y)); R.style.width = nw + 'px'; R.style.height = nh + 'px'; }
+  });
+  W.addEventListener('mouseup', () => { S.drag = false; S.resize = false; R.style.transition = ''; });
+
+  W.addEventListener('keydown', e => {
+    if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) { e.preventDefault(); R.classList.remove('ins-hide'); }
+    if (e.key === 'Escape' && S.pick) { S.pick = false; const ov = $('.ins-pov'); if (ov) ov.remove(); }
+  });
+
+  // ─── INIT ───
+  render();
+  INS.lg('info', '⚡ INS IT Developer Tools v5.2 aktif!');
+  INS.lg('info', 'F12 / Ctrl+Shift+I = toggle | Esc = cancel picker');
+
+  setInterval(() => { if (S.tab === 'secrets' || S.tab === 'resources') render(); }, 2000);
+})();
