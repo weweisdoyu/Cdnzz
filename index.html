@@ -1,280 +1,776 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>INS Cloud | Unlimited Storage</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; color: #fafafa; }
-        .glass { background: rgba(15, 15, 18, 0.6); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.06); }
-        .nav-link.active { background: #fbbf24; color: #000; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
-        .tab-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .infinity-glow { box-shadow: 0 0 15px rgba(251, 191, 36, 0.1); animation: pulse-border 3s infinite; }
-        @keyframes pulse-border { 0%, 100% { border-color: rgba(39, 39, 42, 1); } 50% { border-color: rgba(251, 191, 36, 0.4); } }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INS Cloud - Enterprise Storage</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="antialiased overflow-x-hidden">
+<body class="bg-[#050505] text-[#fafafa] overflow-x-hidden">
+  
+  <div id="root"></div>
 
-<div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border-amber-500/30 text-amber-500 font-bold shadow-2xl hidden items-center gap-3 transition-all scale-95 opacity-0">
-    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-    <span id="toast-msg">Tersalin!</span>
-</div>
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+    import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+    // Penambahan Ikon Volume dan Pause untuk Video Player
+    import { 
+      Infinity as InfinityIcon, LayoutGrid, CloudUpload, FolderSearch, 
+      LockKeyhole, Database, Cpu, Upload, Plus, FileCheck, Check, 
+      ZapOff, Inbox, FileText, Copy, Eye, CheckCircle2, Play, Pause, 
+      Volume2, VolumeX, X, Settings, Maximize, ExternalLink, Link2, 
+      Loader, LogIn, User, Sparkles
+    } from 'https://esm.sh/lucide-react@0.294.0';
 
-<div class="min-h-screen flex flex-col lg:flex-row">
-    <aside class="w-full lg:w-72 glass border-r border-zinc-900 p-8 flex flex-col gap-10">
-        <div class="flex items-center gap-4">
-            <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center rotate-3 shadow-2xl shadow-amber-500/20">
-                <i data-lucide="infinity" class="text-black w-7 h-7"></i>
-            </div>
-            <div>
-                <span class="block text-xl font-black tracking-tighter leading-none">INS CLOUD</span>
-                <span id="user-display" class="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase italic">Guest Mode</span>
-            </div>
-        </div>
+    const API_BASE = ""; 
 
-        <nav class="flex flex-col gap-1.5">
-            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="layout-grid" class="w-5 h-5"></i> Dashboard
-            </button>
-            <button onclick="switchTab('upload')" id="btn-upload" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="cloud-upload" class="w-5 h-5"></i> Upload
-            </button>
-            <button onclick="switchTab('history')" id="btn-history" class="nav-link flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold text-zinc-400 hover:text-white">
-                <i data-lucide="folder-search" class="w-5 h-5"></i> My Files
-            </button>
-        </nav>
-
-        <div class="mt-auto glass infinity-glow rounded-[2rem] p-6 border-zinc-800 flex flex-col items-center text-center">
-            <div class="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3">
-                <i data-lucide="lock-keyhole" class="w-4 h-4 text-amber-500"></i>
-            </div>
-            <p class="text-[11px] text-zinc-500 font-bold uppercase tracking-wider mb-1">Status Akun</p>
-            <h4 class="text-sm font-black text-white mb-3 uppercase">Unlimited Capacity</h4>
-            <div class="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-black border border-amber-500/20">PRO EDITION</div>
-        </div>
-    </aside>
-
-    <main class="flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full">
+    const injectStyles = () => {
+      if (document.getElementById('cloudins-styles')) return;
+      const style = document.createElement('style');
+      style.id = 'cloudins-styles';
+      style.innerHTML = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap');
+        :root { --font-body: 'Inter', sans-serif; --font-display: 'Space Grotesk', sans-serif; }
+        * { font-family: var(--font-body); }
+        .font-display { font-family: var(--font-display) !important; }
+        body { background-color: #050505; color: #fafafa; overflow-x: hidden; }
+        .glass { background: rgba(15, 15, 18, 0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.05); }
+        @keyframes shimmer { 0% { transform: translateX(-150%) skewX(-20deg); } 100% { transform: translateX(200%) skewX(-20deg); } }
+        .animate-shimmer { position: absolute; top: 0; left: 0; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); animation: shimmer 2.5s infinite; z-index: 10; }
+        .cursor-blink { animation: blink 1s step-end infinite; }
+        @keyframes blink { 50% { border-color: transparent; } }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #18181b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #27272a; }
+        .animate-scale-in { animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
+        @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+        .animate-blob { animation: blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes blob { 0% { transform: translate(0px, 0px) scale(1) rotate(0deg); } 33% { transform: translate(40px, -60px) scale(1.1) rotate(10deg); } 66% { transform: translate(-30px, 30px) scale(0.9) rotate(-10deg); } 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); } }
         
-        <section id="view-dashboard" class="tab-content">
-            <header class="mb-12">
-                <h1 class="text-5xl font-black tracking-tighter mb-3 leading-tight">Halo, <span id="hello-user" class="text-amber-500 text-6xl">Master.</span></h1>
-                <p class="text-zinc-500 font-medium text-lg">Kelola database cloud Anda dalam satu genggaman.</p>
-            </header>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5">
-                    <div class="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500"><i data-lucide="database" class="w-7 h-7"></i></div>
-                    <div><h3 class="text-3xl font-black leading-none mb-2" id="stat-files">0</h3><p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p></div>
+        /* Modifikasi untuk menyembunyikan kontrol bawaan browser di video */
+        video::-webkit-media-controls { display: none !important; }
+      `;
+      document.head.appendChild(style);
+    };
+
+    // --- KOMPONEN UI DASAR ---
+    const ElectricBorder = ({ children, color = "#EAB308", speed = 2, thickness = 2, radius = 24, className = "" }) => (
+      <div className={`relative overflow-hidden ${className}`} style={{ borderRadius: radius, padding: thickness }}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0" style={{ background: `conic-gradient(from 0deg, transparent 70%, ${color} 100%)`, animationDuration: `${speed}s` }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0 blur-xl opacity-60" style={{ background: `conic-gradient(from 0deg, transparent 60%, ${color} 100%)`, animationDuration: `${speed}s` }} />
+        <div className="relative z-10 w-full h-full bg-[#0a0a0c] overflow-hidden" style={{ borderRadius: radius - thickness }}>{children}</div>
+      </div>
+    );
+
+    const ScrollReveal = ({ children, baseOpacity = 0.1, enableBlur = true, baseRotation = 3, blurStrength = 4, className = "" }) => {
+      const [isVisible, setIsVisible] = useState(false);
+      const ref = useRef(null);
+      useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); } }, { threshold: 0.2, rootMargin: "0px 0px -20px 0px" });
+        if (ref.current) observer.observe(ref.current);
+        return () => { if (ref.current) observer.unobserve(ref.current); };
+      }, []);
+      const text = typeof children === 'string' ? children : '';
+      const words = text.split(" ");
+      return (
+        <p ref={ref} className={`flex flex-wrap gap-x-[0.25em] ${className}`}>
+          {words.map((word, i) => (
+            <span key={i} className="inline-block transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]" style={{ opacity: isVisible ? 1 : baseOpacity, filter: isVisible ? 'blur(0px)' : (enableBlur ? `blur(${blurStrength}px)` : 'none'), transform: isVisible ? 'translateY(0) rotate(0)' : `translateY(12px) rotate(${baseRotation}deg)`, transitionDelay: `${i * 0.03}s` }}>{word}</span>
+          ))}
+        </p>
+      );
+    };
+
+    const Reveal = ({ children, delay = 0, className = "" }) => {
+      const [isVisible, setIsVisible] = useState(false);
+      const ref = useRef(null);
+      useEffect(() => {
+        const observer = new IntersectionObserver(([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); } }, { threshold: 0.1 });
+        if (ref.current) observer.observe(ref.current);
+        return () => { if (ref.current) observer.unobserve(ref.current); };
+      }, []);
+      return (
+        <div ref={ref} className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isVisible ? "opacity-100 translate-y-0 blur-none scale-100" : "opacity-0 translate-y-12 blur-[4px] scale-[0.98]"} ${className}`} style={{ transitionDelay: `${delay}s` }}>
+          {children}
+        </div>
+      );
+    };
+
+    const Typewriter = ({ words, typingSpeed = 100, deletingSpeed = 50, delay = 2000 }) => {
+      const [text, setText] = useState('');
+      const [wordIndex, setWordIndex] = useState(0);
+      const [isDeleting, setIsDeleting] = useState(false);
+      useEffect(() => {
+        const currentWord = words[wordIndex] || "";
+        let timer;
+        if (isDeleting) {
+          timer = setTimeout(() => {
+            setText(currentWord.substring(0, text.length - 1));
+            if (text.length === 0) { setIsDeleting(false); setWordIndex((prev) => (prev + 1) % words.length); }
+          }, deletingSpeed);
+        } else {
+          timer = setTimeout(() => {
+            setText(currentWord.substring(0, text.length + 1));
+            if (text.length === currentWord.length) setTimeout(() => setIsDeleting(true), delay);
+          }, typingSpeed);
+        }
+        return () => clearTimeout(timer);
+      }, [text, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, delay]);
+      return <span className="border-r-2 border-amber-500 pr-1 cursor-blink text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-display">{text}</span>;
+    };
+
+    // --- KOMPONEN PREMIUM VIDEO PLAYER ---
+    const PremiumVideoPlayer = ({ media, onClose }) => {
+      const videoRef = useRef(null);
+      const containerRef = useRef(null);
+      const [isPlaying, setIsPlaying] = useState(true);
+      const [progress, setProgress] = useState(0);
+      const [currentTime, setCurrentTime] = useState('00:00');
+      const [duration, setDuration] = useState('00:00');
+      const [isMuted, setIsMuted] = useState(false);
+
+      const formatTime = (secs) => {
+        if (isNaN(secs)) return '00:00';
+        const m = Math.floor(secs / 60).toString().padStart(2, '0');
+        const s = Math.floor(secs % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      };
+
+      const togglePlay = (e) => {
+        if (e) e.stopPropagation();
+        if (videoRef.current.paused) {
+          videoRef.current.play();
+          setIsPlaying(true);
+        } else {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        }
+      };
+
+      const handleTimeUpdate = () => {
+        const vid = videoRef.current;
+        if (vid && !isNaN(vid.duration)) {
+          setProgress((vid.currentTime / vid.duration) * 100);
+          setCurrentTime(formatTime(vid.currentTime));
+          setDuration(formatTime(vid.duration));
+        }
+      };
+
+      const handleScrub = (e) => {
+        e.stopPropagation();
+        const bar = e.currentTarget;
+        const clickPos = e.nativeEvent.offsetX;
+        const newTime = (clickPos / bar.offsetWidth) * videoRef.current.duration;
+        videoRef.current.currentTime = newTime;
+      };
+
+      const toggleMute = (e) => {
+        e.stopPropagation();
+        videoRef.current.muted = !videoRef.current.muted;
+        setIsMuted(!isMuted);
+      };
+
+      const toggleFullscreen = async (e) => {
+        e.stopPropagation();
+        if (!document.fullscreenElement) {
+          await containerRef.current.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-8 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
+          <div 
+            ref={containerRef}
+            className="relative bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.15)] border border-zinc-800 w-full max-w-5xl aspect-video group"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Bar Overlay */}
+            <div className="absolute top-0 left-0 right-0 p-6 z-30 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center text-black shadow-lg">
+                  <InfinityIcon size={20} />
                 </div>
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5 border-amber-500/20 bg-amber-500/[0.02]">
-                    <div class="w-14 h-14 bg-amber-500 text-black rounded-2xl flex items-center justify-center"><i data-lucide="infinity" class="w-7 h-7"></i></div>
-                    <div><h3 class="text-3xl font-black leading-none mb-2 text-white">Unlimited</h3><p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Kapasitas Sisa</p></div>
+                <div>
+                  <h2 className="text-white font-display font-bold text-sm drop-shadow-md truncate max-w-xs md:max-w-md">{media.name}</h2>
+                  <p className="text-amber-400 text-[10px] font-bold uppercase tracking-widest drop-shadow-md">INS Fast CDN • Premium Player</p>
                 </div>
-                <div class="glass p-8 rounded-[2.5rem] flex flex-col gap-5">
-                    <div class="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400"><i data-lucide="cpu" class="w-7 h-7"></i></div>
-                    <div><h3 class="text-3xl font-black leading-none mb-2 text-white">Enterprise</h3><p class="text-xs font-bold text-zinc-500 uppercase tracking-widest">Node Server</p></div>
+              </div>
+              <div className="flex gap-3">
+                <a href={media.url} download target="_blank" className="p-3 bg-zinc-900/80 hover:bg-amber-500 rounded-xl text-white hover:text-black backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
+                  <CloudUpload size={20} className="rotate-180" />
+                </a>
+                <button onClick={onClose} className="p-3 bg-zinc-900/80 hover:bg-red-500 rounded-xl text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Main Video Element */}
+            <video 
+              ref={videoRef}
+              src={media.url}
+              className="w-full h-full object-contain cursor-pointer"
+              onClick={togglePlay}
+              onTimeUpdate={handleTimeUpdate}
+              onEnded={() => setIsPlaying(false)}
+              autoPlay
+              playsInline
+            />
+
+            {/* Giant Center Play Button (Visible only when paused) */}
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-300 pointer-events-none ${isPlaying ? 'scale-150 opacity-0' : 'scale-100 opacity-100'}`}>
+              <button onClick={togglePlay} className="pointer-events-auto w-24 h-24 bg-amber-500/90 hover:bg-amber-400 text-black rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:scale-110 transition-all backdrop-blur-sm">
+                <Play size={40} className="ml-2" fill="currentColor" />
+              </button>
+            </div>
+
+            {/* Bottom Control Bar */}
+            <div className="absolute bottom-0 left-0 right-0 glass border-t border-white/5 p-4 md:p-6 flex flex-col gap-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-30 bg-gradient-to-t from-black/90 to-transparent">
+              
+              {/* Progress Bar */}
+              <div className="relative w-full h-1.5 md:h-2 bg-zinc-800/80 rounded-full cursor-pointer overflow-hidden group/progress" onClick={handleScrub}>
+                <div className="h-full bg-gradient-to-r from-amber-600 to-amber-400 relative" style={{ width: `${progress}%` }}>
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full shadow-md opacity-0 group-hover/progress:opacity-100 transform translate-x-1/2 transition-opacity"></div>
                 </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-zinc-900 to-black rounded-[3rem] p-10 border border-zinc-800 flex flex-col lg:flex-row items-center gap-10 justify-between">
-                <div class="max-w-md"><h2 class="text-3xl font-bold mb-4 tracking-tight">Butuh Link Instan?</h2><p class="text-zinc-500 leading-relaxed font-medium">Unggah file Anda dan dapatkan CDN link pribadi yang bisa diakses selamanya.</p></div>
-                <button onclick="switchTab('upload')" class="bg-white text-black px-10 py-5 rounded-3xl font-black text-lg hover:scale-105 transition-all shadow-2xl active:scale-95">UPLOAD SEKARANG</button>
-            </div>
-        </section>
+              </div>
 
-        <section id="view-upload" class="tab-content">
-            <div class="flex items-center gap-4 mb-10"><i data-lucide="upload" class="w-10 h-10 text-amber-500"></i><h2 class="text-4xl font-black tracking-tight">Upload Center</h2></div>
-            <div id="dropzone" class="glass rounded-[3rem] p-20 border-2 border-dashed border-zinc-800 flex flex-col items-center justify-center transition-all cursor-pointer group hover:bg-zinc-900/40">
-                <input type="file" id="fileInput" class="hidden">
-                <div class="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center mb-8 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all"><i data-lucide="plus" class="w-12 h-12"></i></div>
-                <h3 class="text-2xl font-black mb-3">Pilih atau Taruh File</h3>
-                <div id="fileInfo" class="mt-10 hidden flex flex-col items-center w-full max-w-md">
-                    <div class="flex items-center gap-3 px-6 py-4 bg-zinc-800/50 rounded-2xl border border-amber-500/20 w-full"><i data-lucide="file-check" class="text-amber-500 w-5 h-5"></i><span id="selectedFileName" class="text-sm font-bold truncate flex-1"></span></div>
-                    <button id="uploadBtn" class="mt-8 bg-amber-500 text-black px-12 py-5 rounded-2xl font-black text-lg hover:shadow-[0_0_30px_rgba(251,191,36,0.3)] transition-all w-full uppercase">Upload ke Cloud</button>
+              {/* Tools */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 md:gap-6 text-zinc-300">
+                  <button onClick={togglePlay} className="hover:text-amber-400 transition-colors">
+                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
+                  </button>
+                  <button onClick={toggleMute} className="hover:text-amber-400 transition-colors">
+                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                  </button>
+                  <span className="text-xs md:text-sm font-mono tracking-wide select-none">
+                    {currentTime} <span className="text-zinc-600 mx-1">/</span> {duration}
+                  </span>
                 </div>
-            </div>
 
-            <div id="progressArea" class="mt-10 hidden glass rounded-[2.5rem] p-8">
-                <div class="flex justify-between items-end mb-5"><div><p class="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-1 italic">Status Pengiriman</p><h4 class="text-lg font-bold">Mengenkripsi & Mengunggah...</h4></div><span id="progressPercent" class="text-4xl font-black text-white italic">0%</span></div>
-                <div class="w-full h-4 bg-zinc-900 rounded-full overflow-hidden border border-zinc-800 shadow-inner"><div id="progressBar" class="h-full bg-amber-500 w-0 transition-all duration-300"></div></div>
-            </div>
-
-            <div id="successArea" class="mt-10 hidden glass rounded-[2.5rem] p-10 border-amber-500/20">
-                <div class="w-16 h-16 bg-amber-500 text-black rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="check" class="w-8 h-8"></i></div>
-                <h3 class="text-2xl font-black mb-6 italic text-center text-amber-500 uppercase">File Siap Digunakan</h3>
-                <div class="space-y-4 max-w-2xl mx-auto">
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-zinc-500 ml-2 mb-1 block tracking-widest">URL Umum</label>
-                        <div class="flex gap-2"><input id="url1" readonly class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-5 py-3 text-xs font-bold text-zinc-400 focus:outline-none"><button onclick="copyToClipboard(document.getElementById('url1').value)" class="bg-zinc-800 text-white px-6 rounded-xl font-black text-[10px] uppercase hover:bg-zinc-700 transition-all">Salin</button></div>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-black uppercase text-amber-500 ml-2 mb-1 block tracking-widest">URL User (Fix)</label>
-                        <div class="flex gap-2"><input id="url2" readonly class="flex-1 bg-zinc-900 border border-amber-500/20 rounded-xl px-5 py-3 text-xs font-bold text-amber-500 focus:outline-none"><button onclick="copyToClipboard(document.getElementById('url2').value)" class="bg-amber-500 text-black px-6 rounded-xl font-black text-[10px] uppercase hover:scale-105 transition-all">Salin</button></div>
-                    </div>
+                <div className="flex items-center gap-4 md:gap-6 text-zinc-300">
+                  <button onClick={toggleFullscreen} className="hover:text-amber-400 transition-colors">
+                    <Maximize size={20} />
+                  </button>
                 </div>
-                <button onclick="location.reload()" class="w-full mt-10 bg-zinc-100 text-black py-4 rounded-2xl font-black text-sm uppercase hover:bg-white transition-all">Selesai & Muat Ulang</button>
+              </div>
+
             </div>
-        </section>
+          </div>
+        </div>
+      );
+    };
 
-        <section id="view-history" class="tab-content">
-            <div class="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-6 mb-12">
-                <div><h2 class="text-4xl font-black tracking-tight mb-2 italic uppercase">My Files</h2><p class="text-zinc-500 font-semibold italic">Sinkronisasi otomatis dengan database cloud.</p></div>
-                <button onclick="clearHistory()" class="group flex items-center gap-2 text-zinc-600 hover:text-red-500 font-bold text-[10px] transition-all uppercase tracking-widest bg-zinc-900/50 px-6 py-3 rounded-full border border-zinc-800"><i data-lucide="zap-off" class="w-4 h-4"></i> Wipe Cache</button>
-            </div>
-            <div id="historyGrid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8"></div>
-            <div id="emptyState" class="hidden py-40 text-center glass rounded-[4rem] border-zinc-900"><i data-lucide="inbox" class="w-10 h-10 text-zinc-800 mx-auto mb-8"></i><h3 class="text-2xl font-black text-zinc-700 uppercase">Library Kosong</h3><p class="text-zinc-800 font-bold mt-2">Mulai isi penyimpanan unlimited Anda sekarang.</p></div>
-        </section>
-    </main>
-</div>
+    // --- MAIN APP ---
+    function App() {
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [currentUser, setCurrentUser] = useState(localStorage.getItem('ins_username') || '');
+      const [files, setFiles] = useState(JSON.parse(localStorage.getItem('ins_unlimited') || '[]'));
+      const [showLoginModal, setShowLoginModal] = useState(false);
+      const [inputUsername, setInputUsername] = useState('');
+      const [pendingTab, setPendingTab] = useState('');
+      const [uploadState, setUploadState] = useState('idle');
+      const [uploadProgress, setUploadProgress] = useState(0);
+      const [selectedFile, setSelectedFile] = useState(null);
+      const [uploadedUrls, setUploadedUrls] = useState({ public: '', fix: '' });
+      const [toast, setToast] = useState({ show: false, msg: '' });
+      const [activeMedia, setActiveMedia] = useState(null);
+      const fileInputRef = useRef(null);
 
-<script>
-    lucide.createIcons();
-    let currentUser = localStorage.getItem('ins_username');
-
-    document.addEventListener('DOMContentLoaded', () => {
-        updateUserDisplay();
+      useEffect(() => {
+        injectStyles();
         if (currentUser) syncWithServer();
-        const h = window.location.hash.slice(1);
-        switchTab(h || 'dashboard');
-    });
+        const hash = window.location.hash.slice(1);
+        if (['dashboard', 'upload', 'history'].includes(hash)) setActiveTab(hash);
+      }, [currentUser]);
 
-    async function syncWithServer() {
+      const syncWithServer = async () => {
         if (!currentUser) return;
         try {
-            const response = await fetch(`/${currentUser}.json`);
-            if (response.ok) {
-                const json = await response.json();
-                const serverFiles = json.files.map(f => ({
-                    id: f.id,
-                    name: f.original_name,
-                    url: `https://${window.location.hostname}/${currentUser}/media/${encodeURIComponent(f.original_name)}`,
-                    size: f.file_size,
-                    type: f.mime_type
-                }));
-                localStorage.setItem('ins_unlimited', JSON.stringify(serverFiles));
-                updateStats();
-                if (document.getElementById('view-history').classList.contains('active')) loadHistory();
+          const res = await fetch(`${API_BASE}/${currentUser}.json`);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.files)) {
+              const serverFiles = json.files.map(f => ({
+                id: f.id,
+                name: f.original_name,
+                url: f.fix_url || f.url, 
+                size: f.file_size || 0,
+                type: f.mime_type,
+                rawUrl: f.url
+              }));
+              setFiles(serverFiles);
+              localStorage.setItem('ins_unlimited', JSON.stringify(serverFiles));
             }
-        } catch (e) { console.error("Sync error", e); }
-    }
+          }
+        } catch (e) { console.error("Sync error:", e); }
+      };
 
-    function switchTab(tabId) {
-        if (tabId === 'upload' && !currentUser) {
-            const user = prompt("🔐 LOGIN REQUIRED\nMasukkan username untuk akses upload:");
-            if (user && user.trim()) {
-                currentUser = user.trim().toLowerCase();
-                localStorage.setItem('ins_username', currentUser);
-                updateUserDisplay();
-                syncWithServer();
-            } else { return; }
+      const showToast = (msg) => {
+        setToast({ show: true, msg });
+        setTimeout(() => setToast({ show: false, msg: '' }), 2500);
+      };
+
+      const copyToClipboard = (text) => {
+        navigator.clipboard.writeText(text);
+        showToast("Link Tersalin!");
+      };
+
+      const handleTabSwitch = (tab) => {
+        if (tab === 'upload' && !currentUser) {
+          setPendingTab(tab);
+          setShowLoginModal(true);
+          return; 
         }
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        const target = document.getElementById('view-' + tabId);
-        if(target) target.classList.add('active');
-        const btn = document.getElementById('btn-' + tabId);
-        if(btn) btn.classList.add('active');
-        if(tabId === 'history') loadHistory();
-        if(tabId === 'dashboard') updateStats();
-        window.location.hash = tabId;
-    }
+        setActiveTab(tab);
+        window.location.hash = tab;
+      };
 
-    function updateUserDisplay() {
-        if(currentUser) {
-            document.getElementById('user-display').textContent = "USER: " + currentUser.toUpperCase();
-            document.getElementById('hello-user').textContent = currentUser + ".";
+      const handleLoginSubmit = (e) => {
+        e.preventDefault();
+        if (inputUsername.trim()) {
+          const u = inputUsername.trim().toLowerCase();
+          setCurrentUser(u);
+          localStorage.setItem('ins_username', u);
+          setShowLoginModal(false);
+          if (pendingTab) {
+            setActiveTab(pendingTab);
+            window.location.hash = pendingTab;
+            setPendingTab('');
+          }
         }
-    }
+      };
 
-    const fileInput = document.getElementById('fileInput');
-    document.getElementById('dropzone').onclick = () => fileInput.click();
-    fileInput.onchange = () => {
-        if(fileInput.files.length) {
-            document.getElementById('selectedFileName').textContent = fileInput.files[0].name;
-            document.getElementById('fileInfo').classList.remove('hidden');
-            document.querySelector('#dropzone h3').classList.add('hidden');
-            document.querySelector('#dropzone .w-24').classList.add('hidden');
+      const handleFileSelect = (e) => {
+        if (e.target.files.length > 0) {
+          setSelectedFile(e.target.files[0]);
+          setUploadState('selected');
         }
-    };
+      };
 
-    document.getElementById('uploadBtn').onclick = async (e) => {
-        e.stopPropagation();
-        const file = fileInput.files[0];
-        if(!file || !currentUser) return;
-        const formData = new FormData();
-        formData.append("file", file);
+      const startUpload = () => {
+        if (!selectedFile || !currentUser) return;
+        setUploadState('uploading');
+
         const xhr = new XMLHttpRequest();
-        document.getElementById('fileInfo').classList.add('hidden');
-        document.getElementById('progressArea').classList.remove('hidden');
-        xhr.upload.onprogress = (ev) => {
-            if(ev.lengthComputable) {
-                const p = Math.round((ev.loaded / ev.total) * 100);
-                document.getElementById('progressBar').style.width = p + '%';
-                document.getElementById('progressPercent').textContent = p + '%';
-            }
-        };
-        xhr.onload = async () => {
-            if(xhr.status === 200) {
-                await syncWithServer();
-                const res = JSON.parse(xhr.responseText);
-                document.getElementById('progressArea').classList.add('hidden');
-                document.getElementById('successArea').classList.remove('hidden');
-                document.getElementById('url1').value = res.media_url;
-                document.getElementById('url2').value = res.user_media_url;
-                showToast("File Berhasil Disimpan!");
-            } else { showToast("Gagal mengunggah", true); }
-        };
-        xhr.open("POST", "/upload-send");
+        xhr.open("POST", `${API_BASE}/upload-send`);
+        
         xhr.setRequestHeader("x-user-id", currentUser);
-        xhr.send(formData);
-    };
+        xhr.setRequestHeader("x-filename", encodeURIComponent(selectedFile.name));
+        xhr.setRequestHeader("Content-Type", selectedFile.type || "application/octet-stream");
 
-    function loadHistory() {
-        const h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        const grid = document.getElementById('historyGrid');
-        const empty = document.getElementById('emptyState');
-        grid.innerHTML = '';
-        if(h.length === 0) { empty.classList.remove('hidden'); return; }
-        empty.classList.add('hidden');
-        h.forEach(item => {
-            const card = document.createElement('div');
-            card.className = "glass rounded-[2.5rem] p-6 flex flex-col group transition-all hover:bg-zinc-900/30";
-            card.innerHTML = `
-                <div class="w-full h-48 bg-black rounded-3xl mb-6 overflow-hidden border border-zinc-800 flex items-center justify-center relative">
-                    ${(item.type && item.type.startsWith('image/')) ? `<img src="${item.url}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">` : `<i data-lucide="file-text" class="w-12 h-12 text-zinc-800"></i>`}
-                    <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3">
-                        <button onclick="copyToClipboard('${item.url}')" class="p-3 bg-amber-500 rounded-xl text-black hover:scale-110 transition-all"><i data-lucide="copy" class="w-5 h-5"></i></button>
-                        <a href="${item.url}" target="_blank" class="p-3 bg-white rounded-xl text-black hover:scale-110 transition-all"><i data-lucide="eye" class="w-5 h-5"></i></a>
-                    </div>
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+        };
+
+        xhr.onload = async () => {
+          if (xhr.status === 200) {
+            await syncWithServer();
+            const res = JSON.parse(xhr.responseText);
+            setUploadedUrls({ 
+              public: res.public_url || res.url, 
+              fix: res.fix_url || res.user_media_url 
+            });
+            setUploadState('success');
+            showToast("File Berhasil Disimpan!");
+          } else {
+            setUploadState('idle');
+            showToast("Gagal mengunggah file");
+          }
+        };
+        xhr.onerror = () => { setUploadState('idle'); showToast("Terjadi kesalahan jaringan"); };
+        
+        xhr.send(selectedFile);
+      };
+
+      const formatSize = (b) => {
+        if (!b || b === 0) return '0 B';
+        const i = Math.floor(Math.log(b) / Math.log(1024));
+        return (b / Math.pow(1024, i)).toFixed(1) + ' ' + ['B','KB','MB','GB'][i];
+      };
+
+      const clearHistory = () => {
+        if(window.confirm('Hapus cache data lokal? Data di server CloudFlare tetap aman.')) {
+          setFiles([]);
+          localStorage.setItem('ins_unlimited', '[]');
+          showToast('Cache dibersihkan');
+        }
+      };
+
+      const isVideo = (mime) => mime?.startsWith('video/');
+      const isImage = (mime) => mime?.startsWith('image/');
+
+      return (
+        <div className="min-h-screen flex flex-col lg:flex-row bg-[#050505] text-[#fafafa] relative overflow-hidden">
+          <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none animate-blob"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none animate-blob" style={{ animationDelay: '3s' }}></div>
+
+          <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 ${toast.show ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}`}>
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="font-display tracking-wide">{toast.msg}</span>
+          </div>
+
+          {showLoginModal && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
+              <div className="glass rounded-[2.5rem] p-8 w-full max-w-md border border-amber-500/20 shadow-[0_0_80px_rgba(251,191,36,0.1)] animate-scale-in relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
+                <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
+                <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group">
+                  <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:scale-150 transition-transform"></div>
+                  <LogIn className="w-8 h-8 relative z-10" />
                 </div>
-                <h4 class="font-bold text-xs truncate mb-4 italic px-1">${item.name}</h4>
-                <div class="mt-auto flex justify-between border-t border-zinc-900 pt-4 px-1">
-                    <span class="text-[9px] font-black text-zinc-600 uppercase tracking-tighter">${formatSize(item.size)}</span>
-                    <i data-lucide="cloud-check" class="w-4 h-4 text-amber-500"></i>
-                </div>`;
-            grid.appendChild(card);
-        });
-        lucide.createIcons();
+                <h3 className="text-3xl font-display font-black text-center mb-2 tracking-tighter">Otorisasi Akses</h3>
+                <p className="text-zinc-400 text-center text-sm mb-8 font-medium leading-relaxed">Masukkan ID Database Anda untuk mulai mengunggah file ke cloud.</p>
+                <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+                  <div className="relative group">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
+                    <input type="text" autoFocus required placeholder="Misal: ins_sanjaya" value={inputUsername} onChange={(e) => setInputUsername(e.target.value)}
+                      className="w-full bg-black/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white font-bold placeholder:text-zinc-700 focus:outline-none focus:border-amber-500/50 focus:bg-zinc-900/50 transition-all font-display tracking-wide" />
+                  </div>
+                  <button type="submit" className="relative overflow-hidden w-full bg-amber-500 text-black py-4 rounded-2xl font-display font-black text-sm uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(251,191,36,0.2)]">
+                    <div className="animate-shimmer"></div>
+                    <span className="relative z-10">Masuk / Buat ID</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <aside className="w-full lg:w-72 glass border-r border-zinc-900/50 p-8 flex flex-col gap-10 z-10">
+            <Reveal delay={0}>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full"></div>
+                  <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10">
+                    <InfinityIcon className="text-black w-7 h-7" />
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-2xl font-display font-black tracking-tighter leading-none">INS CLOUD</span>
+                  <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display">
+                    {currentUser ? `USER: ${currentUser}` : "Guest Mode"}
+                  </span>
+                </div>
+              </div>
+            </Reveal>
+
+            <nav className="flex flex-col gap-2 flex-1">
+              {[
+                { id: 'dashboard', icon: LayoutGrid, label: 'Dashboard' },
+                { id: 'upload', icon: CloudUpload, label: 'Upload Center' },
+                { id: 'history', icon: FolderSearch, label: 'My Library' }
+              ].map((item, i) => (
+                <Reveal key={item.id} delay={0.1 + (i * 0.1)}>
+                  <button onClick={() => handleTabSwitch(item.id)}
+                    className={`w-full flex items-center gap-3.5 px-5 py-4 rounded-2xl transition-all font-semibold font-display tracking-wide ${activeTab === item.id ? 'bg-amber-400 text-black shadow-[0_0_24px_rgba(251,191,36,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+                  >
+                    <item.icon className="w-5 h-5" /> {item.label}
+                  </button>
+                </Reveal>
+              ))}
+            </nav>
+
+            <Reveal delay={0.4}>
+              <ElectricBorder color="#fbbf24" speed={3} thickness={1.5} radius={32}>
+                <div className="p-6 flex flex-col items-center text-center">
+                  <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner">
+                    <LockKeyhole className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">Status Akun</p>
+                  <h4 className="text-sm font-display font-black text-white mb-3 uppercase tracking-wide">Unlimited Capacity</h4>
+                  <div className="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3" /> PRO EDITION
+                  </div>
+                </div>
+              </ElectricBorder>
+            </Reveal>
+          </aside>
+
+          <main className="flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto">
+            {activeTab === 'dashboard' && (
+              <section>
+                <Reveal delay={0}>
+                  <header className="mb-14">
+                    <h1 className="text-5xl lg:text-7xl font-display font-black tracking-tighter mb-4 leading-[1.1]">
+                      Halo, <Typewriter words={currentUser ? [currentUser, "Master", "Administrator"] : ["Guest", "Pengguna"]} />.
+                    </h1>
+                    <ScrollReveal baseOpacity={0.1} enableBlur baseRotation={3} blurStrength={4} className="text-zinc-400 font-medium text-lg lg:text-xl max-w-2xl leading-relaxed mt-2">
+                      Kelola database cloud Anda dalam satu genggaman. Cepat, aman, dan tanpa batas kapasitas.
+                    </ScrollReveal>
+                  </header>
+                </Reveal>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                  <Reveal delay={0.1}>
+                    <div className="glass p-8 rounded-[2.5rem] flex flex-col gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
+                      <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors">
+                        <Database className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                  
+                  <Reveal delay={0.2}>
+                    <div className="glass p-8 rounded-[2.5rem] flex flex-col gap-5 border border-amber-500/30 bg-amber-500/[0.03] hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_40px_rgba(251,191,36,0.05)] group h-full">
+                      <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40">
+                        <InfinityIcon className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-4xl font-display font-black leading-none mb-3 text-white">Unlimited</h3>
+                        <p className="text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  <Reveal delay={0.3}>
+                    <div className="glass p-8 rounded-[2.5rem] flex flex-col gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
+                      <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors">
+                        <Cpu className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h3 className="text-4xl font-display font-black leading-none mb-3 text-white">Enterprise</h3>
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Node Server</p>
+                      </div>
+                    </div>
+                  </Reveal>
+                </div>
+                
+                <Reveal delay={0.4}>
+                  <div className="bg-zinc-900/60 rounded-[3rem] p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-10 justify-between relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]"></div>
+                    <div className="max-w-md relative z-10">
+                      <h2 className="text-3xl font-display font-black mb-4 tracking-tight">Butuh Link Instan?</h2>
+                      <ScrollReveal baseOpacity={0} blurStrength={6} className="text-zinc-400 leading-relaxed">
+                        Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.
+                      </ScrollReveal>
+                    </div>
+                    <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-10 py-5 rounded-3xl font-display font-black text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0">
+                      <div className="animate-shimmer"></div>
+                      <span className="relative z-10">UPLOAD SEKARANG</span>
+                    </button>
+                  </div>
+                </Reveal>
+              </section>
+            )}
+
+            {activeTab === 'upload' && (
+              <section>
+                <Reveal delay={0}>
+                  <div className="flex items-center gap-4 mb-10">
+                    <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20">
+                      <Upload className="w-7 h-7 text-amber-500" />
+                    </div>
+                    <h2 className="text-4xl lg:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
+                  </div>
+                </Reveal>
+
+                {(uploadState === 'idle' || uploadState === 'selected') && (
+                  <Reveal delay={0.1}>
+                    <ElectricBorder color="#fbbf24" speed={4} thickness={2} radius={48} className="cursor-pointer group">
+                      <div onClick={() => fileInputRef.current?.click()} className="p-16 lg:p-24 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full">
+                        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
+                        
+                        {uploadState === 'idle' ? (
+                          <div className="flex flex-col items-center relative z-10">
+                            <div className="w-24 h-24 bg-black/50 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2">
+                              <Plus className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-3xl font-display font-black mb-3 tracking-tight group-hover:text-amber-400 transition-colors">Pilih atau Tarik File</h3>
+                            <ScrollReveal baseOpacity={0.5} blurStrength={2} className="text-zinc-500 font-medium tracking-wide">
+                              Mendukung format gambar, video, dan dokumen.
+                            </ScrollReveal>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center w-full max-w-lg z-10">
+                            <div className="flex items-center gap-5 px-6 py-5 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl">
+                              <div className="p-3 bg-amber-500/10 rounded-xl">
+                                <FileCheck className="text-amber-500 w-8 h-8 shrink-0" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
+                                <span className="text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
+                              </div>
+                            </div>
+                            <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-8 bg-amber-500 text-black px-12 py-5 rounded-2xl font-display font-black text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
+                              <div className="animate-shimmer"></div>
+                              <span className="relative z-10 flex items-center justify-center gap-2">
+                                Upload ke Cloud <CloudUpload className="w-5 h-5 group-hover/btn:animate-bounce" />
+                              </span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </ElectricBorder>
+                  </Reveal>
+                )}
+
+                {uploadState === 'uploading' && (
+                  <Reveal delay={0}>
+                    <div className="glass rounded-[3rem] p-12 lg:p-16 border border-amber-500/20 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                      <div className="flex justify-between items-end mb-8 relative z-10">
+                        <div>
+                          <p className="text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                            <Loader className="w-4 h-4 animate-spin" /> Sedang Memproses
+                          </p>
+                          <h4 className="text-3xl font-display font-bold tracking-tight">Mengenkripsi File...</h4>
+                        </div>
+                        <span className="text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
+                      </div>
+                      <div className="w-full h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
+                        <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
+                          <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </Reveal>
+                )}
+
+                {uploadState === 'success' && (
+                  <Reveal delay={0}>
+                    <div className="glass rounded-[3rem] p-10 lg:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+                      <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-amber-500/20 transform rotate-3">
+                        <Check className="w-12 h-12" />
+                      </div>
+                      <h3 className="text-4xl font-display font-black mb-10 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
+                      
+                      <div className="space-y-6 max-w-3xl mx-auto relative z-10">
+                        <div className="bg-black/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/50 hover:border-zinc-700 transition-colors">
+                          <label className="text-[10px] font-display font-black uppercase text-zinc-400 ml-2 mb-3 block tracking-[0.2em]">URL Publik (Raw Media)</label>
+                          <div className="flex gap-3">
+                            <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-2xl px-6 py-4 text-sm font-medium text-zinc-300 focus:outline-none font-display" />
+                            <button onClick={() => copyToClipboard(uploadedUrls.public)} className="bg-zinc-800 text-white px-8 rounded-2xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center gap-2">
+                              <Copy className="w-4 h-4" /> Salin
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-amber-500/5 backdrop-blur-md p-6 rounded-3xl border border-amber-500/30 hover:border-amber-500/50 transition-colors shadow-inner relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-2xl rounded-full"></div>
+                          <label className="text-[10px] font-display font-black uppercase text-amber-500 ml-2 mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
+                            <ZapOff className="w-3 h-3" /> URL User (Fast CDN)
+                          </label>
+                          <div className="flex gap-3 relative z-10">
+                            <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-2xl px-6 py-4 text-sm font-bold text-amber-400 focus:outline-none font-display tracking-wide" />
+                            <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="relative overflow-hidden bg-amber-500 text-black px-8 rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center gap-2">
+                              <div className="animate-shimmer"></div>
+                              <Copy className="w-4 h-4 relative z-10" /> <span className="relative z-10">Salin</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-12 block bg-zinc-900 border border-zinc-800 text-white py-5 rounded-2xl font-display font-black text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
+                        Upload File Lainnya
+                      </button>
+                    </div>
+                  </Reveal>
+                )}
+              </section>
+            )}
+
+            {activeTab === 'history' && (
+              <section>
+                <Reveal delay={0}>
+                  <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-6 mb-12">
+                    <div className="flex items-center gap-5">
+                      <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20">
+                        <FolderSearch className="w-7 h-7 text-amber-500" />
+                      </div>
+                      <div>
+                        <h2 className="text-4xl lg:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
+                        <ScrollReveal baseOpacity={0} blurStrength={3} className="text-zinc-400 font-medium text-lg">
+                          Semua media yang tersinkronisasi.
+                        </ScrollReveal>
+                      </div>
+                    </div>
+                    <button onClick={clearHistory} className="group flex items-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-6 py-3.5 rounded-full border border-zinc-800 hover:border-red-500/30">
+                      <ZapOff className="w-4 h-4" /> Bersihkan Cache
+                    </button>
+                  </div>
+                </Reveal>
+
+                {files.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {files.map((file, idx) => (
+                      <Reveal key={file.id} delay={(idx % 8) * 0.1}>
+                        <div className="glass rounded-[2rem] p-5 flex flex-col group transition-all duration-400 hover:bg-zinc-900/60 hover:-translate-y-2 hover:border-amber-500/30 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)] cursor-pointer relative overflow-hidden h-full" onClick={() => setActiveMedia(file)}>
+                          <div className="w-full h-44 bg-black rounded-2xl mb-5 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
+                            {isVideo(file.type) ? (
+                              <>
+                                <video src={file.url} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700" />
+                                <div className="absolute w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10 group-hover:border-transparent">
+                                  <Play className="ml-1 fill-current" size={24} />
+                                </div>
+                                <span className="absolute top-3 left-3 bg-black/80 px-2.5 py-1 rounded-md text-[10px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
+                              </>
+                            ) : isImage(file.type) ? (
+                              <img src={file.url} className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700" alt={file.name} loading="lazy" />
+                            ) : (
+                              <FileText className="w-16 h-16 text-zinc-800 group-hover:text-amber-500 transition-colors" />
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
+                              <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-3.5 bg-amber-500 rounded-xl text-black hover:scale-110 transition-all shadow-xl"><Copy className="w-5 h-5" /></button>
+                              <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-3.5 bg-white rounded-xl text-black hover:scale-110 transition-all shadow-xl"><ExternalLink className="w-5 h-5" /></button>
+                            </div>
+                          </div>
+                          <h4 className="font-semibold text-sm truncate mb-4 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
+                          <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-4 px-1">
+                            <span className="text-[10px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800 group-hover:border-amber-500/30 transition-colors">{formatSize(file.size)}</span>
+                            <CheckCircle2 className="w-5 h-5 text-amber-500 opacity-30 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </div>
+                      </Reveal>
+                    ))}
+                  </div>
+                ) : (
+                  <Reveal delay={0.2}>
+                    <div className="py-32 text-center glass rounded-[4rem] border border-zinc-900 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent"></div>
+                      <div className="w-24 h-24 bg-black/50 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 border border-zinc-800 relative z-10 shadow-inner">
+                        <Inbox className="w-10 h-10 text-zinc-600" />
+                      </div>
+                      <h3 className="text-3xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
+                      <p className="text-zinc-600 font-medium mt-3 text-lg relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
+                    </div>
+                  </Reveal>
+                )}
+              </section>
+            )}
+          </main>
+
+          {/* Image Preview Modal */}
+          {activeMedia && isImage(activeMedia.type) && (
+            <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={() => setActiveMedia(null)}>
+              <div className="relative max-w-6xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2">
+                <img src={activeMedia.url} className="max-w-full max-h-[85vh] object-contain rounded-[2rem]" alt="Preview" />
+                <button className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Custom Premium Video Player Rendering */}
+          {activeMedia && isVideo(activeMedia.type) && (
+            <PremiumVideoPlayer media={activeMedia} onClose={() => setActiveMedia(null)} />
+          )}
+        </div>
+      );
     }
 
-    function updateStats() {
-        const h = JSON.parse(localStorage.getItem('ins_unlimited') || '[]');
-        const el = document.getElementById('stat-files');
-        if(el) el.textContent = h.length;
-    }
-
-    function clearHistory() { if(confirm('Hapus cache data? User ID tetap aman.')) { localStorage.setItem('ins_unlimited', '[]'); loadHistory(); updateStats(); } }
-    function formatSize(b) { if(!b || b === 0) return '0 B'; const i = Math.floor(Math.log(b) / Math.log(1024)); return (b / Math.pow(1024, i)).toFixed(1) + ' ' + ['B','KB','MB','GB'][i]; }
-    function copyToClipboard(text) { navigator.clipboard.writeText(text); showToast("Link Tersalin!"); }
-    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; t.classList.remove('hidden', 'opacity-0'); t.classList.add('flex', 'opacity-100'); setTimeout(() => { t.classList.add('opacity-0'); setTimeout(() => t.classList.add('hidden'), 500); }, 2000); }
-</script>
+    const root = createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
 </body>
 </html>
