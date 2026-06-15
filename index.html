@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>INS CLOUD - Unlimited Storage</title>
+<title>INS CLOUD - Media CDN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
@@ -12,10 +12,10 @@
 <style>
   :root{--font-body:'Inter',sans-serif;--font-display:'Space Grotesk',sans-serif;--amber:#fbbf24;--amber-dark:#d97706}
   *{font-family:var(--font-body);margin:0;padding:0;box-sizing:border-box}
-  svg { flex-shrink: 0; }
+  svg { flex-shrink: 0; display: block; }
   .font-display{font-family:var(--font-display)!important}
-  body{background:#050505;color:#fafafa;overflow-x:hidden;min-height:100vh}
-  .glass{background:rgba(15,15,18,0.4);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.05)}
+  body{background:#050505;color:#fafafa;overflow-x:hidden;min-height:100vh; -webkit-tap-highlight-color: transparent;}
+  .glass{background:rgba(15,15,18,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.05)}
   @keyframes shimmer{0%{transform:translateX(-150%)skewX(-20deg)}100%{transform:translateX(200%)skewX(-20deg)}}
   .animate-shimmer{position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);animation:shimmer 2.5s infinite;z-index:10}
   .cursor-blink{animation:blink 1s step-end infinite}
@@ -24,21 +24,16 @@
   ::-webkit-scrollbar-track{background:#050505}
   ::-webkit-scrollbar-thumb{background:#18181b;border-radius:10px}
   ::-webkit-scrollbar-thumb:hover{background:#27272a}
-  .animate-scale-in{animation:scaleIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards;opacity:0;transform:scale(0.95)}
+  .animate-scale-in{animation:scaleIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards;opacity:0;transform:scale(0.95)}
   @keyframes scaleIn{to{opacity:1;transform:scale(1)}}
   .animate-blob{animation:blob 15s infinite alternate cubic-bezier(0.4,0,0.2,1)}
   @keyframes blob{0%{transform:translate(0,0)scale(1)rotate(0deg)}33%{transform:translate(40px,-60px)scale(1.1)rotate(10deg)}66%{transform:translate(-30px,30px)scale(0.9)rotate(-10deg)}100%{transform:translate(0,0)scale(1)rotate(0deg)}}
   @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-  .fade-in-up{animation:fadeInUp 0.6s ease-out forwards}
   .video-container{position:relative;width:100%;background:#000;border-radius:1.5rem;overflow:hidden}
   .video-container video{width:100%;height:auto;max-height:70vh;object-fit:contain}
   .resolution-badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;color:#fbbf24;border:1px solid rgba(251,191,36,0.3);z-index:20}
-  .quality-selector{position:absolute;bottom:60px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:30}
-  .quality-btn{background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);color:white;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s}
-  .quality-btn:hover,.quality-btn.active{background:#fbbf24;color:black;border-color:#fbbf24}
-  .video-controls-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.8));opacity:0;transition:opacity 0.3s}
+  .video-controls-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.9));opacity:0;transition:opacity 0.3s}
   .video-container:hover .video-controls-overlay,.video-container.show-controls .video-controls-overlay{opacity:1}
   .progress-bar{width:100%;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;margin-bottom:10px;position:relative}
   .progress-fill{height:100%;background:#fbbf24;border-radius:2px;transition:width 0.1s}
@@ -48,75 +43,55 @@
   .control-btn:hover{background:rgba(255,255,255,0.1)}
   .time-display{font-size:12px;color:rgba(255,255,255,0.7);font-family:var(--font-display)}
   .fullscreen-btn{margin-left:auto}
-  .volume-slider{width:80px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;appearance:none;-webkit-appearance:none}
+  .volume-slider{width:80px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;appearance:none;-webkit-appearance:none; margin-right:8px}
   .volume-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:12px;height:12px;background:#fbbf24;border-radius:50%;cursor:pointer}
+  
+  /* Embed Player Specific */
+  .embed-player-wrapper { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .embed-player-wrapper video { width: 100%; height: 100%; max-height: 100vh; object-fit: contain; }
+
   .file-card{transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
   .file-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
-  .dropzone-active{border-color:#fbbf24!important;background:rgba(251,191,36,0.05)!important}
-  .upload-progress{transition:width 0.3s ease}
-  .toast-enter{animation:toastIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards}
-  @keyframes toastIn{from{opacity:0;transform:translate(-50%,-20px)scale(0.95)}to{opacity:1;transform:translate(-50%,0)scale(1)}}
   .modal-backdrop{background:rgba(0,0,0,0.85);backdrop-filter:blur(20px)}
   .electric-border{position:relative;overflow:hidden}
   .electric-border::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250%;height:250%;background:conic-gradient(from 0deg,transparent 70%,#fbbf24 100%);animation:spin 4s linear infinite;z-index:0}
   .electric-border::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250%;height:250%;background:conic-gradient(from 0deg,transparent 60%,#fbbf24 100%);animation:spin 4s linear infinite;z-index:0;filter:blur(20px);opacity:0.6}
   .electric-inner{position:relative;z-index:1;background:#0a0a0c}
-  .loading-spinner{width:40px;height:40px;border:3px solid rgba(251,191,36,0.2);border-top-color:#fbbf24;border-radius:50%;animation:spin 1s linear infinite}
-  .media-preview-img{transition:transform 0.7s cubic-bezier(0.16,1,0.3,1)}
-  .file-card:hover .media-preview-img{transform:scale(1.1)}
-  .play-overlay{transition:all 0.3s cubic-bezier(0.16,1,0.3,1)}
-  .file-card:hover .play-overlay{transform:scale(1.1);background:#fbbf24!important;color:black!important}
+  
   .sidebar-nav-item{transition:all 0.3s cubic-bezier(0.16,1,0.3,1);border-radius:1rem;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.875rem;font-weight:600;font-family:var(--font-display);letter-spacing:0.025em;width:100%;border:none;background:transparent;color:inherit;cursor:pointer}
   .sidebar-nav-item:hover{background:rgba(255,255,255,0.05);color:white}
   .sidebar-nav-item.active{background:#fbbf24;color:black;box-shadow:0 0 24px rgba(251,191,36,0.15)}
-  .btn-primary{background:#fbbf24;color:black;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);border:none;cursor:pointer;font-family:var(--font-display);font-weight:800;letter-spacing:0.05em;text-transform:uppercase}
-  .btn-primary:hover{transform:scale(1.02);box-shadow:0 0 20px rgba(251,191,36,0.3)}
-  .btn-primary:active{transform:scale(0.98)}
-  .input-field{background:rgba(0,0,0,0.5);border:1px solid #27272a;transition:all 0.3s;color:white;padding:1rem 1rem 1rem 3rem;border-radius:1rem;font-family:var(--font-display);font-weight:700;letter-spacing:0.02em;width:100%}
-  .input-field:focus{outline:none;border-color:rgba(251,191,36,0.5);background:rgba(39,39,42,0.5)}
-  .input-field::placeholder{color:#52525b}
-  .stat-card{transition:all 0.3s cubic-bezier(0.16,1,0.3,1)}
-  .stat-card:hover{transform:scale(1.02) translateY(-4px)}
-  .copy-btn{transition:all 0.2s}
-  .copy-btn:hover{transform:scale(1.05)}
-  .copy-btn:active{transform:scale(0.95)}
-  .delete-btn{transition:all 0.2s}
-  .delete-btn:hover{background:#ef4444!important;color:white!important}
-  .link-input{font-family:var(--font-display);letter-spacing:0.02em}
+  
   .grid-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
   .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-  .upload-area{padding:4rem 2rem}
+  
+  /* MOBILE OPTIMIZATIONS */
   @media(max-width:1024px){
-    .sidebar{width:100%!important;position:fixed;bottom:0;left:0;z-index:100;flex-direction:row!important;padding:12px!important;gap:8px!important;border-right:none!important;border-top:1px solid rgba(255,255,255,0.05)}
-    .sidebar-nav{flex-direction:row!important;flex:1;justify-content:center}
-    .main-content{padding-bottom:100px!important;padding-left:24px!important;padding-right:24px!important}
+    .sidebar{width:100%!important;position:fixed;bottom:0;left:0;z-index:100;flex-direction:row!important;padding:12px 16px!important;gap:8px!important;border-right:none!important;border-top:1px solid rgba(255,255,255,0.05); background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); padding-bottom: max(12px, env(safe-area-inset-bottom))!important;}
+    .sidebar-nav{flex-direction:row!important;flex:1;justify-content:space-around; gap:4px;}
+    .sidebar-nav-item { flex-direction: column; gap: 6px; padding: 10px 8px; font-size: 11px; border-radius: 14px; text-align: center; }
+    .main-content{padding-bottom:110px!important;padding-left:16px!important;padding-right:16px!important;}
     .sidebar-brand,.sidebar-status,.sidebar-logout{display:none}
-    .stats-grid{grid-template-columns:1fr!important}
   }
   @media(max-width:768px){
-    .grid-files{grid-template-columns:1fr!important}
-    .upload-area{padding:40px 20px!important}
-    .modal-content{max-width:95vw!important;border-radius:1rem!important}
+    .stats-grid{grid-template-columns:1fr!important; gap: 1rem;}
+    .grid-files{grid-template-columns:1fr!important; gap: 1rem;}
     h1{font-size:2.5rem!important}
-    h2{font-size:2rem!important}
+    h2{font-size:1.8rem!important}
+    /* Fix squished buttons in history tab */
+    .history-controls { flex-wrap: wrap!important; gap: 8px!important; }
+    .history-controls button { padding: 8px 14px!important; font-size: 10px!important; }
+    /* Fix upload area overflow */
+    .upload-pad { padding: 2rem 1.5rem!important; }
+    .volume-slider { display: none; } /* hide volume slider on small screens to save space */
   }
+
   .search-input{background:rgba(0,0,0,0.3);border:1px solid #27272a;border-radius:1rem;padding:0.75rem 1rem 0.75rem 2.5rem;color:white;font-size:0.875rem;transition:all 0.3s;width:100%}
   .search-input:focus{outline:none;border-color:rgba(251,191,36,0.4);background:rgba(0,0,0,0.5)}
-  .search-input::placeholder{color:#52525b}
   .filter-btn{padding:0.5rem 1rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.05em;border:1px solid #27272a;background:transparent;color:#a1a1aa;cursor:pointer;transition:all 0.2s}
   .filter-btn:hover,.filter-btn.active{background:#fbbf24;color:black;border-color:#fbbf24}
-  .view-toggle-btn{padding:0.5rem;border-radius:0.5rem;border:1px solid #27272a;background:transparent;color:#a1a1aa;cursor:pointer;transition:all 0.2s}
-  .view-toggle-btn:hover,.view-toggle-btn.active{background:rgba(255,255,255,0.1);color:white}
-  .list-item{transition:all 0.3s}
-  .list-item:hover{background:rgba(255,255,255,0.03)}
   .badge-type{font-size:10px;font-weight:800;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.1em;padding:4px 10px;border-radius:6px}
-  .badge-image{background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3)}
-  .badge-video{background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3)}
-  .badge-audio{background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3)}
-  .badge-file{background:rgba(161,161,170,0.15);color:#a1a1aa;border:1px solid rgba(161,161,170,0.3)}
-  .img-viewer-zoom{transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
   .drag-over-overlay{position:absolute;inset:0;background:rgba(251,191,36,0.1);border:2px dashed #fbbf24;border-radius:inherit;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none}
-  .drag-over-overlay span{color:#fbbf24;font-family:var(--font-display);font-weight:800;font-size:1.25rem;text-transform:uppercase;letter-spacing:0.1em}
 </style>
 </head>
 <body>
@@ -126,7 +101,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 
 const API_BASE = "";
 
-// SVG Icons (Sudah diperbaiki dengan flex-shrink dan width/height manual)
+// SVG Icons
 const I = {
   Infinity: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></svg>,
   LayoutGrid: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
@@ -201,14 +176,31 @@ function App() {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef(null);
   const dropzoneRef = useRef(null);
+  
+  const [isEmbedPlayer, setIsEmbedPlayer] = useState(false);
+  const [embedVideoUrl, setEmbedVideoUrl] = useState('');
 
+  // Cek apakah URL adalah Embed Player (diawali /player/)
   useEffect(() => {
-    if (currentUser) syncWithServer();
-    const hash = window.location.hash.slice(1);
-    if (['dashboard', 'upload', 'history'].includes(hash)) setActiveTab(hash);
+    const path = window.location.pathname;
+    if (path.startsWith('/player/')) {
+      setIsEmbedPlayer(true);
+      const parts = path.split('/');
+      // Format: /player/userId/media/fileName
+      if (parts.length >= 5) {
+        const uId = parts[2];
+        const fName = parts.slice(4).join('/');
+        setEmbedVideoUrl(`/${uId}/media/${fName}`);
+      }
+    } else {
+      if (currentUser) syncWithServer();
+      const hash = window.location.hash.slice(1);
+      if (['dashboard', 'upload', 'history'].includes(hash)) setActiveTab(hash);
+    }
   }, [currentUser]);
 
   useEffect(() => {
+    if (isEmbedPlayer) return;
     const dz = dropzoneRef.current;
     if (!dz) return;
     const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
@@ -229,7 +221,7 @@ function App() {
       dz.removeEventListener('dragleave', handleDragLeave);
       dz.removeEventListener('drop', handleDrop);
     };
-  }, [activeTab]);
+  }, [activeTab, isEmbedPlayer]);
 
   const syncWithServer = async () => {
     if (!currentUser) return;
@@ -268,6 +260,11 @@ function App() {
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     showToast("Link Tersalin!");
+  };
+
+  const copyPlayerLink = (userId, fileName) => {
+    const link = `${window.location.origin}/player/${userId}/media/${encodeURIComponent(fileName)}`;
+    copyToClipboard(link);
   };
 
   const handleTabSwitch = (tab) => {
@@ -335,7 +332,8 @@ function App() {
             await syncWithServer();
             setUploadedUrls({
               public: res.public_url || res.url,
-              fix: res.fix_url || res.user_media_url
+              fix: res.fix_url || res.user_media_url,
+              player: `${window.location.origin}/player/${currentUser}/media/${encodeURIComponent(res.filename)}`
             });
             setUploadState('success');
             showToast("File Berhasil Disimpan!");
@@ -394,7 +392,29 @@ function App() {
     return matchesSearch && matchesType;
   });
 
-  // Custom Video Player
+  // Dedicated Fullscreen Embed Video Player Component
+  const DedicatedEmbedPlayer = ({ src }) => {
+    return (
+      <div className="embed-player-wrapper">
+        <video 
+          src={src} 
+          controls 
+          autoPlay 
+          playsInline 
+          style={{ width: '100%', height: '100%', objectFit: 'contain', outline: 'none' }} 
+        />
+      </div>
+    );
+  };
+
+  // Render jika mode Embed Player
+  if (isEmbedPlayer) {
+    if (!embedVideoUrl) return <div className="text-white p-4">Invalid Player URL</div>;
+    return <DedicatedEmbedPlayer src={embedVideoUrl} />;
+  }
+
+  // --- KOMPONEN LAINNYA ---
+  
   const CustomVideoPlayer = ({ file, onClose }) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
@@ -507,15 +527,7 @@ function App() {
       <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 modal-backdrop animate-scale-in" onClick={onClose}>
         <div ref={containerRef} className="relative w-full max-w-6xl bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10" onClick={(e) => e.stopPropagation()} onMouseMove={handleMouseMove}>
           <div className="video-container" style={{ borderRadius: '2.5rem' }}>
-            <video
-              ref={videoRef}
-              src={file.url}
-              className="w-full"
-              style={{ maxHeight: '70vh', objectFit: 'contain' }}
-              onClick={togglePlay}
-              preload="metadata"
-              playsInline
-            />
+            <video ref={videoRef} src={file.url} className="w-full" style={{ maxHeight: '70vh', objectFit: 'contain' }} onClick={togglePlay} preload="metadata" playsInline />
             <div className="resolution-badge">{formatSize(file.size)} • {file.type?.split('/')[1]?.toUpperCase() || 'VIDEO'}</div>
 
             <div className={`video-controls-overlay ${showControls ? 'show-controls' : ''}`} style={{ opacity: showControls ? 1 : 0 }}>
@@ -524,60 +536,37 @@ function App() {
                 <div className="progress-handle" style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%`, opacity: isDragging ? 1 : undefined }}></div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <button className="control-btn" onClick={togglePlay}>
-                  {isPlaying ? <I.Pause size={20} /> : <I.Play size={20} />}
-                </button>
-                <button className="control-btn" onClick={() => skip(-10)}>
-                  <I.SkipBack size={18} />
-                </button>
-                <button className="control-btn" onClick={() => skip(10)}>
-                  <I.SkipForward size={18} />
-                </button>
-                <button className="control-btn" onClick={toggleMute}>
-                  {isMuted ? <I.VolumeX size={18} /> : <I.Volume2 size={18} />}
-                </button>
+              <div className="flex items-center gap-2 md:gap-4">
+                <button className="control-btn" onClick={togglePlay}>{isPlaying ? <I.Pause size={20} /> : <I.Play size={20} />}</button>
+                <button className="control-btn" onClick={() => skip(-10)}><I.SkipBack size={18} /></button>
+                <button className="control-btn" onClick={() => skip(10)}><I.SkipForward size={18} /></button>
+                <button className="control-btn" onClick={toggleMute}>{isMuted ? <I.VolumeX size={18} /> : <I.Volume2 size={18} />}</button>
                 <input type="range" min="0" max="1" step="0.1" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="volume-slider" />
                 <span className="time-display">{formatTime(currentTime)} / {formatTime(duration)}</span>
                 <button className="control-btn" onClick={changePlaybackRate} style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-display)' }}>{playbackRate}x</button>
-                <button className="control-btn fullscreen-btn" onClick={toggleFullscreen}>
-                  {isFullscreen ? <I.Minimize size={18} /> : <I.Maximize size={18} />}
-                </button>
+                <button className="control-btn fullscreen-btn" onClick={toggleFullscreen}>{isFullscreen ? <I.Minimize size={18} /> : <I.Maximize size={18} />}</button>
               </div>
             </div>
           </div>
 
-          <div className="absolute top-6 left-6 glass px-4 py-2 rounded-full text-sm text-zinc-300 font-display flex items-center gap-2">
-            <I.Film size={14} className="text-amber-500" /> {file.name}
+          <div className="absolute top-6 left-6 glass px-4 py-2 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 max-w-[60%] truncate">
+            <I.Film size={14} className="text-amber-500 shrink-0" /> <span className="truncate">{file.name}</span>
           </div>
 
           <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent z-50">
             <I.X size={20} />
           </button>
-
-          <div className="absolute bottom-6 right-6 flex gap-2">
-            <button onClick={() => copyToClipboard(file.url)} className="p-3 bg-amber-500 rounded-xl text-black hover:scale-110 transition-all shadow-xl">
-              <I.Copy size={16} />
-            </button>
-            <a href={file.url} download={file.name} className="p-3 bg-white rounded-xl text-black hover:scale-110 transition-all shadow-xl inline-flex">
-              <I.Download size={16} />
-            </a>
-          </div>
         </div>
       </div>
     );
   };
 
-
-  // Image Viewer with Zoom & Rotate
   const ImageViewer = ({ file, onClose }) => {
     const [scale, setScale] = useState(1);
     const [rotation, setRotation] = useState(0);
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-    const imgRef = useRef(null);
-    const containerRef = useRef(null);
 
     const zoomIn = () => setScale(s => Math.min(s + 0.25, 4));
     const zoomOut = () => setScale(s => Math.max(s - 0.25, 0.5));
@@ -590,19 +579,16 @@ function App() {
         setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
       }
     };
-
     const handleMouseMove = (e) => {
       if (!isDragging) return;
       setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
     };
-
     const handleMouseUp = () => setIsDragging(false);
 
     return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 modal-backdrop animate-scale-in" onClick={onClose}>
-        <div ref={containerRef} className="relative max-w-6xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 modal-backdrop animate-scale-in" onClick={onClose}>
+        <div className="relative max-w-6xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2" onClick={(e) => e.stopPropagation()}>
           <img
-            ref={imgRef}
             src={file.url}
             className="max-w-full max-h-[85vh] object-contain rounded-[2rem] cursor-move"
             alt={file.name}
@@ -610,39 +596,29 @@ function App() {
               transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
               transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)'
             }}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            draggable={false}
+            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} draggable={false}
           />
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-full text-sm text-zinc-300 font-display flex items-center gap-4">
-            <I.Image size={14} className="text-amber-500" />
-            {file.name} &mdash; {formatSize(file.size)}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 md:gap-4 w-max max-w-[80%] truncate">
+            <I.Image size={14} className="text-amber-500 shrink-0" />
+            <span className="truncate">{file.name} &mdash; {formatSize(file.size)}</span>
           </div>
           <div className="absolute top-6 right-6 flex gap-2">
-            <button onClick={zoomIn} className="p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomIn size={16} /></button>
-            <button onClick={zoomOut} className="p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomOut size={16} /></button>
-            <button onClick={rotate} className="p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RotateCcw size={16} /></button>
-            <button onClick={reset} className="p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RefreshCw size={16} /></button>
-            <button onClick={onClose} className="p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10"><I.X size={16} /></button>
-          </div>
-          <div className="absolute bottom-6 right-6 flex gap-2">
-            <button onClick={() => copyToClipboard(file.url)} className="p-3 bg-amber-500 rounded-xl text-black hover:scale-110 transition-all shadow-xl"><I.Copy size={16} /></button>
-            <a href={file.url} download={file.name} className="p-3 bg-white rounded-xl text-black hover:scale-110 transition-all shadow-xl inline-flex"><I.Download size={16} /></a>
+            <button onClick={zoomIn} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomIn size={16} /></button>
+            <button onClick={zoomOut} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomOut size={16} /></button>
+            <button onClick={rotate} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RotateCcw size={16} /></button>
+            <button onClick={reset} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RefreshCw size={16} /></button>
+            <button onClick={onClose} className="p-2 md:p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10"><I.X size={16} /></button>
           </div>
         </div>
       </div>
     );
   };
 
-  // Audio Player
   const AudioPlayer = ({ file, onClose }) => {
     const audioRef = useRef(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
 
     useEffect(() => {
       const audio = audioRef.current;
@@ -682,12 +658,12 @@ function App() {
 
     return (
       <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 modal-backdrop animate-scale-in" onClick={onClose}>
-        <div className="relative bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-zinc-800 w-full max-w-lg p-12 flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
-          <div className="w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30 relative">
+        <div className="relative bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-zinc-800 w-full max-w-lg p-8 md:p-12 flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
+          <div className="w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30 relative shrink-0">
             <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-pulse"></div>
             <I.Music size={32} className="text-amber-500 relative z-10" />
           </div>
-          <h3 className="text-2xl font-display font-black text-white text-center truncate w-full">{file.name}</h3>
+          <h3 className="text-xl md:text-2xl font-display font-black text-white text-center truncate w-full">{file.name}</h3>
           <div className="w-full">
             <div className="progress-bar mb-4" onClick={handleSeek}>
               <div className="progress-fill" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
@@ -702,7 +678,7 @@ function App() {
               {isPlaying ? <I.Pause size={28} /> : <I.Play size={28} />}
             </button>
           </div>
-          <audio ref={audioRef} src={file.url} autoPlay className="w-full" controls style={{ display: 'none' }} />
+          <audio ref={audioRef} src={file.url} autoPlay controls style={{ display: 'none' }} />
           <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
             <I.X size={20} />
           </button>
@@ -711,14 +687,11 @@ function App() {
     );
   };
 
-  // Render Badge
   const FileBadge = ({ type }) => {
     const badges = { image: 'badge-image', video: 'badge-video', audio: 'badge-audio', file: 'badge-file' };
     return <span className={`badge-type ${badges[type] || badges.file}`}>{type}</span>;
   };
 
-
-  // Typewriter Effect
   const Typewriter = ({ words, typingSpeed = 100, deletingSpeed = 50, delay = 2000 }) => {
     const [text, setText] = useState('');
     const [wordIndex, setWordIndex] = useState(0);
@@ -744,23 +717,20 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#050505] text-[#fafafa] relative overflow-hidden">
-      {/* Background Blobs */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none animate-blob"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none animate-blob" style={{ animationDelay: '3s' }}></div>
 
-      {/* TOAST */}
       <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 ${toast.show ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}`}>
         <I.CheckCircle2 size={20} />
-        <span className="font-display tracking-wide">{toast.msg}</span>
+        <span className="font-display tracking-wide text-sm">{toast.msg}</span>
       </div>
 
-      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
           <div className="glass rounded-[2.5rem] p-8 w-full max-w-md border border-amber-500/20 shadow-[0_0_80px_rgba(251,191,36,0.1)] animate-scale-in relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
             <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"><I.X size={24} /></button>
-            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group">
+            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group shrink-0">
               <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:scale-150 transition-transform"></div>
               <I.LogIn size={32} className="relative z-10" />
             </div>
@@ -781,18 +751,17 @@ function App() {
         </div>
       )}
 
-      {/* SIDEBAR */}
       <aside className="sidebar w-full lg:w-72 glass border-r border-zinc-900/50 p-8 flex flex-col gap-10 z-10">
         <div className="sidebar-brand flex items-center gap-4">
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full"></div>
             <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10">
               <I.Infinity size={28} className="text-black" />
             </div>
           </div>
-          <div>
-            <span className="block text-2xl font-display font-black tracking-tighter leading-none">INS CLOUD</span>
-            <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display">{currentUser ? `USER: ${currentUser}` : "Guest Mode"}</span>
+          <div className="min-w-0">
+            <span className="block text-2xl font-display font-black tracking-tighter leading-none truncate">INS CLOUD</span>
+            <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display truncate block">{currentUser ? `USER: ${currentUser}` : "Guest Mode"}</span>
           </div>
         </div>
 
@@ -805,7 +774,7 @@ function App() {
             <button key={item.id} onClick={() => handleTabSwitch(item.id)}
               className={`sidebar-nav-item ${activeTab === item.id ? 'active' : ''}`}
             >
-              <item.icon size={20} /> {item.label}
+              <item.icon size={20} className="shrink-0" /> <span>{item.label}</span>
             </button>
           ))}
         </nav>
@@ -813,13 +782,13 @@ function App() {
         <div className="sidebar-status">
           <div className="electric-border" style={{ borderRadius: '2rem', padding: '2px' }}>
             <div className="electric-inner p-6 flex flex-col items-center text-center" style={{ borderRadius: '1.9rem' }}>
-              <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner">
+              <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner shrink-0">
                 <I.LockKeyhole size={16} className="text-amber-500" />
               </div>
               <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">Status Akun</p>
               <h4 className="text-sm font-display font-black text-white mb-3 uppercase tracking-wide">Unlimited Capacity</h4>
               <div className="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5">
-                <I.Sparkles size={12} /> PRO EDITION
+                <I.Sparkles size={12} className="shrink-0"/> PRO EDITION
               </div>
             </div>
           </div>
@@ -827,15 +796,12 @@ function App() {
 
         {currentUser && (
           <button onClick={handleLogout} className="sidebar-logout w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-3 rounded-2xl border border-zinc-800 hover:border-red-500/30">
-            <I.LogIn size={16} className="rotate-180" /> Logout
+            <I.LogIn size={16} className="rotate-180 shrink-0" /> Logout
           </button>
         )}
       </aside>
 
-      {/* MAIN CONTENT */}
       <main className="main-content flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto">
-
-        {/* DASHBOARD */}
         {activeTab === 'dashboard' && (
           <section>
             <header className="mb-14">
@@ -848,44 +814,44 @@ function App() {
             </header>
 
             <div className="stats-grid mb-12">
-              <div className="stat-card glass p-8 rounded-[2.5rem] flex flex-col gap-5 h-full">
-                <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800">
-                  <I.Database size={28} />
+              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 h-full">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 shrink-0">
+                  <I.Database size={24} />
                 </div>
                 <div>
-                  <h3 className="text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
-                  <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
+                  <h3 className="text-4xl md:text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
+                  <p className="text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
                 </div>
               </div>
 
-              <div className="stat-card glass p-8 rounded-[2.5rem] flex flex-col gap-5 border border-amber-500/30 bg-amber-500/[0.03] shadow-[0_0_40px_rgba(251,191,36,0.05)] h-full">
-                <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40">
-                  <I.Infinity size={28} />
+              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 border border-amber-500/30 bg-amber-500/[0.03] shadow-[0_0_40px_rgba(251,191,36,0.05)] h-full">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 shrink-0">
+                  <I.Infinity size={24} />
                 </div>
                 <div>
-                  <h3 className="text-4xl font-display font-black leading-none mb-3 text-white">Unlimited</h3>
-                  <p className="text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
+                  <h3 className="text-3xl md:text-4xl font-display font-black leading-none mb-2 text-white">Unlimited</h3>
+                  <p className="text-[10px] md:text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
                 </div>
               </div>
 
-              <div className="stat-card glass p-8 rounded-[2.5rem] flex flex-col gap-5 h-full">
-                <div className="w-14 h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800">
-                  <I.HardDrive size={28} />
+              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 h-full">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 shrink-0">
+                  <I.HardDrive size={24} />
                 </div>
                 <div>
-                  <h3 className="text-4xl font-display font-black leading-none mb-3 text-white">{formatSize(totalSize)}</h3>
-                  <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total Storage</p>
+                  <h3 className="text-3xl md:text-4xl font-display font-black leading-none mb-2 text-white">{formatSize(totalSize)}</h3>
+                  <p className="text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total Storage</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-zinc-900/60 rounded-[3rem] p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-10 justify-between relative overflow-hidden">
+            <div className="bg-zinc-900/60 rounded-[2.5rem] p-8 md:p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-8 md:gap-10 justify-between relative overflow-hidden text-center lg:text-left">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]"></div>
               <div className="max-w-md relative z-10">
-                <h2 className="text-3xl font-display font-black mb-4 tracking-tight">Butuh Link Instan?</h2>
-                <p className="text-zinc-400 leading-relaxed">Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.</p>
+                <h2 className="text-2xl md:text-3xl font-display font-black mb-3 tracking-tight">Butuh Link Instan?</h2>
+                <p className="text-zinc-400 text-sm md:text-base leading-relaxed">Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.</p>
               </div>
-              <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-10 py-5 rounded-3xl font-display font-black text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0">
+              <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-8 py-4 md:px-10 md:py-5 rounded-2xl md:rounded-3xl font-display font-black text-sm md:text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0">
                 <div className="animate-shimmer"></div>
                 <span className="relative z-10">UPLOAD SEKARANG</span>
               </button>
@@ -893,24 +859,22 @@ function App() {
           </section>
         )}
 
-
-        {/* UPLOAD CENTER */}
         {activeTab === 'upload' && (
           <section>
-            <div className="flex items-center gap-4 mb-10">
-              <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20">
-                <I.Upload size={28} className="text-amber-500" />
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0">
+                <I.Upload size={24} className="text-amber-500" />
               </div>
-              <h2 className="text-4xl lg:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
+              <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
             </div>
 
             {(uploadState === 'idle' || uploadState === 'selected') && (
-              <div ref={dropzoneRef} className="electric-border cursor-pointer group" style={{ borderRadius: '3rem', padding: '2px' }}>
+              <div ref={dropzoneRef} className="electric-border cursor-pointer group" style={{ borderRadius: '2rem', padding: '2px' }}>
                 <div onClick={() => fileInputRef.current?.click()}
-                  className="electric-inner p-16 lg:p-24 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full"
-                  style={{ borderRadius: '2.9rem' }}>
+                  className="electric-inner upload-pad p-8 sm:p-16 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full text-center"
+                  style={{ borderRadius: '1.9rem' }}>
                   {isDragOver && (
-                    <div className="drag-over-overlay" style={{ borderRadius: '2.9rem' }}>
+                    <div className="drag-over-overlay" style={{ borderRadius: '1.9rem' }}>
                       <span>Drop File Here</span>
                     </div>
                   )}
@@ -919,27 +883,27 @@ function App() {
 
                   {uploadState === 'idle' ? (
                     <div className="flex flex-col items-center relative z-10">
-                      <div className="w-24 h-24 bg-black/50 backdrop-blur-md rounded-3xl flex items-center justify-center mb-8 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2">
-                        <I.Plus size={40} />
+                      <div className="w-16 h-16 md:w-24 md:h-24 bg-black/50 backdrop-blur-md rounded-2xl md:rounded-3xl flex items-center justify-center mb-6 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2 shrink-0">
+                        <I.Plus size={32} />
                       </div>
-                      <h3 className="text-3xl font-display font-black mb-3 tracking-tight group-hover:text-amber-400 transition-colors">Pilih atau Tarik File</h3>
-                      <p className="text-zinc-500 font-medium tracking-wide">Mendukung format gambar, video, audio, dan dokumen.</p>
+                      <h3 className="text-2xl md:text-3xl font-display font-black mb-2 tracking-tight group-hover:text-amber-400 transition-colors">Pilih atau Tarik File</h3>
+                      <p className="text-zinc-500 text-sm md:text-base font-medium tracking-wide">Mendukung format gambar, video, audio, dan dokumen.</p>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center w-full max-w-lg z-10">
-                      <div className="flex items-center gap-5 px-6 py-5 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl">
-                        <div className="p-3 bg-amber-500/10 rounded-xl">
-                          <I.FileCheck size={32} className="text-amber-500 shrink-0" />
+                      <div className="flex items-center gap-4 px-4 py-4 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl text-left">
+                        <div className="p-3 bg-amber-500/10 rounded-xl shrink-0">
+                          <I.FileCheck size={28} className="text-amber-500" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
-                          <span className="text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
+                          <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
+                          <span className="text-sm md:text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
                           <span className="text-xs text-zinc-600">{formatSize(selectedFile?.size)}</span>
                         </div>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-8 bg-amber-500 text-black px-12 py-5 rounded-2xl font-display font-black text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
+                      <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-6 bg-amber-500 text-black px-8 py-4 rounded-xl md:rounded-2xl font-display font-black text-sm md:text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
                         <div className="animate-shimmer"></div>
-                        <span className="relative z-10 flex items-center justify-center gap-2">Upload ke Cloud <I.CloudUpload size={20} className="group-hover/btn:animate-bounce" /></span>
+                        <span className="relative z-10 flex items-center justify-center gap-2">Upload ke Cloud <I.CloudUpload size={20} className="group-hover/btn:animate-bounce shrink-0" /></span>
                       </button>
                     </div>
                   )}
@@ -948,63 +912,79 @@ function App() {
             )}
 
             {uploadState === 'uploading' && (
-              <div className="glass rounded-[3rem] p-12 lg:p-16 border border-amber-500/20 relative overflow-hidden">
+              <div className="glass rounded-[2.5rem] p-8 md:p-16 border border-amber-500/20 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                <div className="flex justify-between items-end mb-8 relative z-10">
+                <div className="flex justify-between items-end mb-6 relative z-10">
                   <div>
-                    <p className="text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
-                      <I.Loader size={16} /> Sedang Memproses
+                    <p className="text-[9px] md:text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-1 md:mb-2 flex items-center gap-2">
+                      <I.Loader size={14} /> Sedang Memproses
                     </p>
-                    <h4 className="text-3xl font-display font-bold tracking-tight">Mengunggah File...</h4>
+                    <h4 className="text-2xl md:text-3xl font-display font-bold tracking-tight">Mengunggah...</h4>
                   </div>
-                  <span className="text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
+                  <span className="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
                 </div>
-                <div className="w-full h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
+                <div className="w-full h-3 md:h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
                   <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
                     <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
                   </div>
                 </div>
-                <p className="text-zinc-500 text-sm mt-4 text-center">{selectedFile?.name} &mdash; {formatSize(selectedFile?.size)}</p>
+                <p className="text-zinc-500 text-xs md:text-sm mt-4 text-center truncate">{selectedFile?.name} &mdash; {formatSize(selectedFile?.size)}</p>
               </div>
             )}
 
             {uploadState === 'success' && (
-              <div className="glass rounded-[3rem] p-10 lg:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
+              <div className="glass rounded-[2.5rem] p-6 md:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 blur-[80px] rounded-full pointer-events-none"></div>
-                <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-amber-500/20 transform rotate-3">
-                  <I.Check size={48} />
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-amber-500/20 transform rotate-3 shrink-0">
+                  <I.Check size={40} />
                 </div>
-                <h3 className="text-4xl font-display font-black mb-10 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
+                <h3 className="text-2xl md:text-4xl font-display font-black mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
 
-                <div className="space-y-6 max-w-3xl mx-auto relative z-10">
-                  <div className="bg-black/40 backdrop-blur-md p-6 rounded-3xl border border-zinc-800/50 hover:border-zinc-700 transition-colors">
-                    <label className="text-[10px] font-display font-black uppercase text-zinc-400 ml-2 mb-3 block tracking-[0.2em] flex items-center gap-2">
-                      <I.Globe size={12} /> URL Publik (Raw Media)
+                <div className="space-y-4 md:space-y-6 max-w-3xl mx-auto relative z-10">
+                  <div className="bg-black/40 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-zinc-800/50">
+                    <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-zinc-400 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] flex items-center gap-2">
+                      <I.Globe size={12} className="shrink-0"/> URL Publik (Raw Media)
                     </label>
-                    <div className="flex gap-3">
-                      <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-2xl px-6 py-4 text-sm font-medium text-zinc-300 focus:outline-none font-display link-input" />
-                      <button onClick={() => copyToClipboard(uploadedUrls.public)} className="bg-zinc-800 text-white px-8 rounded-2xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center gap-2 copy-btn">
-                        <I.Copy size={16} /> Salin
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium text-zinc-300 focus:outline-none font-display link-input" />
+                      <button onClick={() => copyToClipboard(uploadedUrls.public)} className="w-full sm:w-auto bg-zinc-800 text-white px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-2 copy-btn">
+                        <I.Copy size={16} className="shrink-0" /> Salin
                       </button>
                     </div>
                   </div>
 
-                  <div className="bg-amber-500/5 backdrop-blur-md p-6 rounded-3xl border border-amber-500/30 hover:border-amber-500/50 transition-colors shadow-inner relative overflow-hidden">
+                  <div className="bg-amber-500/5 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-amber-500/30 shadow-inner relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-2xl rounded-full"></div>
-                    <label className="text-[10px] font-display font-black uppercase text-amber-500 ml-2 mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
-                      <I.Link2 size={12} /> URL User (Fast CDN)
+                    <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-amber-500 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
+                      <I.Link2 size={12} className="shrink-0"/> URL User (Fast CDN)
                     </label>
-                    <div className="flex gap-3 relative z-10">
-                      <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-2xl px-6 py-4 text-sm font-bold text-amber-400 focus:outline-none font-display tracking-wide link-input" />
-                      <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="relative overflow-hidden bg-amber-500 text-black px-8 rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center gap-2 copy-btn">
+                    <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                      <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold text-amber-400 focus:outline-none font-display tracking-wide link-input" />
+                      <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="w-full sm:w-auto relative overflow-hidden bg-amber-500 text-black px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center justify-center gap-2 copy-btn">
                         <div className="animate-shimmer"></div>
-                        <I.Copy size={16} className="relative z-10" /> <span className="relative z-10">Salin</span>
+                        <I.Copy size={16} className="relative z-10 shrink-0" /> <span className="relative z-10">Salin</span>
                       </button>
                     </div>
                   </div>
+                  
+                  {/* Link Khusus Embed Player Video */}
+                  {selectedFile && selectedFile.type.startsWith('video/') && (
+                    <div className="bg-blue-500/5 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-blue-500/30 shadow-inner relative overflow-hidden mt-4">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-2xl rounded-full"></div>
+                      <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-blue-400 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
+                        <I.Play size={12} className="shrink-0" /> URL Embed Player (App Web)
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                        <input value={uploadedUrls.player} readOnly className="flex-1 bg-black/80 border border-blue-500/30 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold text-blue-400 focus:outline-none font-display tracking-wide link-input" />
+                        <button onClick={() => copyToClipboard(uploadedUrls.player)} className="w-full sm:w-auto bg-blue-500 text-white px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2 copy-btn">
+                          <I.Copy size={16} className="shrink-0" /> Salin
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-12 block bg-zinc-900 border border-zinc-800 text-white py-5 rounded-2xl font-display font-black text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
+                <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-8 md:mt-12 block bg-zinc-900 border border-zinc-800 text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-display font-black text-xs md:text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
                   Upload File Lainnya
                 </button>
               </div>
@@ -1012,124 +992,139 @@ function App() {
           </section>
         )}
 
-
-        {/* HISTORY / LIBRARY */}
         {activeTab === 'history' && (
           <section>
-            <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-6 mb-12">
-              <div className="flex items-center gap-5">
-                <div className="w-14 h-14 bg-amber-500/10 rounded-2xl flex items-center justify-center border border-amber-500/20">
-                  <I.FolderSearch size={28} className="text-amber-500" />
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 lg:mb-12">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0">
+                  <I.FolderSearch size={24} className="text-amber-500" />
                 </div>
                 <div>
-                  <h2 className="text-4xl lg:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
-                  <p className="text-zinc-400 font-medium text-lg">Semua media yang tersinkronisasi.</p>
+                  <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
+                  <p className="text-zinc-400 text-sm md:text-lg">Semua media yang tersinkronisasi.</p>
                 </div>
               </div>
-              <div className="flex gap-3 flex-wrap">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                <div className="relative w-full sm:w-auto flex-1">
                   <I.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
                   <input type="text" placeholder="Cari file..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="search-input pl-9" />
                 </div>
-                {['all', 'image', 'video', 'audio', 'file'].map(t => (
-                  <button key={t} onClick={() => setFilterType(t)} className={`filter-btn ${filterType === t ? 'active' : ''}`}>
-                    {t === 'all' ? 'Semua' : t}
+                <div className="flex gap-2 flex-wrap">
+                  {['all', 'image', 'video', 'audio', 'file'].map(t => (
+                    <button key={t} onClick={() => setFilterType(t)} className={`filter-btn ${filterType === t ? 'active' : ''}`}>
+                      {t === 'all' ? 'Semua' : t}
+                    </button>
+                  ))}
+                  <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="view-toggle-btn active shrink-0">
+                    {viewMode === 'grid' ? <I.Grid3x3 size={16} /> : <I.List size={16} />}
                   </button>
-                ))}
-                <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="view-toggle-btn active">
-                  {viewMode === 'grid' ? <I.Grid3x3 size={16} /> : <I.List size={16} />}
-                </button>
-                <button onClick={syncWithServer} disabled={isLoading} className="flex items-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-6 py-3.5 rounded-full border border-amber-500/20 hover:border-amber-500/40">
-                  <I.Loader size={16} className={isLoading ? 'animate-spin' : ''} /> {isLoading ? 'Syncing...' : 'Sync'}
-                </button>
-                <button onClick={clearHistory} className="flex items-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-6 py-3.5 rounded-full border border-zinc-800 hover:border-red-500/30">
-                  <I.ZapOff size={16} /> Bersihkan Cache
-                </button>
+                </div>
               </div>
+            </div>
+
+            <div className="history-controls flex flex-wrap gap-2 mb-6 border-t border-zinc-800/50 pt-4">
+              <button onClick={syncWithServer} disabled={isLoading} className="flex items-center justify-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[10px] md:text-[11px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-4 py-2.5 md:px-6 md:py-3.5 rounded-xl md:rounded-full border border-amber-500/20 hover:border-amber-500/40 w-auto">
+                <I.Loader size={14} className={`shrink-0 ${isLoading ? 'animate-spin' : ''}`} /> {isLoading ? 'Syncing...' : 'Sync'}
+              </button>
+              <button onClick={clearHistory} className="flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[10px] md:text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-2.5 md:px-6 md:py-3.5 rounded-xl md:rounded-full border border-zinc-800 hover:border-red-500/30 w-auto">
+                <I.ZapOff size={14} className="shrink-0" /> Bersihkan Cache
+              </button>
             </div>
 
             {filteredFiles.length > 0 ? (
               viewMode === 'grid' ? (
                 <div className="grid-files">
-                  {filteredFiles.map((file, idx) => (
-                    <div key={file.id} className="file-card glass rounded-[2rem] p-5 flex flex-col group cursor-pointer relative overflow-hidden h-full"
+                  {filteredFiles.map((file) => (
+                    <div key={file.id} className="file-card glass rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-5 flex flex-col group cursor-pointer relative overflow-hidden h-full"
                       onClick={() => setActiveMedia(file)}>
-                      <div className="w-full h-44 bg-black rounded-2xl mb-5 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
+                      <div className="w-full h-36 md:h-44 bg-black rounded-xl md:rounded-2xl mb-4 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
                         {isVideo(file.type) ? (
                           <>
                             <video src={file.url} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700" preload="metadata" muted />
-                            <div className="absolute w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10 group-hover:border-transparent play-overlay">
-                              <I.Play size={24} className="ml-1 fill-current" />
+                            <div className="absolute w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10 group-hover:border-transparent play-overlay">
+                              <I.Play size={20} className="ml-1 fill-current shrink-0" />
                             </div>
-                            <span className="absolute top-3 left-3 bg-black/80 px-2.5 py-1 rounded-md text-[10px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
+                            <span className="absolute top-2 left-2 bg-black/80 px-2 py-1 rounded md:rounded-md text-[9px] md:text-[10px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
                             <FileBadge type="video" />
                           </>
                         ) : isImage(file.type) ? (
                           <img src={file.url} className="w-full h-full object-cover media-preview-img group-hover:opacity-50" alt={file.name} loading="lazy" />
                         ) : isAudio(file.type) ? (
                           <div className="flex flex-col items-center gap-2">
-                            <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center">
-                              <I.Music size={32} className="text-amber-500" />
+                            <div className="w-12 h-12 md:w-16 md:h-16 bg-amber-500/10 rounded-full flex items-center justify-center shrink-0">
+                              <I.Music size={24} className="text-amber-500" />
                             </div>
-                            <span className="text-[10px] font-display font-bold text-zinc-500 uppercase tracking-widest">AUDIO</span>
+                            <span className="text-[9px] md:text-[10px] font-display font-bold text-zinc-500 uppercase tracking-widest">AUDIO</span>
                           </div>
                         ) : (
-                          <I.FileText size={64} className="text-zinc-800 group-hover:text-amber-500 transition-colors" />
+                          <I.FileText size={48} className="text-zinc-800 group-hover:text-amber-500 transition-colors shrink-0" />
                         )}
 
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4 backdrop-blur-[2px]">
-                          <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-3.5 bg-amber-500 rounded-xl text-black hover:scale-110 transition-all shadow-xl copy-btn">
-                            <I.Copy size={20} />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
+                          {isVideo(file.type) && (
+                            <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 md:p-3 bg-blue-500 rounded-lg text-white hover:scale-110 transition-all shadow-xl copy-btn" title="Copy Embed URL">
+                              <I.Film size={16} className="shrink-0" />
+                            </button>
+                          )}
+                          <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 md:p-3 bg-amber-500 rounded-lg text-black hover:scale-110 transition-all shadow-xl copy-btn">
+                            <I.Copy size={16} className="shrink-0" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-3.5 bg-white rounded-xl text-black hover:scale-110 transition-all shadow-xl">
-                            <I.ExternalLink size={20} />
+                          <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 md:p-3 bg-white rounded-lg text-black hover:scale-110 transition-all shadow-xl">
+                            <I.ExternalLink size={16} className="shrink-0" />
                           </button>
-                          <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-3.5 bg-red-500 rounded-xl text-white hover:scale-110 transition-all shadow-xl delete-btn">
-                            <I.Trash2 size={20} />
+                          <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 md:p-3 bg-red-500 rounded-lg text-white hover:scale-110 transition-all shadow-xl delete-btn">
+                            <I.Trash2 size={16} className="shrink-0" />
                           </button>
                         </div>
                       </div>
 
-                      <h4 className="font-semibold text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
-                      <div className="flex items-center gap-2 text-[10px] text-zinc-600 mb-3 px-1">
-                        <I.Clock size={12} />
+                      <h4 className="font-semibold text-xs md:text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
+                      <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-zinc-600 mb-2 md:mb-3 px-1">
+                        <I.Clock size={10} className="shrink-0" />
                         <span>{formatDate(file.uploaded_at)}</span>
                       </div>
-                      <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-4 px-1">
-                        <span className="text-[10px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-3 py-1.5 rounded-lg border border-zinc-800 group-hover:border-amber-500/30 transition-colors">{formatSize(file.size)}</span>
-                        <I.CheckCircle2 size={20} className="text-amber-500 opacity-30 group-hover:opacity-100 transition-opacity" />
+                      <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-3 md:pt-4 px-1">
+                        <span className="text-[9px] md:text-[10px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-zinc-800 group-hover:border-amber-500/30 transition-colors">{formatSize(file.size)}</span>
+                        <I.CheckCircle2 size={16} className="text-amber-500 opacity-30 group-hover:opacity-100 transition-opacity shrink-0" />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="glass rounded-[2rem] overflow-hidden border border-zinc-800">
+                <div className="glass rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-zinc-800">
                   {filteredFiles.map((file) => (
-                    <div key={file.id} className="list-item flex items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer" onClick={() => setActiveMedia(file)}>
-                      <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center border border-zinc-800 shrink-0">
-                        {isVideo(file.type) ? <I.Film size={20} className="text-red-400" /> :
-                         isImage(file.type) ? <I.Image size={20} className="text-blue-400" /> :
-                         isAudio(file.type) ? <I.Music size={20} className="text-green-400" /> :
-                         <I.FileText size={20} className="text-zinc-500" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm truncate text-zinc-200">{file.name}</h4>
-                        <div className="flex items-center gap-3 text-[10px] text-zinc-500 mt-1">
-                          <span>{formatSize(file.size)}</span>
-                          <span>•</span>
-                          <span>{formatDate(file.uploaded_at)}</span>
-                          <FileBadge type={file.file_type || 'file'} />
+                    <div key={file.id} className="list-item flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer" onClick={() => setActiveMedia(file)}>
+                      <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
+                        <div className="w-10 h-10 md:w-12 md:h-12 bg-black rounded-lg md:rounded-xl flex items-center justify-center border border-zinc-800 shrink-0">
+                          {isVideo(file.type) ? <I.Film size={18} className="text-red-400" /> :
+                           isImage(file.type) ? <I.Image size={18} className="text-blue-400" /> :
+                           isAudio(file.type) ? <I.Music size={18} className="text-green-400" /> :
+                           <I.FileText size={18} className="text-zinc-500" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-xs md:text-sm truncate text-zinc-200">{file.name}</h4>
+                          <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[9px] md:text-[10px] text-zinc-500 mt-1">
+                            <span>{formatSize(file.size)}</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span>{formatDate(file.uploaded_at)}</span>
+                            <FileBadge type={file.file_type || 'file'} />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 self-end sm:self-center bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800">
+                        {isVideo(file.type) && (
+                          <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all" title="Copy Embed URL">
+                            <I.Film size={14} className="shrink-0" />
+                          </button>
+                        )}
                         <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-amber-500 transition-all">
-                          <I.Copy size={16} />
+                          <I.Copy size={14} className="shrink-0" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all">
-                          <I.ExternalLink size={16} />
+                          <I.ExternalLink size={14} className="shrink-0" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-all delete-btn">
-                          <I.Trash2 size={16} />
+                          <I.Trash2 size={14} className="shrink-0" />
                         </button>
                       </div>
                     </div>
@@ -1137,13 +1132,13 @@ function App() {
                 </div>
               )
             ) : (
-              <div className="py-32 text-center glass rounded-[4rem] border border-zinc-900 relative overflow-hidden">
+              <div className="py-24 md:py-32 text-center glass rounded-[2.5rem] md:rounded-[4rem] border border-zinc-900 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent"></div>
-                <div className="w-24 h-24 bg-black/50 backdrop-blur-md rounded-3xl flex items-center justify-center mx-auto mb-8 border border-zinc-800 relative z-10 shadow-inner">
-                  <I.Inbox size={40} className="text-zinc-600" />
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-black/50 backdrop-blur-md rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 border border-zinc-800 relative z-10 shadow-inner shrink-0">
+                  <I.Inbox size={32} className="text-zinc-600" />
                 </div>
-                <h3 className="text-3xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
-                <p className="text-zinc-600 font-medium mt-3 text-lg relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
+                <h3 className="text-2xl md:text-3xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
+                <p className="text-zinc-600 text-sm md:text-lg font-medium mt-2 md:mt-3 relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
               </div>
             )}
           </section>
