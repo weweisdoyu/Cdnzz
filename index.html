@@ -1,160 +1,257 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>INS CLOUD - Media CDN</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          display: ['Space Grotesk', 'sans-serif'],
+        }
+      }
+    }
+  }
+</script>
+
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- React & Babel -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<!-- Custom CSS Base -->
 <style>
-  :root{--font-body:'Inter',sans-serif;--font-display:'Space Grotesk',sans-serif;--amber:#fbbf24;--amber-dark:#d97706}
-  *{font-family:var(--font-body);margin:0;padding:0;box-sizing:border-box}
+  :root { --font-body: 'Inter', sans-serif; --font-display: 'Space Grotesk', sans-serif; }
+  * { font-family: var(--font-body); }
+  .font-display { font-family: var(--font-display) !important; }
+  body { background-color: #050505; color: #fafafa; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+  
+  .glass { 
+    background: rgba(15, 15, 18, 0.4); 
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.05); 
+  }
+
+  @keyframes shimmer { 0% { transform: translateX(-150%) skewX(-20deg); } 100% { transform: translateX(200%) skewX(-20deg); } }
+  .animate-shimmer {
+    position: absolute; top: 0; left: 0; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 2.5s infinite; z-index: 10;
+  }
+
+  .cursor-blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { border-color: transparent; } }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #050505; }
+  ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+
+  .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
+  @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
+
+  .animate-blob { animation: blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+    33% { transform: translate(40px, -60px) scale(1.1) rotate(10deg); }
+    66% { transform: translate(-30px, 30px) scale(0.9) rotate(-10deg); }
+    100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  }
+
+  /* Video Player specific fixes */
+  .video-container { position:relative; width:100%; background:#000; border-radius:1.5rem; overflow:hidden; }
+  .video-controls-overlay { position:absolute; bottom:0; left:0; right:0; padding:20px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); opacity:0; transition:opacity 0.3s; }
+  .video-container:hover .video-controls-overlay, .video-container.show-controls .video-controls-overlay { opacity:1; }
+  .progress-bar { width:100%; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; cursor:pointer; margin-bottom:10px; position:relative; }
+  .progress-fill { height:100%; background:#fbbf24; border-radius:2px; transition:width 0.1s; }
+  .volume-slider { width:80px; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; cursor:pointer; appearance:none; -webkit-appearance:none; }
+  .volume-slider::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:12px; height:12px; background:#fbbf24; border-radius:50%; cursor:pointer; }
+  
+  .badge-type { font-size:9px; font-weight:800; font-family:var(--font-display); text-transform:uppercase; letter-spacing:0.1em; padding:4px 8px; border-radius:6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
+
+  /* Utilities */
   svg { flex-shrink: 0; display: block; }
-  .font-display{font-family:var(--font-display)!important}
-  body{background:#050505;color:#fafafa;overflow-x:hidden;min-height:100vh; -webkit-tap-highlight-color: transparent;}
-  .glass{background:rgba(15,15,18,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.05)}
-  @keyframes shimmer{0%{transform:translateX(-150%)skewX(-20deg)}100%{transform:translateX(200%)skewX(-20deg)}}
-  .animate-shimmer{position:absolute;top:0;left:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);animation:shimmer 2.5s infinite;z-index:10}
-  .cursor-blink{animation:blink 1s step-end infinite}
-  @keyframes blink{50%{border-color:transparent}}
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-track{background:#050505}
-  ::-webkit-scrollbar-thumb{background:#18181b;border-radius:10px}
-  ::-webkit-scrollbar-thumb:hover{background:#27272a}
-  .animate-scale-in{animation:scaleIn 0.3s cubic-bezier(0.16,1,0.3,1) forwards;opacity:0;transform:scale(0.95)}
-  @keyframes scaleIn{to{opacity:1;transform:scale(1)}}
-  .animate-blob{animation:blob 15s infinite alternate cubic-bezier(0.4,0,0.2,1)}
-  @keyframes blob{0%{transform:translate(0,0)scale(1)rotate(0deg)}33%{transform:translate(40px,-60px)scale(1.1)rotate(10deg)}66%{transform:translate(-30px,30px)scale(0.9)rotate(-10deg)}100%{transform:translate(0,0)scale(1)rotate(0deg)}}
-  @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  .video-container{position:relative;width:100%;background:#000;border-radius:1.5rem;overflow:hidden}
-  .video-container video{width:100%;height:auto;max-height:70vh;object-fit:contain}
-  .resolution-badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);padding:4px 12px;border-radius:8px;font-size:11px;font-weight:700;color:#fbbf24;border:1px solid rgba(251,191,36,0.3);z-index:20}
-  .video-controls-overlay{position:absolute;bottom:0;left:0;right:0;padding:20px;background:linear-gradient(transparent,rgba(0,0,0,0.9));opacity:0;transition:opacity 0.3s}
-  .video-container:hover .video-controls-overlay,.video-container.show-controls .video-controls-overlay{opacity:1}
-  .progress-bar{width:100%;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;margin-bottom:10px;position:relative}
-  .progress-fill{height:100%;background:#fbbf24;border-radius:2px;transition:width 0.1s}
-  .progress-handle{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#fbbf24;border-radius:50%;opacity:0;transition:opacity 0.2s}
-  .progress-bar:hover .progress-handle{opacity:1}
-  .control-btn{background:none;border:none;color:white;cursor:pointer;padding:8px;border-radius:50%;transition:all 0.2s;display:flex;align-items:center;justify-content:center}
-  .control-btn:hover{background:rgba(255,255,255,0.1)}
-  .time-display{font-size:12px;color:rgba(255,255,255,0.7);font-family:var(--font-display)}
-  .fullscreen-btn{margin-left:auto}
-  .volume-slider{width:80px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;cursor:pointer;appearance:none;-webkit-appearance:none; margin-right:8px}
-  .volume-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:12px;height:12px;background:#fbbf24;border-radius:50%;cursor:pointer}
   
-  /* Embed Player Specific */
-  .embed-player-wrapper { position: fixed; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; z-index: 9999; }
-  .embed-player-wrapper video { width: 100%; height: 100%; max-height: 100vh; object-fit: contain; }
-
-  .file-card{transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
-  .file-card:hover{transform:translateY(-8px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
-  .modal-backdrop{background:rgba(0,0,0,0.85);backdrop-filter:blur(20px)}
-  .electric-border{position:relative;overflow:hidden}
-  .electric-border::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250%;height:250%;background:conic-gradient(from 0deg,transparent 70%,#fbbf24 100%);animation:spin 4s linear infinite;z-index:0}
-  .electric-border::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:250%;height:250%;background:conic-gradient(from 0deg,transparent 60%,#fbbf24 100%);animation:spin 4s linear infinite;z-index:0;filter:blur(20px);opacity:0.6}
-  .electric-inner{position:relative;z-index:1;background:#0a0a0c}
-  
-  .sidebar-nav-item{transition:all 0.3s cubic-bezier(0.16,1,0.3,1);border-radius:1rem;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.875rem;font-weight:600;font-family:var(--font-display);letter-spacing:0.025em;width:100%;border:none;background:transparent;color:inherit;cursor:pointer}
-  .sidebar-nav-item:hover{background:rgba(255,255,255,0.05);color:white}
-  .sidebar-nav-item.active{background:#fbbf24;color:black;box-shadow:0 0 24px rgba(251,191,36,0.15)}
-  
-  .grid-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
-  .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-  
-  /* MOBILE OPTIMIZATIONS */
-  @media(max-width:1024px){
-    .sidebar{width:100%!important;position:fixed;bottom:0;left:0;z-index:100;flex-direction:row!important;padding:12px 16px!important;gap:8px!important;border-right:none!important;border-top:1px solid rgba(255,255,255,0.05); background: rgba(10,10,12,0.95); backdrop-filter: blur(20px); padding-bottom: max(12px, env(safe-area-inset-bottom))!important;}
-    .sidebar-nav{flex-direction:row!important;flex:1;justify-content:space-around; gap:4px;}
-    .sidebar-nav-item { flex-direction: column; gap: 6px; padding: 10px 8px; font-size: 11px; border-radius: 14px; text-align: center; }
-    .main-content{padding-bottom:110px!important;padding-left:16px!important;padding-right:16px!important;}
-    .sidebar-brand,.sidebar-status,.sidebar-logout{display:none}
-  }
-  @media(max-width:768px){
-    .stats-grid{grid-template-columns:1fr!important; gap: 1rem;}
-    .grid-files{grid-template-columns:1fr!important; gap: 1rem;}
-    h1{font-size:2.5rem!important}
-    h2{font-size:1.8rem!important}
-    /* Fix squished buttons in history tab */
-    .history-controls { flex-wrap: wrap!important; gap: 8px!important; }
-    .history-controls button { padding: 8px 14px!important; font-size: 10px!important; }
-    /* Fix upload area overflow */
-    .upload-pad { padding: 2rem 1.5rem!important; }
-    .volume-slider { display: none; } /* hide volume slider on small screens to save space */
-  }
-
+  /* Input Custom */
   .search-input{background:rgba(0,0,0,0.3);border:1px solid #27272a;border-radius:1rem;padding:0.75rem 1rem 0.75rem 2.5rem;color:white;font-size:0.875rem;transition:all 0.3s;width:100%}
   .search-input:focus{outline:none;border-color:rgba(251,191,36,0.4);background:rgba(0,0,0,0.5)}
   .filter-btn{padding:0.5rem 1rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.05em;border:1px solid #27272a;background:transparent;color:#a1a1aa;cursor:pointer;transition:all 0.2s}
   .filter-btn:hover,.filter-btn.active{background:#fbbf24;color:black;border-color:#fbbf24}
-  .badge-type{font-size:10px;font-weight:800;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.1em;padding:4px 10px;border-radius:6px}
+  
   .drag-over-overlay{position:absolute;inset:0;background:rgba(251,191,36,0.1);border:2px dashed #fbbf24;border-radius:inherit;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  
+  .grid-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
+  
+  @media(max-width:768px){
+    .grid-files{grid-template-columns:1fr!important; gap: 1rem;}
+  }
 </style>
 </head>
 <body>
 <div id="root"></div>
+
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback } = React;
 
 const API_BASE = "";
 
-// SVG Icons
-const I = {
-  Infinity: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></svg>,
-  LayoutGrid: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
-  CloudUpload: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>,
-  FolderSearch: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M13.4 13.4 11 16"/><circle cx="16.5" cy="16.5" r="2.5"/><path d="m21 21-1.4-1.4"/></svg>,
-  LockKeyhole: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>,
-  Database: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>,
-  Upload: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
-  Plus: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
-  FileCheck: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></svg>,
-  Check: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>,
-  ZapOff: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.5 16.5 2 22"/><path d="M16 22 2 8"/><path d="M17 15l-4.5-4.5"/><path d="M2 2l20 20"/><path d="M7 7 2 12"/><path d="M22 2 10.5 13.5"/></svg>,
-  Inbox: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>,
-  FileText: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>,
-  Copy: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>,
-  CheckCircle2: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>,
-  Play: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" fill="currentColor"/></svg>,
-  Pause: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></svg>,
-  X: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>,
-  Maximize: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>,
-  Minimize: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>,
-  ExternalLink: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>,
-  Link2: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>,
-  Loader: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`animate-spin ${p.className||''}`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>,
-  LogIn: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>,
-  User: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  Sparkles: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 15v4"/><path d="M19 19h4"/></svg>,
-  Trash2: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>,
-  HardDrive: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></svg>,
-  Globe: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>,
-  Clock: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  Volume2: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>,
-  VolumeX: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></svg>,
-  SkipBack: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></svg>,
-  SkipForward: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></svg>,
-  Film: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><path d="M17 2v5"/><path d="M7 2v5"/><path d="M2 12h20"/></svg>,
-  Image: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>,
-  Music: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
-  Monitor: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>,
-  Search: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>,
-  Filter: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 14 12.46 14 19 10 21 10 12.46 22 3"/></svg>,
-  Grid3x3: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></svg>,
-  List: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>,
-  Download: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
-  RotateCcw: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
-  ZoomIn: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>,
-  ZoomOut: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>,
-  Info: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
-  ChevronLeft: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>,
-  ChevronRight: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>,
-  RefreshCw: (p) => <svg width={p.size || 24} height={p.size || 24} {...p} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>,
+// ============================================================================
+// ICONS (Mapped to simulate lucide-react imports)
+// ============================================================================
+const SVG = (props) => <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>{props.children}</svg>;
+
+const InfinityIcon = (p) => <SVG {...p}><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></SVG>;
+const LayoutGrid = (p) => <SVG {...p}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></SVG>;
+const CloudUpload = (p) => <SVG {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></SVG>;
+const FolderSearch = (p) => <SVG {...p}><path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M13.4 13.4 11 16"/><circle cx="16.5" cy="16.5" r="2.5"/><path d="m21 21-1.4-1.4"/></SVG>;
+const LockKeyhole = (p) => <SVG {...p}><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></SVG>;
+const Database = (p) => <SVG {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></SVG>;
+const Upload = (p) => <SVG {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></SVG>;
+const Plus = (p) => <SVG {...p}><path d="M5 12h14"/><path d="M12 5v14"/></SVG>;
+const FileCheck = (p) => <SVG {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></SVG>;
+const Check = (p) => <SVG {...p}><path d="M20 6 9 17l-5-5"/></SVG>;
+const ZapOff = (p) => <SVG {...p}><path d="M10.5 16.5 2 22"/><path d="M16 22 2 8"/><path d="M17 15l-4.5-4.5"/><path d="M2 2l20 20"/><path d="M7 7 2 12"/><path d="M22 2 10.5 13.5"/></SVG>;
+const Inbox = (p) => <SVG {...p}><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></SVG>;
+const FileText = (p) => <SVG {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></SVG>;
+const Copy = (p) => <SVG {...p}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></SVG>;
+const CheckCircle2 = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></SVG>;
+const Play = (p) => <SVG {...p}><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" fill="currentColor"/></SVG>;
+const Pause = (p) => <SVG {...p}><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></SVG>;
+const X = (p) => <SVG {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></SVG>;
+const Maximize = (p) => <SVG {...p}><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></SVG>;
+const Minimize = (p) => <SVG {...p}><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></SVG>;
+const ExternalLink = (p) => <SVG {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></SVG>;
+const Link2 = (p) => <SVG {...p}><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></SVG>;
+const Loader = (p) => <SVG {...p}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></SVG>;
+const LogIn = (p) => <SVG {...p}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></SVG>;
+const User = (p) => <SVG {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></SVG>;
+const Sparkles = (p) => <SVG {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 15v4"/><path d="M19 19h4"/></SVG>;
+const Trash2 = (p) => <SVG {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SVG>;
+const HardDrive = (p) => <SVG {...p}><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></SVG>;
+const Globe = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></SVG>;
+const Clock = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SVG>;
+const Search = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></SVG>;
+const Film = (p) => <SVG {...p}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><path d="M17 2v5"/><path d="M7 2v5"/><path d="M2 12h20"/></SVG>;
+const ImageIcon = (p) => <SVG {...p}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></SVG>;
+const Music = (p) => <SVG {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></SVG>;
+const Grid3x3 = (p) => <SVG {...p}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></SVG>;
+const List = (p) => <SVG {...p}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></SVG>;
+const ZoomIn = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></SVG>;
+const ZoomOut = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></SVG>;
+const RotateCcw = (p) => <SVG {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></SVG>;
+const RefreshCw = (p) => <SVG {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></SVG>;
+const Volume2 = (p) => <SVG {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></SVG>;
+const VolumeX = (p) => <SVG {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></SVG>;
+const SkipBack = (p) => <SVG {...p}><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></SVG>;
+const SkipForward = (p) => <SVG {...p}><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></SVG>;
+
+// ============================================================================
+// CUSTOM ANIMATION COMPONENTS (React Bits)
+// ============================================================================
+
+const ElectricBorder = ({ children, color = "#EAB308", speed = 2, thickness = 2, radius = 24, className = "" }) => {
+  return (
+    <div className={`relative overflow-hidden ${className}`} style={{ borderRadius: radius, padding: thickness }}>
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0"
+        style={{ background: `conic-gradient(from 0deg, transparent 70%, ${color} 100%)`, animationDuration: `${speed}s`, animation: `spin ${speed}s linear infinite` }}
+      />
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0 blur-xl opacity-60"
+        style={{ background: `conic-gradient(from 0deg, transparent 60%, ${color} 100%)`, animationDuration: `${speed}s`, animation: `spin ${speed}s linear infinite` }}
+      />
+      <div className="relative z-10 w-full h-full bg-[#0a0a0c] overflow-hidden" style={{ borderRadius: radius - thickness }}>
+        {children}
+      </div>
+    </div>
+  );
 };
 
+const ScrollReveal = ({ children, baseOpacity = 0.1, enableBlur = true, baseRotation = 3, blurStrength = 4, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
+    }, { threshold: 0.2, rootMargin: "0px 0px -20px 0px" });
+    if (ref.current) observer.observe(ref.current);
+    return () => { if (ref.current) observer.unobserve(ref.current); };
+  }, []);
+
+  const text = typeof children === 'string' ? children : '';
+  const words = text.split(" ");
+  return (
+    <p ref={ref} className={`flex flex-wrap gap-x-[0.25em] ${className}`}>
+      {words.map((word, i) => (
+        <span key={i} className="inline-block transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+          style={{
+            opacity: isVisible ? 1 : baseOpacity,
+            filter: isVisible ? 'blur(0px)' : (enableBlur ? `blur(${blurStrength}px)` : 'none'),
+            transform: isVisible ? 'translateY(0) rotate(0)' : `translateY(12px) rotate(${baseRotation}deg)`,
+            transitionDelay: `${i * 0.03}s`
+          }}
+        >
+          {word}
+        </span>
+      ))}
+    </p>
+  );
+};
+
+const Reveal = ({ children, delay = 0, className = "" }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
+    }, { threshold: 0.1 });
+    if (ref.current) observer.observe(ref.current);
+    return () => { if (ref.current) observer.unobserve(ref.current); };
+  }, []);
+  return (
+    <div ref={ref} className={`transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${isVisible ? "opacity-100 translate-y-0 blur-none scale-100" : "opacity-0 translate-y-12 blur-[4px] scale-[0.98]"} ${className}`} style={{ transitionDelay: `${delay}s` }}>
+      {children}
+    </div>
+  );
+};
+
+const Typewriter = ({ words, typingSpeed = 100, deletingSpeed = 50, delay = 2000 }) => {
+  const [text, setText] = useState('');
+  const [wordIndex, setWordIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  useEffect(() => {
+    const currentWord = words[wordIndex] || "";
+    let timer;
+    if (isDeleting) {
+      timer = setTimeout(() => {
+        setText(currentWord.substring(0, text.length - 1));
+        if (text.length === 0) { setIsDeleting(false); setWordIndex((prev) => (prev + 1) % words.length); }
+      }, deletingSpeed);
+    } else {
+      timer = setTimeout(() => {
+        setText(currentWord.substring(0, text.length + 1));
+        if (text.length === currentWord.length) setTimeout(() => setIsDeleting(true), delay);
+      }, typingSpeed);
+    }
+    return () => clearTimeout(timer);
+  }, [text, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, delay]);
+  return <span className="border-r-2 border-amber-500 pr-1 cursor-blink text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-display">{text}</span>;
+};
+
+// ============================================================================
+// MAIN APP COMPONENT
+// ============================================================================
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -180,13 +277,12 @@ function App() {
   const [isEmbedPlayer, setIsEmbedPlayer] = useState(false);
   const [embedVideoUrl, setEmbedVideoUrl] = useState('');
 
-  // Cek apakah URL adalah Embed Player (diawali /player/)
+  // Mode Embed Player Check
   useEffect(() => {
     const path = window.location.pathname;
     if (path.startsWith('/player/')) {
       setIsEmbedPlayer(true);
       const parts = path.split('/');
-      // Format: /player/userId/media/fileName
       if (parts.length >= 5) {
         const uId = parts[2];
         const fName = parts.slice(4).join('/');
@@ -199,6 +295,7 @@ function App() {
     }
   }, [currentUser]);
 
+  // Drag & Drop
   useEffect(() => {
     if (isEmbedPlayer) return;
     const dz = dropzoneRef.current;
@@ -246,7 +343,7 @@ function App() {
       }
     } catch (e) {
       console.error("Sync error:", e);
-      showToast("Gagal sinkronisasi dengan server");
+      showToast("Gagal sinkronisasi");
     } finally {
       setIsLoading(false);
     }
@@ -299,7 +396,7 @@ function App() {
     localStorage.removeItem('ins_unlimited');
     setActiveTab('dashboard');
     window.location.hash = 'dashboard';
-    showToast("Berhasil logout");
+    showToast("Logout Berhasil");
   };
 
   const handleFileSelect = (e) => {
@@ -336,20 +433,20 @@ function App() {
               player: `${window.location.origin}/player/${currentUser}/media/${encodeURIComponent(res.filename)}`
             });
             setUploadState('success');
-            showToast("File Berhasil Disimpan!");
+            showToast("File Tersimpan!");
           } else {
             throw new Error(res.error || "Upload gagal");
           }
         } catch (err) {
           setUploadState('idle');
-          showToast(err.message || "Gagal mengunggah file");
+          showToast(err.message || "Gagal upload");
         }
       } else {
         setUploadState('idle');
-        showToast("Gagal mengunggah file");
+        showToast("Gagal upload");
       }
     };
-    xhr.onerror = () => { setUploadState('idle'); showToast("Terjadi kesalahan jaringan"); };
+    xhr.onerror = () => { setUploadState('idle'); showToast("Error jaringan"); };
     xhr.send(formData);
   };
 
@@ -357,7 +454,7 @@ function App() {
     const updated = files.filter(f => f.id !== fileId);
     setFiles(updated);
     localStorage.setItem('ins_unlimited', JSON.stringify(updated));
-    showToast("File dihapus dari cache lokal");
+    showToast("File dihapus");
   };
 
   const formatSize = (b) => {
@@ -373,7 +470,7 @@ function App() {
   };
 
   const clearHistory = () => {
-    if (window.confirm('Hapus cache data lokal? Data di server CloudFlare tetap aman.')) {
+    if (window.confirm('Hapus cache lokal? Server aman.')) {
       setFiles([]);
       localStorage.setItem('ins_unlimited', '[]');
       showToast('Cache dibersihkan');
@@ -392,29 +489,21 @@ function App() {
     return matchesSearch && matchesType;
   });
 
-  // Dedicated Fullscreen Embed Video Player Component
+  // Dedicated Fullscreen Embed Video Player
   const DedicatedEmbedPlayer = ({ src }) => {
     return (
-      <div className="embed-player-wrapper">
-        <video 
-          src={src} 
-          controls 
-          autoPlay 
-          playsInline 
-          style={{ width: '100%', height: '100%', objectFit: 'contain', outline: 'none' }} 
-        />
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
+        <video src={src} controls autoPlay playsInline className="w-full h-full max-h-screen object-contain outline-none" />
       </div>
     );
   };
 
-  // Render jika mode Embed Player
   if (isEmbedPlayer) {
     if (!embedVideoUrl) return <div className="text-white p-4">Invalid Player URL</div>;
     return <DedicatedEmbedPlayer src={embedVideoUrl} />;
   }
 
-  // --- KOMPONEN LAINNYA ---
-  
+  // --- MODAL & PLAYER COMPONENTS ---
   const CustomVideoPlayer = ({ file, onClose }) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
@@ -426,7 +515,6 @@ function App() {
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [playbackRate, setPlaybackRate] = useState(1);
-    const [buffered, setBuffered] = useState(0);
     const controlsTimeoutRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
 
@@ -435,18 +523,13 @@ function App() {
       if (!video) return;
       const updateTime = () => setCurrentTime(video.currentTime);
       const updateDuration = () => setDuration(video.duration);
-      const updateBuffered = () => {
-        if (video.buffered.length > 0) setBuffered(video.buffered.end(video.buffered.length - 1));
-      };
       const onEnded = () => setIsPlaying(false);
       video.addEventListener('timeupdate', updateTime);
       video.addEventListener('loadedmetadata', updateDuration);
-      video.addEventListener('progress', updateBuffered);
       video.addEventListener('ended', onEnded);
       return () => {
         video.removeEventListener('timeupdate', updateTime);
         video.removeEventListener('loadedmetadata', updateDuration);
-        video.removeEventListener('progress', updateBuffered);
         video.removeEventListener('ended', onEnded);
       };
     }, []);
@@ -465,9 +548,6 @@ function App() {
       const pos = (e.clientX - rect.left) / rect.width;
       video.currentTime = pos * duration;
     };
-
-    const handleSeekStart = () => { setIsDragging(true); };
-    const handleSeekEnd = () => { setIsDragging(false); };
 
     const toggleMute = () => {
       const video = videoRef.current;
@@ -510,51 +590,49 @@ function App() {
 
     const changePlaybackRate = () => {
       const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
-      const currentIdx = rates.indexOf(playbackRate);
-      const nextRate = rates[(currentIdx + 1) % rates.length];
-      const video = videoRef.current;
-      if (video) video.playbackRate = nextRate;
+      const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
+      if (videoRef.current) videoRef.current.playbackRate = nextRate;
       setPlaybackRate(nextRate);
     };
 
     const skip = (seconds) => {
-      const video = videoRef.current;
-      if (!video) return;
-      video.currentTime = Math.max(0, Math.min(video.currentTime + seconds, duration));
+      if (videoRef.current) videoRef.current.currentTime = Math.max(0, Math.min(videoRef.current.currentTime + seconds, duration));
     };
 
     return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 modal-backdrop animate-scale-in" onClick={onClose}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
         <div ref={containerRef} className="relative w-full max-w-6xl bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10" onClick={(e) => e.stopPropagation()} onMouseMove={handleMouseMove}>
           <div className="video-container" style={{ borderRadius: '2.5rem' }}>
             <video ref={videoRef} src={file.url} className="w-full" style={{ maxHeight: '70vh', objectFit: 'contain' }} onClick={togglePlay} preload="metadata" playsInline />
-            <div className="resolution-badge">{formatSize(file.size)} • {file.type?.split('/')[1]?.toUpperCase() || 'VIDEO'}</div>
+            <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1 rounded-md text-[10px] font-bold text-amber-500 border border-amber-500/30 z-20">
+              {formatSize(file.size)} • {file.type?.split('/')[1]?.toUpperCase() || 'VIDEO'}
+            </div>
 
             <div className={`video-controls-overlay ${showControls ? 'show-controls' : ''}`} style={{ opacity: showControls ? 1 : 0 }}>
-              <div className="progress-bar" onClick={handleSeek} onMouseDown={handleSeekStart} onMouseUp={handleSeekEnd}>
+              <div className="progress-bar" onClick={handleSeek} onMouseDown={() => setIsDragging(true)} onMouseUp={() => setIsDragging(false)}>
                 <div className="progress-fill" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
                 <div className="progress-handle" style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%`, opacity: isDragging ? 1 : undefined }}></div>
               </div>
 
               <div className="flex items-center gap-2 md:gap-4">
-                <button className="control-btn" onClick={togglePlay}>{isPlaying ? <I.Pause size={20} /> : <I.Play size={20} />}</button>
-                <button className="control-btn" onClick={() => skip(-10)}><I.SkipBack size={18} /></button>
-                <button className="control-btn" onClick={() => skip(10)}><I.SkipForward size={18} /></button>
-                <button className="control-btn" onClick={toggleMute}>{isMuted ? <I.VolumeX size={18} /> : <I.Volume2 size={18} />}</button>
-                <input type="range" min="0" max="1" step="0.1" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="volume-slider" />
+                <button className="control-btn" onClick={togglePlay}>{isPlaying ? <Pause size={20} /> : <Play size={20} />}</button>
+                <button className="control-btn" onClick={() => skip(-10)}><SkipBack size={18} /></button>
+                <button className="control-btn" onClick={() => skip(10)}><SkipForward size={18} /></button>
+                <button className="control-btn hidden sm:flex" onClick={toggleMute}>{isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
+                <input type="range" min="0" max="1" step="0.1" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="volume-slider hidden sm:block" />
                 <span className="time-display">{formatTime(currentTime)} / {formatTime(duration)}</span>
-                <button className="control-btn" onClick={changePlaybackRate} style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-display)' }}>{playbackRate}x</button>
-                <button className="control-btn fullscreen-btn" onClick={toggleFullscreen}>{isFullscreen ? <I.Minimize size={18} /> : <I.Maximize size={18} />}</button>
+                <button className="control-btn ml-auto" onClick={changePlaybackRate} style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-display)' }}>{playbackRate}x</button>
+                <button className="control-btn" onClick={toggleFullscreen}>{isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}</button>
               </div>
             </div>
           </div>
 
-          <div className="absolute top-6 left-6 glass px-4 py-2 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 max-w-[60%] truncate">
-            <I.Film size={14} className="text-amber-500 shrink-0" /> <span className="truncate">{file.name}</span>
+          <div className="absolute top-6 left-6 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 max-w-[60%] truncate border border-white/10 z-50">
+            <Film size={14} className="text-amber-500 shrink-0" /> <span className="truncate">{file.name}</span>
           </div>
 
           <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent z-50">
-            <I.X size={20} />
+            <X size={20} />
           </button>
         </div>
       </div>
@@ -574,40 +652,29 @@ function App() {
     const reset = () => { setScale(1); setRotation(0); setPosition({ x: 0, y: 0 }); };
 
     const handleMouseDown = (e) => {
-      if (scale > 1) {
-        setIsDragging(true);
-        setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-      }
+      if (scale > 1) { setIsDragging(true); setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y }); }
     };
     const handleMouseMove = (e) => {
-      if (!isDragging) return;
-      setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+      if (!isDragging) return; setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
     };
-    const handleMouseUp = () => setIsDragging(false);
 
     return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 modal-backdrop animate-scale-in" onClick={onClose}>
-        <div className="relative max-w-6xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2" onClick={(e) => e.stopPropagation()}>
-          <img
-            src={file.url}
-            className="max-w-full max-h-[85vh] object-contain rounded-[2rem] cursor-move"
-            alt={file.name}
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)'
-            }}
-            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} draggable={false}
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
+        <div className="relative max-w-6xl w-full max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2" onClick={(e) => e.stopPropagation()}>
+          <img src={file.url} className="max-w-full w-full max-h-[85vh] object-contain rounded-[2rem] cursor-move" alt={file.name}
+            style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`, transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)' }}
+            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)} draggable={false}
           />
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 md:gap-4 w-max max-w-[80%] truncate">
-            <I.Image size={14} className="text-amber-500 shrink-0" />
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 md:gap-4 w-max max-w-[80%] truncate border border-white/10">
+            <ImageIcon size={14} className="text-amber-500 shrink-0" />
             <span className="truncate">{file.name} &mdash; {formatSize(file.size)}</span>
           </div>
-          <div className="absolute top-6 right-6 flex gap-2">
-            <button onClick={zoomIn} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomIn size={16} /></button>
-            <button onClick={zoomOut} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.ZoomOut size={16} /></button>
-            <button onClick={rotate} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RotateCcw size={16} /></button>
-            <button onClick={reset} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><I.RefreshCw size={16} /></button>
-            <button onClick={onClose} className="p-2 md:p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10"><I.X size={16} /></button>
+          <div className="absolute top-6 right-6 flex flex-wrap justify-end gap-2 max-w-[200px]">
+            <button onClick={zoomIn} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><ZoomIn size={16} /></button>
+            <button onClick={zoomOut} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><ZoomOut size={16} /></button>
+            <button onClick={rotate} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><RotateCcw size={16} /></button>
+            <button onClick={reset} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><RefreshCw size={16} /></button>
+            <button onClick={onClose} className="p-2 md:p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10"><X size={16} /></button>
           </div>
         </div>
       </div>
@@ -615,72 +682,17 @@ function App() {
   };
 
   const AudioPlayer = ({ file, onClose }) => {
-    const audioRef = useRef(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-
-    useEffect(() => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      const updateTime = () => setCurrentTime(audio.currentTime);
-      const updateDuration = () => setDuration(audio.duration);
-      audio.addEventListener('timeupdate', updateTime);
-      audio.addEventListener('loadedmetadata', updateDuration);
-      audio.addEventListener('ended', () => setIsPlaying(false));
-      return () => {
-        audio.removeEventListener('timeupdate', updateTime);
-        audio.removeEventListener('loadedmetadata', updateDuration);
-      };
-    }, []);
-
-    const togglePlay = () => {
-      const audio = audioRef.current;
-      if (!audio) return;
-      if (audio.paused) { audio.play(); setIsPlaying(true); }
-      else { audio.pause(); setIsPlaying(false); }
-    };
-
-    const handleSeek = (e) => {
-      const audio = audioRef.current;
-      if (!audio || !duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      audio.currentTime = pos * duration;
-    };
-
-    const formatTime = (seconds) => {
-      if (!seconds || isNaN(seconds)) return '0:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
     return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 modal-backdrop animate-scale-in" onClick={onClose}>
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
         <div className="relative bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-zinc-800 w-full max-w-lg p-8 md:p-12 flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
           <div className="w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30 relative shrink-0">
             <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-pulse"></div>
-            <I.Music size={32} className="text-amber-500 relative z-10" />
+            <Music size={32} className="text-amber-500 relative z-10" />
           </div>
           <h3 className="text-xl md:text-2xl font-display font-black text-white text-center truncate w-full">{file.name}</h3>
-          <div className="w-full">
-            <div className="progress-bar mb-4" onClick={handleSeek}>
-              <div className="progress-fill" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
-            </div>
-            <div className="flex justify-between text-xs text-zinc-500 font-display mb-4">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button onClick={togglePlay} className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center text-black hover:scale-110 transition-all shadow-xl shadow-amber-500/20">
-              {isPlaying ? <I.Pause size={28} /> : <I.Play size={28} />}
-            </button>
-          </div>
-          <audio ref={audioRef} src={file.url} autoPlay controls style={{ display: 'none' }} />
+          <audio src={file.url} autoPlay controls className="w-full custom-audio" />
           <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
-            <I.X size={20} />
+            <X size={20} />
           </button>
         </div>
       </div>
@@ -688,57 +700,38 @@ function App() {
   };
 
   const FileBadge = ({ type }) => {
-    const badges = { image: 'badge-image', video: 'badge-video', audio: 'badge-audio', file: 'badge-file' };
-    return <span className={`badge-type ${badges[type] || badges.file}`}>{type}</span>;
+    return <span className={`badge-type ${type === 'video' ? 'text-red-400' : type === 'image' ? 'text-blue-400' : type === 'audio' ? 'text-green-400' : 'text-zinc-400'}`}>{type}</span>;
   };
 
-  const Typewriter = ({ words, typingSpeed = 100, deletingSpeed = 50, delay = 2000 }) => {
-    const [text, setText] = useState('');
-    const [wordIndex, setWordIndex] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-    useEffect(() => {
-      const currentWord = words[wordIndex] || "";
-      let timer;
-      if (isDeleting) {
-        timer = setTimeout(() => {
-          setText(currentWord.substring(0, text.length - 1));
-          if (text.length === 0) { setIsDeleting(false); setWordIndex((prev) => (prev + 1) % words.length); }
-        }, deletingSpeed);
-      } else {
-        timer = setTimeout(() => {
-          setText(currentWord.substring(0, text.length + 1));
-          if (text.length === currentWord.length) setTimeout(() => setIsDeleting(true), delay);
-        }, typingSpeed);
-      }
-      return () => clearTimeout(timer);
-    }, [text, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, delay]);
-    return <span className="border-r-2 border-amber-500 pr-1 cursor-blink text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-display">{text}</span>;
-  };
-
+  // --- RENDER APP ---
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#050505] text-[#fafafa] relative overflow-hidden">
+      
+      {/* Background Orbs */}
       <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none animate-blob"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none animate-blob" style={{ animationDelay: '3s' }}></div>
 
-      <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[100] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 ${toast.show ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}`}>
-        <I.CheckCircle2 size={20} />
+      {/* TOAST */}
+      <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[200] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 ${toast.show ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}`}>
+        <CheckCircle2 size={20} />
         <span className="font-display tracking-wide text-sm">{toast.msg}</span>
       </div>
 
+      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
           <div className="glass rounded-[2.5rem] p-8 w-full max-w-md border border-amber-500/20 shadow-[0_0_80px_rgba(251,191,36,0.1)] animate-scale-in relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
-            <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"><I.X size={24} /></button>
+            <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
             <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group shrink-0">
               <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:scale-150 transition-transform"></div>
-              <I.LogIn size={32} className="relative z-10" />
+              <LogIn size={32} className="relative z-10" />
             </div>
             <h3 className="text-3xl font-display font-black text-center mb-2 tracking-tighter">Otorisasi Akses</h3>
             <p className="text-zinc-400 text-center text-sm mb-8 font-medium leading-relaxed">Masukkan ID Database Anda untuk mulai mengunggah file ke cloud.</p>
             <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
               <div className="relative group">
-                <I.User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
+                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
                 <input type="text" autoFocus required placeholder="Misal: ins_sanjaya" value={inputUsername} onChange={(e) => setInputUsername(e.target.value)}
                   className="w-full bg-black/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white font-bold placeholder:text-zinc-700 focus:outline-none focus:border-amber-500/50 focus:bg-zinc-900/50 transition-all font-display tracking-wide" />
               </div>
@@ -751,412 +744,442 @@ function App() {
         </div>
       )}
 
-      <aside className="sidebar w-full lg:w-72 glass border-r border-zinc-900/50 p-8 flex flex-col gap-10 z-10">
-        <div className="sidebar-brand flex items-center gap-4">
-          <div className="relative shrink-0">
-            <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full"></div>
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10">
-              <I.Infinity size={28} className="text-black" />
+      {/* SIDEBAR (Desktop & Mobile: Top/Vertical Header) */}
+      <aside className="w-full lg:w-72 glass border-b lg:border-b-0 lg:border-r border-zinc-900/50 p-6 lg:p-8 flex flex-col gap-8 lg:gap-10 z-20 relative">
+        
+        {/* Brand */}
+        <div className="flex items-center gap-4">
+          <Reveal delay={0}>
+            <div className="relative shrink-0">
+              <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full"></div>
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10">
+                <InfinityIcon size={28} className="text-black" />
+              </div>
             </div>
-          </div>
-          <div className="min-w-0">
-            <span className="block text-2xl font-display font-black tracking-tighter leading-none truncate">INS CLOUD</span>
-            <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display truncate block">{currentUser ? `USER: ${currentUser}` : "Guest Mode"}</span>
-          </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="min-w-0">
+              <span className="block text-2xl font-display font-black tracking-tighter leading-none truncate">INS CLOUD</span>
+              <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display truncate block">{currentUser ? `USER: ${currentUser}` : "Guest Mode"}</span>
+            </div>
+          </Reveal>
         </div>
 
-        <nav className="sidebar-nav flex flex-col gap-2 flex-1">
+        {/* Navigation */}
+        <nav className="flex flex-col gap-2 w-full flex-1">
           {[
-            { id: 'dashboard', icon: I.LayoutGrid, label: 'Dashboard' },
-            { id: 'upload', icon: I.CloudUpload, label: 'Upload Center' },
-            { id: 'history', icon: I.FolderSearch, label: 'My Library' }
-          ].map((item) => (
-            <button key={item.id} onClick={() => handleTabSwitch(item.id)}
-              className={`sidebar-nav-item ${activeTab === item.id ? 'active' : ''}`}
-            >
-              <item.icon size={20} className="shrink-0" /> <span>{item.label}</span>
-            </button>
+            { id: 'dashboard', icon: LayoutGrid, label: 'Dashboard' },
+            { id: 'upload', icon: CloudUpload, label: 'Upload' },
+            { id: 'history', icon: FolderSearch, label: 'My Files' }
+          ].map((item, i) => (
+            <Reveal key={item.id} delay={0.1 + (i * 0.1)} className="w-full">
+              <button onClick={() => handleTabSwitch(item.id)}
+                className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl transition-all font-semibold font-display tracking-wide text-base ${activeTab === item.id ? 'bg-amber-400 text-black shadow-[0_0_24px_rgba(251,191,36,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
+              >
+                <item.icon size={20} className="shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            </Reveal>
           ))}
         </nav>
 
-        <div className="sidebar-status">
-          <div className="electric-border" style={{ borderRadius: '2rem', padding: '2px' }}>
-            <div className="electric-inner p-6 flex flex-col items-center text-center" style={{ borderRadius: '1.9rem' }}>
-              <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner shrink-0">
-                <I.LockKeyhole size={16} className="text-amber-500" />
+        {/* Status */}
+        <div className="mt-auto pt-4">
+          <Reveal delay={0.4}>
+            <ElectricBorder color="#fbbf24" speed={3} thickness={1.5} radius={32}>
+              <div className="p-6 flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner shrink-0">
+                  <LockKeyhole size={16} className="text-amber-500" />
+                </div>
+                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">Status Akun</p>
+                <h4 className="text-sm font-display font-black text-white mb-3 uppercase tracking-wide">Unlimited Capacity</h4>
+                <div className="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5">
+                  <Sparkles size={12} className="shrink-0"/> PRO EDITION
+                </div>
               </div>
-              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">Status Akun</p>
-              <h4 className="text-sm font-display font-black text-white mb-3 uppercase tracking-wide">Unlimited Capacity</h4>
-              <div className="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5">
-                <I.Sparkles size={12} className="shrink-0"/> PRO EDITION
-              </div>
-            </div>
-          </div>
-        </div>
+            </ElectricBorder>
+          </Reveal>
 
-        {currentUser && (
-          <button onClick={handleLogout} className="sidebar-logout w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-3 rounded-2xl border border-zinc-800 hover:border-red-500/30">
-            <I.LogIn size={16} className="rotate-180 shrink-0" /> Logout
-          </button>
-        )}
+          {currentUser && (
+            <Reveal delay={0.5} className="mt-4">
+              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-3 rounded-2xl border border-zinc-800 hover:border-red-500/30">
+                <LogIn size={16} className="rotate-180 shrink-0" /> Logout
+              </button>
+            </Reveal>
+          )}
+        </div>
       </aside>
 
-      <main className="main-content flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto">
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto">
+        
+        {/* DASHBOARD */}
         {activeTab === 'dashboard' && (
           <section>
-            <header className="mb-14">
-              <h1 className="text-5xl lg:text-7xl font-display font-black tracking-tighter mb-4 leading-[1.1]">
-                Halo, <Typewriter words={currentUser ? [currentUser, "Master", "Administrator"] : ["Guest", "Pengguna"]} />.
-              </h1>
-              <p className="text-zinc-400 font-medium text-lg lg:text-xl max-w-2xl leading-relaxed mt-2">
-                Kelola database cloud Anda dalam satu genggaman. Cepat, aman, dan tanpa batas kapasitas.
-              </p>
-            </header>
+            <Reveal delay={0}>
+              <header className="mb-10 lg:mb-14">
+                <h1 className="text-4xl lg:text-7xl font-display font-black tracking-tighter mb-2 lg:mb-4 leading-[1.1]">
+                  Halo, <Typewriter words={currentUser ? [currentUser, "Master", "Administrator"] : ["Guest", "Pengguna"]} />.
+                </h1>
+                <ScrollReveal baseOpacity={0.1} enableBlur baseRotation={3} blurStrength={4} className="text-zinc-400 font-medium text-sm lg:text-xl max-w-2xl leading-relaxed mt-2">
+                  Kelola database cloud Anda dalam satu genggaman. Cepat, aman, dan tanpa batas kapasitas.
+                </ScrollReveal>
+              </header>
+            </Reveal>
 
-            <div className="stats-grid mb-12">
-              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 h-full">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 shrink-0">
-                  <I.Database size={24} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
+              <Reveal delay={0.1} className="h-full">
+                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0">
+                    <Database size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-4xl lg:text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-4xl md:text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
-                  <p className="text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
-                </div>
-              </div>
+              </Reveal>
 
-              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 border border-amber-500/30 bg-amber-500/[0.03] shadow-[0_0_40px_rgba(251,191,36,0.05)] h-full">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 shrink-0">
-                  <I.Infinity size={24} />
+              <Reveal delay={0.2} className="h-full">
+                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 border border-amber-500/30 bg-amber-500/[0.03] hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_40px_rgba(251,191,36,0.05)] group h-full">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 shrink-0">
+                    <InfinityIcon size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white">Unlimited</h3>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-3xl md:text-4xl font-display font-black leading-none mb-2 text-white">Unlimited</h3>
-                  <p className="text-[10px] md:text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
-                </div>
-              </div>
+              </Reveal>
 
-              <div className="stat-card glass p-6 md:p-8 rounded-[2.5rem] flex flex-col gap-4 md:gap-5 h-full">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-zinc-900 rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 shrink-0">
-                  <I.HardDrive size={24} />
+              <Reveal delay={0.3} className="h-full">
+                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
+                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0">
+                    <HardDrive size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white">{formatSize(totalSize)}</h3>
+                    <p className="text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total Storage</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-3xl md:text-4xl font-display font-black leading-none mb-2 text-white">{formatSize(totalSize)}</h3>
-                  <p className="text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total Storage</p>
-                </div>
-              </div>
+              </Reveal>
             </div>
 
-            <div className="bg-zinc-900/60 rounded-[2.5rem] p-8 md:p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-8 md:gap-10 justify-between relative overflow-hidden text-center lg:text-left">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]"></div>
-              <div className="max-w-md relative z-10">
-                <h2 className="text-2xl md:text-3xl font-display font-black mb-3 tracking-tight">Butuh Link Instan?</h2>
-                <p className="text-zinc-400 text-sm md:text-base leading-relaxed">Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.</p>
+            <Reveal delay={0.4}>
+              <div className="bg-zinc-900/60 rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 justify-between relative overflow-hidden text-center lg:text-left">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]"></div>
+                <div className="max-w-md relative z-10">
+                  <h2 className="text-2xl lg:text-3xl font-display font-black mb-2 lg:mb-4 tracking-tight">Butuh Link Instan?</h2>
+                  <ScrollReveal baseOpacity={0} blurStrength={6} className="text-zinc-400 text-sm lg:text-base leading-relaxed justify-center lg:justify-start">
+                    Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.
+                  </ScrollReveal>
+                </div>
+                <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-8 py-4 lg:px-10 lg:py-5 rounded-xl lg:rounded-3xl font-display font-black text-sm lg:text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0 w-full lg:w-auto">
+                  <div className="animate-shimmer"></div>
+                  <span className="relative z-10">UPLOAD SEKARANG</span>
+                </button>
               </div>
-              <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-8 py-4 md:px-10 md:py-5 rounded-2xl md:rounded-3xl font-display font-black text-sm md:text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0">
-                <div className="animate-shimmer"></div>
-                <span className="relative z-10">UPLOAD SEKARANG</span>
-              </button>
-            </div>
+            </Reveal>
           </section>
         )}
 
+        {/* UPLOAD CENTER */}
         {activeTab === 'upload' && (
           <section>
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0">
-                <I.Upload size={24} className="text-amber-500" />
+            <Reveal delay={0}>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 text-center sm:text-left">
+                <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0 mx-auto sm:mx-0">
+                  <Upload size={24} className="text-amber-500" />
+                </div>
+                <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
               </div>
-              <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
-            </div>
+            </Reveal>
 
             {(uploadState === 'idle' || uploadState === 'selected') && (
-              <div ref={dropzoneRef} className="electric-border cursor-pointer group" style={{ borderRadius: '2rem', padding: '2px' }}>
-                <div onClick={() => fileInputRef.current?.click()}
-                  className="electric-inner upload-pad p-8 sm:p-16 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full text-center"
-                  style={{ borderRadius: '1.9rem' }}>
-                  {isDragOver && (
-                    <div className="drag-over-overlay" style={{ borderRadius: '1.9rem' }}>
-                      <span>Drop File Here</span>
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                  <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
+              <Reveal delay={0.1}>
+                <ElectricBorder color="#fbbf24" speed={4} thickness={2} radius={32} className="cursor-pointer group">
+                  <div onClick={() => fileInputRef.current?.click()}
+                    className="p-10 lg:p-24 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full text-center"
+                    style={{ borderRadius: '1.9rem' }}>
+                    
+                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
 
-                  {uploadState === 'idle' ? (
-                    <div className="flex flex-col items-center relative z-10">
-                      <div className="w-16 h-16 md:w-24 md:h-24 bg-black/50 backdrop-blur-md rounded-2xl md:rounded-3xl flex items-center justify-center mb-6 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2 shrink-0">
-                        <I.Plus size={32} />
-                      </div>
-                      <h3 className="text-2xl md:text-3xl font-display font-black mb-2 tracking-tight group-hover:text-amber-400 transition-colors">Pilih atau Tarik File</h3>
-                      <p className="text-zinc-500 text-sm md:text-base font-medium tracking-wide">Mendukung format gambar, video, audio, dan dokumen.</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center w-full max-w-lg z-10">
-                      <div className="flex items-center gap-4 px-4 py-4 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl text-left">
-                        <div className="p-3 bg-amber-500/10 rounded-xl shrink-0">
-                          <I.FileCheck size={28} className="text-amber-500" />
+                    {uploadState === 'idle' ? (
+                      <div className="flex flex-col items-center relative z-10">
+                        <div className="w-20 h-20 lg:w-24 lg:h-24 bg-black/50 backdrop-blur-md rounded-2xl lg:rounded-3xl flex items-center justify-center mb-6 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2 shrink-0">
+                          <Plus size={32} />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
-                          <span className="text-sm md:text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
-                          <span className="text-xs text-zinc-600">{formatSize(selectedFile?.size)}</span>
-                        </div>
+                        <h3 className="text-2xl lg:text-3xl font-display font-black mb-2 tracking-tight group-hover:text-amber-400 transition-colors">Pilih / Tarik File</h3>
+                        <ScrollReveal baseOpacity={0.5} blurStrength={2} className="text-zinc-500 text-xs lg:text-base font-medium tracking-wide justify-center">
+                          Mendukung format gambar, video, audio, dan dokumen.
+                        </ScrollReveal>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-6 bg-amber-500 text-black px-8 py-4 rounded-xl md:rounded-2xl font-display font-black text-sm md:text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
-                        <div className="animate-shimmer"></div>
-                        <span className="relative z-10 flex items-center justify-center gap-2">Upload ke Cloud <I.CloudUpload size={20} className="group-hover/btn:animate-bounce shrink-0" /></span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+                    ) : (
+                      <div className="flex flex-col items-center w-full max-w-lg z-10">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 px-4 py-4 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl text-center sm:text-left">
+                          <div className="p-3 bg-amber-500/10 rounded-xl shrink-0">
+                            <FileCheck size={28} className="text-amber-500" />
+                          </div>
+                          <div className="flex-1 min-w-0 w-full">
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
+                            <span className="text-sm md:text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
+                            <span className="text-xs text-zinc-600">{formatSize(selectedFile?.size)}</span>
+                          </div>
+                        </div>
+                        <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-6 bg-amber-500 text-black px-8 py-4 rounded-xl md:rounded-2xl font-display font-black text-sm md:text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
+                          <div className="animate-shimmer"></div>
+                          <span className="relative z-10 flex items-center justify-center gap-2">Upload ke Cloud <CloudUpload size={20} className="group-hover/btn:animate-bounce shrink-0" /></span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </ElectricBorder>
+              </Reveal>
             )}
 
             {uploadState === 'uploading' && (
-              <div className="glass rounded-[2.5rem] p-8 md:p-16 border border-amber-500/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                <div className="flex justify-between items-end mb-6 relative z-10">
-                  <div>
-                    <p className="text-[9px] md:text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-1 md:mb-2 flex items-center gap-2">
-                      <I.Loader size={14} /> Sedang Memproses
-                    </p>
-                    <h4 className="text-2xl md:text-3xl font-display font-bold tracking-tight">Mengunggah...</h4>
+              <Reveal delay={0}>
+                <div className="glass rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 border border-amber-500/20 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                  <div className="flex justify-between items-end mb-6 relative z-10">
+                    <div>
+                      <p className="text-[10px] lg:text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-1 lg:mb-2 flex items-center gap-2">
+                        <Loader size={14} className="animate-spin" /> Proses
+                      </p>
+                      <h4 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Mengunggah...</h4>
+                    </div>
+                    <span className="text-4xl lg:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
                   </div>
-                  <span className="text-4xl md:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
-                </div>
-                <div className="w-full h-3 md:h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
-                  <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
-                    <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+                  <div className="w-full h-3 lg:h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
+                    <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
+                      <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+                    </div>
                   </div>
+                  <p className="text-zinc-500 text-xs lg:text-sm mt-4 text-center truncate">{selectedFile?.name}</p>
                 </div>
-                <p className="text-zinc-500 text-xs md:text-sm mt-4 text-center truncate">{selectedFile?.name} &mdash; {formatSize(selectedFile?.size)}</p>
-              </div>
+              </Reveal>
             )}
 
             {uploadState === 'success' && (
-              <div className="glass rounded-[2.5rem] p-6 md:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/5 blur-[80px] rounded-full pointer-events-none"></div>
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[1.5rem] md:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-amber-500/20 transform rotate-3 shrink-0">
-                  <I.Check size={40} />
-                </div>
-                <h3 className="text-2xl md:text-4xl font-display font-black mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
-
-                <div className="space-y-4 md:space-y-6 max-w-3xl mx-auto relative z-10">
-                  <div className="bg-black/40 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-zinc-800/50">
-                    <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-zinc-400 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] flex items-center gap-2">
-                      <I.Globe size={12} className="shrink-0"/> URL Publik (Raw Media)
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-medium text-zinc-300 focus:outline-none font-display link-input" />
-                      <button onClick={() => copyToClipboard(uploadedUrls.public)} className="w-full sm:w-auto bg-zinc-800 text-white px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-2 copy-btn">
-                        <I.Copy size={16} className="shrink-0" /> Salin
-                      </button>
-                    </div>
+              <Reveal delay={0}>
+                <div className="glass rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-amber-500/20 transform rotate-3 shrink-0">
+                    <Check size={40} />
                   </div>
+                  <h3 className="text-2xl lg:text-4xl font-display font-black mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
 
-                  <div className="bg-amber-500/5 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-amber-500/30 shadow-inner relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-2xl rounded-full"></div>
-                    <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-amber-500 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
-                      <I.Link2 size={12} className="shrink-0"/> URL User (Fast CDN)
-                    </label>
-                    <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                      <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold text-amber-400 focus:outline-none font-display tracking-wide link-input" />
-                      <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="w-full sm:w-auto relative overflow-hidden bg-amber-500 text-black px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center justify-center gap-2 copy-btn">
-                        <div className="animate-shimmer"></div>
-                        <I.Copy size={16} className="relative z-10 shrink-0" /> <span className="relative z-10">Salin</span>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Link Khusus Embed Player Video */}
-                  {selectedFile && selectedFile.type.startsWith('video/') && (
-                    <div className="bg-blue-500/5 backdrop-blur-md p-4 md:p-6 rounded-2xl md:rounded-3xl border border-blue-500/30 shadow-inner relative overflow-hidden mt-4">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-2xl rounded-full"></div>
-                      <label className="text-[9px] md:text-[10px] font-display font-black uppercase text-blue-400 ml-1 md:ml-2 mb-2 md:mb-3 block tracking-[0.2em] relative z-10 flex items-center gap-2">
-                        <I.Play size={12} className="shrink-0" /> URL Embed Player (App Web)
+                  <div className="space-y-4 lg:space-y-6 max-w-3xl mx-auto relative z-10">
+                    <div className="bg-black/40 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-zinc-800/50">
+                      <label className="text-[10px] font-display font-black uppercase text-zinc-400 ml-1 mb-2 block tracking-[0.2em] flex items-center gap-2">
+                        <Globe size={12} className="shrink-0"/> URL Publik (Raw)
                       </label>
-                      <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                        <input value={uploadedUrls.player} readOnly className="flex-1 bg-black/80 border border-blue-500/30 rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 text-xs md:text-sm font-bold text-blue-400 focus:outline-none font-display tracking-wide link-input" />
-                        <button onClick={() => copyToClipboard(uploadedUrls.player)} className="w-full sm:w-auto bg-blue-500 text-white px-6 py-3 md:py-0 md:px-8 rounded-xl md:rounded-2xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2 copy-btn">
-                          <I.Copy size={16} className="shrink-0" /> Salin
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-4 py-3 text-xs lg:text-sm font-medium text-zinc-300 focus:outline-none font-display" />
+                        <button onClick={() => copyToClipboard(uploadedUrls.public)} className="w-full sm:w-auto bg-zinc-800 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-2">
+                          <Copy size={16} className="shrink-0" /> Salin
                         </button>
                       </div>
                     </div>
-                  )}
-                </div>
 
-                <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-8 md:mt-12 block bg-zinc-900 border border-zinc-800 text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-display font-black text-xs md:text-sm uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
-                  Upload File Lainnya
-                </button>
-              </div>
+                    <div className="bg-amber-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-amber-500/30 shadow-inner relative overflow-hidden">
+                      <label className="text-[10px] font-display font-black uppercase text-amber-500 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2">
+                        <Link2 size={12} className="shrink-0"/> URL User (Fast CDN)
+                      </label>
+                      <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                        <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-amber-400 focus:outline-none font-display" />
+                        <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="w-full sm:w-auto relative overflow-hidden bg-amber-500 text-black px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center justify-center gap-2">
+                          <div className="animate-shimmer"></div>
+                          <Copy size={16} className="relative z-10 shrink-0" /> <span className="relative z-10">Salin</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {selectedFile && selectedFile.type.startsWith('video/') && (
+                      <div className="bg-blue-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-blue-500/30 shadow-inner relative overflow-hidden mt-4">
+                        <label className="text-[10px] font-display font-black uppercase text-blue-400 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2">
+                          <Play size={12} className="shrink-0" /> URL Embed Player
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3 relative z-10">
+                          <input value={uploadedUrls.player} readOnly className="flex-1 bg-black/80 border border-blue-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-blue-400 focus:outline-none font-display" />
+                          <button onClick={() => copyToClipboard(uploadedUrls.player)} className="w-full sm:w-auto bg-blue-500 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2">
+                            <Copy size={16} className="shrink-0" /> Salin
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-8 block bg-zinc-900 border border-zinc-800 text-white py-4 rounded-xl font-display font-black text-xs uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
+                    Upload File Lainnya
+                  </button>
+                </div>
+              </Reveal>
             )}
           </section>
         )}
 
+        {/* HISTORY / LIBRARY */}
         {activeTab === 'history' && (
           <section>
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 lg:mb-12">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0">
-                  <I.FolderSearch size={24} className="text-amber-500" />
+            <Reveal delay={0}>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 lg:gap-6 mb-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20 shrink-0">
+                    <FolderSearch size={24} className="text-amber-500" />
+                  </div>
+                  <div>
+                    <h2 className="text-3xl lg:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
+                    <ScrollReveal baseOpacity={0} blurStrength={3} className="text-zinc-400 text-sm">
+                      Semua media yang tersinkronisasi.
+                    </ScrollReveal>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
-                  <p className="text-zinc-400 text-sm md:text-lg">Semua media yang tersinkronisasi.</p>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                <div className="relative w-full sm:w-auto flex-1">
-                  <I.Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-                  <input type="text" placeholder="Cari file..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="search-input pl-9" />
-                </div>
-                <div className="flex gap-2 flex-wrap">
-                  {['all', 'image', 'video', 'audio', 'file'].map(t => (
-                    <button key={t} onClick={() => setFilterType(t)} className={`filter-btn ${filterType === t ? 'active' : ''}`}>
-                      {t === 'all' ? 'Semua' : t}
+                
+                <div className="flex flex-col w-full md:w-auto gap-4">
+                  <div className="relative w-full">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                    <input type="text" placeholder="Cari file..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="search-input pl-9" />
+                  </div>
+                  <div className="flex gap-2 flex-wrap items-center">
+                    {['all', 'image', 'video', 'audio', 'file'].map(t => (
+                      <button key={t} onClick={() => setFilterType(t)} className={`filter-btn ${filterType === t ? 'active' : ''}`}>
+                        {t === 'all' ? 'Semua' : t}
+                      </button>
+                    ))}
+                    <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="filter-btn shrink-0 p-2">
+                      {viewMode === 'grid' ? <Grid3x3 size={14} /> : <List size={14} />}
                     </button>
-                  ))}
-                  <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="view-toggle-btn active shrink-0">
-                    {viewMode === 'grid' ? <I.Grid3x3 size={16} /> : <I.List size={16} />}
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
-            <div className="history-controls flex flex-wrap gap-2 mb-6 border-t border-zinc-800/50 pt-4">
-              <button onClick={syncWithServer} disabled={isLoading} className="flex items-center justify-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[10px] md:text-[11px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-4 py-2.5 md:px-6 md:py-3.5 rounded-xl md:rounded-full border border-amber-500/20 hover:border-amber-500/40 w-auto">
-                <I.Loader size={14} className={`shrink-0 ${isLoading ? 'animate-spin' : ''}`} /> {isLoading ? 'Syncing...' : 'Sync'}
-              </button>
-              <button onClick={clearHistory} className="flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[10px] md:text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-2.5 md:px-6 md:py-3.5 rounded-xl md:rounded-full border border-zinc-800 hover:border-red-500/30 w-auto">
-                <I.ZapOff size={14} className="shrink-0" /> Bersihkan Cache
-              </button>
-            </div>
+            <Reveal delay={0.1}>
+              <div className="flex flex-wrap gap-2 mb-6 border-t border-zinc-800/50 pt-4">
+                <button onClick={syncWithServer} disabled={isLoading} className="flex items-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-4 py-2.5 rounded-lg border border-amber-500/20 hover:border-amber-500/40 w-auto">
+                  <Loader size={14} className={`shrink-0 ${isLoading ? 'animate-spin' : ''}`} /> {isLoading ? 'Syncing...' : 'Sync'}
+                </button>
+                <button onClick={clearHistory} className="flex items-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-2.5 rounded-lg border border-zinc-800 hover:border-red-500/30 w-auto">
+                  <ZapOff size={14} className="shrink-0" /> Clear Cache
+                </button>
+              </div>
+            </Reveal>
 
             {filteredFiles.length > 0 ? (
               viewMode === 'grid' ? (
                 <div className="grid-files">
-                  {filteredFiles.map((file) => (
-                    <div key={file.id} className="file-card glass rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-5 flex flex-col group cursor-pointer relative overflow-hidden h-full"
-                      onClick={() => setActiveMedia(file)}>
-                      <div className="w-full h-36 md:h-44 bg-black rounded-xl md:rounded-2xl mb-4 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
-                        {isVideo(file.type) ? (
-                          <>
-                            <video src={file.url} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700" preload="metadata" muted />
-                            <div className="absolute w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10 group-hover:border-transparent play-overlay">
-                              <I.Play size={20} className="ml-1 fill-current shrink-0" />
+                  {filteredFiles.map((file, idx) => (
+                    <Reveal key={file.id} delay={(idx % 8) * 0.05}>
+                      <div className="file-card glass rounded-[1.5rem] p-4 flex flex-col group cursor-pointer relative overflow-hidden h-full" onClick={() => setActiveMedia(file)}>
+                        <div className="w-full h-40 bg-black rounded-xl mb-4 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
+                          {isVideo(file.type) ? (
+                            <>
+                              <video src={file.url} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700" preload="metadata" muted />
+                              <div className="absolute w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10">
+                                <Play size={20} className="ml-1 fill-current shrink-0" />
+                              </div>
+                              <span className="absolute top-2 left-2 bg-black/80 px-2 py-1 rounded text-[9px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
+                            </>
+                          ) : isImage(file.type) ? (
+                            <img src={file.url} className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700" alt={file.name} loading="lazy" />
+                          ) : isAudio(file.type) ? (
+                            <div className="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center shrink-0">
+                              <Music size={24} className="text-amber-500" />
                             </div>
-                            <span className="absolute top-2 left-2 bg-black/80 px-2 py-1 rounded md:rounded-md text-[9px] md:text-[10px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
-                            <FileBadge type="video" />
-                          </>
-                        ) : isImage(file.type) ? (
-                          <img src={file.url} className="w-full h-full object-cover media-preview-img group-hover:opacity-50" alt={file.name} loading="lazy" />
-                        ) : isAudio(file.type) ? (
-                          <div className="flex flex-col items-center gap-2">
-                            <div className="w-12 h-12 md:w-16 md:h-16 bg-amber-500/10 rounded-full flex items-center justify-center shrink-0">
-                              <I.Music size={24} className="text-amber-500" />
-                            </div>
-                            <span className="text-[9px] md:text-[10px] font-display font-bold text-zinc-500 uppercase tracking-widest">AUDIO</span>
-                          </div>
-                        ) : (
-                          <I.FileText size={48} className="text-zinc-800 group-hover:text-amber-500 transition-colors shrink-0" />
-                        )}
-
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[2px]">
-                          {isVideo(file.type) && (
-                            <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 md:p-3 bg-blue-500 rounded-lg text-white hover:scale-110 transition-all shadow-xl copy-btn" title="Copy Embed URL">
-                              <I.Film size={16} className="shrink-0" />
-                            </button>
+                          ) : (
+                            <FileText size={40} className="text-zinc-800 group-hover:text-amber-500 transition-colors shrink-0" />
                           )}
-                          <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 md:p-3 bg-amber-500 rounded-lg text-black hover:scale-110 transition-all shadow-xl copy-btn">
-                            <I.Copy size={16} className="shrink-0" />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 md:p-3 bg-white rounded-lg text-black hover:scale-110 transition-all shadow-xl">
-                            <I.ExternalLink size={16} className="shrink-0" />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 md:p-3 bg-red-500 rounded-lg text-white hover:scale-110 transition-all shadow-xl delete-btn">
-                            <I.Trash2 size={16} className="shrink-0" />
-                          </button>
+
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-[2px]">
+                            {isVideo(file.type) && (
+                              <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500 rounded-lg text-white hover:scale-110 transition-all" title="Embed URL">
+                                <Film size={14} />
+                              </button>
+                            )}
+                            <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-amber-500 rounded-lg text-black hover:scale-110 transition-all">
+                              <Copy size={14} />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-white rounded-lg text-black hover:scale-110 transition-all">
+                              <ExternalLink size={14} />
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-red-500 rounded-lg text-white hover:scale-110 transition-all">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        <h4 className="font-semibold text-xs md:text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
+                        <div className="flex items-center gap-2 text-[9px] text-zinc-600 mb-2 px-1">
+                          <Clock size={10} className="shrink-0" /> <span>{formatDate(file.uploaded_at)}</span>
+                        </div>
+                        <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-3 px-1">
+                          <span className="text-[9px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-1 rounded-md border border-zinc-800">{formatSize(file.size)}</span>
+                          <FileBadge type={file.file_type || 'file'} />
                         </div>
                       </div>
-
-                      <h4 className="font-semibold text-xs md:text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
-                      <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-zinc-600 mb-2 md:mb-3 px-1">
-                        <I.Clock size={10} className="shrink-0" />
-                        <span>{formatDate(file.uploaded_at)}</span>
-                      </div>
-                      <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-3 md:pt-4 px-1">
-                        <span className="text-[9px] md:text-[10px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-zinc-800 group-hover:border-amber-500/30 transition-colors">{formatSize(file.size)}</span>
-                        <I.CheckCircle2 size={16} className="text-amber-500 opacity-30 group-hover:opacity-100 transition-opacity shrink-0" />
-                      </div>
-                    </div>
+                    </Reveal>
                   ))}
                 </div>
               ) : (
-                <div className="glass rounded-[1.5rem] md:rounded-[2rem] overflow-hidden border border-zinc-800">
-                  {filteredFiles.map((file) => (
-                    <div key={file.id} className="list-item flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer" onClick={() => setActiveMedia(file)}>
-                      <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
-                        <div className="w-10 h-10 md:w-12 md:h-12 bg-black rounded-lg md:rounded-xl flex items-center justify-center border border-zinc-800 shrink-0">
-                          {isVideo(file.type) ? <I.Film size={18} className="text-red-400" /> :
-                           isImage(file.type) ? <I.Image size={18} className="text-blue-400" /> :
-                           isAudio(file.type) ? <I.Music size={18} className="text-green-400" /> :
-                           <I.FileText size={18} className="text-zinc-500" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-xs md:text-sm truncate text-zinc-200">{file.name}</h4>
-                          <div className="flex flex-wrap items-center gap-2 md:gap-3 text-[9px] md:text-[10px] text-zinc-500 mt-1">
-                            <span>{formatSize(file.size)}</span>
-                            <span className="hidden sm:inline">•</span>
-                            <span>{formatDate(file.uploaded_at)}</span>
-                            <FileBadge type={file.file_type || 'file'} />
+                <div className="glass rounded-[1.5rem] overflow-hidden border border-zinc-800">
+                  {filteredFiles.map((file, idx) => (
+                    <Reveal key={file.id} delay={(idx % 10) * 0.05}>
+                      <div className="list-item flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer" onClick={() => setActiveMedia(file)}>
+                        <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
+                          <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center border border-zinc-800 shrink-0">
+                            {isVideo(file.type) ? <Film size={16} className="text-red-400" /> :
+                             isImage(file.type) ? <ImageIcon size={16} className="text-blue-400" /> :
+                             isAudio(file.type) ? <Music size={16} className="text-green-400" /> :
+                             <FileText size={16} className="text-zinc-500" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-xs md:text-sm truncate text-zinc-200">{file.name}</h4>
+                            <div className="flex flex-wrap items-center gap-2 text-[9px] md:text-[10px] text-zinc-500 mt-1">
+                              <span>{formatSize(file.size)}</span> <span className="hidden sm:inline">•</span> <span>{formatDate(file.uploaded_at)}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex gap-2 self-end sm:self-center bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800">
-                        {isVideo(file.type) && (
-                          <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all" title="Copy Embed URL">
-                            <I.Film size={14} className="shrink-0" />
+                        <div className="flex gap-2 self-end sm:self-center bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800">
+                          {isVideo(file.type) && (
+                            <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
+                              <Film size={14} />
+                            </button>
+                          )}
+                          <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-amber-500 transition-all">
+                            <Copy size={14} />
                           </button>
-                        )}
-                        <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-amber-500 transition-all">
-                          <I.Copy size={14} className="shrink-0" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all">
-                          <I.ExternalLink size={14} className="shrink-0" />
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-all delete-btn">
-                          <I.Trash2 size={14} className="shrink-0" />
-                        </button>
+                          <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all">
+                            <ExternalLink size={14} />
+                          </button>
+                          <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-all">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                    </div>
+                    </Reveal>
                   ))}
                 </div>
               )
             ) : (
-              <div className="py-24 md:py-32 text-center glass rounded-[2.5rem] md:rounded-[4rem] border border-zinc-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent"></div>
-                <div className="w-20 h-20 md:w-24 md:h-24 bg-black/50 backdrop-blur-md rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-6 md:mb-8 border border-zinc-800 relative z-10 shadow-inner shrink-0">
-                  <I.Inbox size={32} className="text-zinc-600" />
+              <Reveal delay={0.2}>
+                <div className="py-24 text-center glass rounded-[2.5rem] border border-zinc-900 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent"></div>
+                  <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-zinc-800 relative z-10 shadow-inner shrink-0">
+                    <Inbox size={32} className="text-zinc-600" />
+                  </div>
+                  <h3 className="text-2xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
+                  <p className="text-zinc-600 text-sm font-medium mt-2 relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
-                <p className="text-zinc-600 text-sm md:text-lg font-medium mt-2 md:mt-3 relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
-              </div>
+              </Reveal>
             )}
           </section>
         )}
       </main>
 
       {/* MEDIA MODALS */}
-      {activeMedia && isImage(activeMedia.type) && (
-        <ImageViewer file={activeMedia} onClose={() => setActiveMedia(null)} />
-      )}
-
-      {activeMedia && isVideo(activeMedia.type) && (
-        <CustomVideoPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />
-      )}
-
-      {activeMedia && isAudio(activeMedia.type) && (
-        <AudioPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />
-      )}
+      {activeMedia && isImage(activeMedia.type) && <ImageViewer file={activeMedia} onClose={() => setActiveMedia(null)} />}
+      {activeMedia && isVideo(activeMedia.type) && <CustomVideoPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />}
+      {activeMedia && isAudio(activeMedia.type) && <AudioPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />}
     </div>
   );
 }
@@ -1166,3 +1189,6 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
+
+```
