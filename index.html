@@ -5,8 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>INS CLOUD - Media CDN</title>
 
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://unpkg.com">
+
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" as="style">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com" defer></script>
 <script>
   tailwind.config = {
     theme: {
@@ -20,25 +27,30 @@
   }
 </script>
 
-<!-- Google Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin defer></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin defer></script>
 
-<!-- React & Babel -->
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-<!-- Custom CSS Base -->
 <style>
   :root { --font-body: 'Inter', sans-serif; --font-display: 'Space Grotesk', sans-serif; }
-  * { font-family: var(--font-body); }
+  * { font-family: var(--font-body); margin: 0; padding: 0; box-sizing: border-box; }
   .font-display { font-family: var(--font-display) !important; }
   body { background-color: #050505; color: #fafafa; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
   
+  #loading-skeleton {
+    position: fixed; inset: 0; background: #050505; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+  }
+  #loading-skeleton.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+  .sk-logo { width: 60px; height: 60px; background: linear-gradient(135deg, #fbbf24, #d97706); border-radius: 16px; margin-bottom: 20px; animation: sk-pulse 1.5s ease-in-out infinite; }
+  .sk-text { width: 180px; height: 20px; background: #1a1a1a; border-radius: 8px; margin-bottom: 12px; animation: sk-shimmer 1.5s ease-in-out infinite; }
+  .sk-sub { width: 120px; height: 14px; background: #1a1a1a; border-radius: 6px; animation: sk-shimmer 1.5s ease-in-out infinite 0.2s; }
+  @keyframes sk-pulse { 0%, 100% { opacity: 0.6; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1); } }
+  @keyframes sk-shimmer { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.7; } }
+
   .glass { 
     background: rgba(15, 15, 18, 0.4); 
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255,255,255,0.05); 
   }
 
@@ -52,27 +64,22 @@
   .cursor-blink { animation: blink 1s step-end infinite; }
   @keyframes blink { 50% { border-color: transparent; } }
 
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #050505; }
   ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: #52525b; }
 
-  /* Sembunyikan scrollbar untuk filter menu di mobile */
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
-  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-  .animate-scale-in { animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
+  .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; transform: scale(0.95); }
   @keyframes scaleIn { to { opacity: 1; transform: scale(1); } }
 
-  .animate-blob { animation: blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); transform-origin: center; will-change: transform; }
+  .animate-blob { animation: blob 15s infinite alternate cubic-bezier(0.4, 0, 0.2, 1); }
   @keyframes blob {
     0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
-    33% { transform: translate(30px, -40px) scale(1.05) rotate(5deg); }
-    66% { transform: translate(-20px, 20px) scale(0.95) rotate(-5deg); }
+    33% { transform: translate(40px, -60px) scale(1.1) rotate(10deg); }
+    66% { transform: translate(-30px, 30px) scale(0.9) rotate(-10deg); }
     100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
   }
 
-  /* Video Player specific fixes */
   .video-container { position:relative; width:100%; background:#000; border-radius:1.5rem; overflow:hidden; }
   .video-controls-overlay { position:absolute; bottom:0; left:0; right:0; padding:20px; background:linear-gradient(transparent,rgba(0,0,0,0.9)); opacity:0; transition:opacity 0.3s; }
   .video-container:hover .video-controls-overlay, .video-container.show-controls .video-controls-overlay { opacity:1; }
@@ -81,209 +88,623 @@
   .volume-slider { width:80px; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; cursor:pointer; appearance:none; -webkit-appearance:none; }
   .volume-slider::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:12px; height:12px; background:#fbbf24; border-radius:50%; cursor:pointer; }
   
-  /* Utilities */
+  .badge-type { font-size:9px; font-weight:800; font-family:var(--font-display); text-transform:uppercase; letter-spacing:0.1em; padding:4px 8px; border-radius:6px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); }
+
   svg { flex-shrink: 0; display: block; }
   
-  .drag-over-overlay { position:absolute; inset:0; background:rgba(251,191,36,0.1); border:2px dashed #fbbf24; border-radius:inherit; z-index:50; display:flex; align-items:center; justify-content:center; pointer-events:none; }
-  .grid-files { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem; }
+  .search-input{background:rgba(0,0,0,0.3);border:1px solid #27272a;border-radius:1rem;padding:0.75rem 1rem 0.75rem 2.5rem;color:white;font-size:0.875rem;transition:all 0.3s;width:100%}
+  .search-input:focus{outline:none;border-color:rgba(251,191,36,0.4);background:rgba(0,0,0,0.5)}
+  .filter-btn{padding:0.5rem 1rem;border-radius:0.75rem;font-size:0.75rem;font-weight:700;font-family:var(--font-display);text-transform:uppercase;letter-spacing:0.05em;border:1px solid #27272a;background:transparent;color:#a1a1aa;cursor:pointer;transition:all 0.2s}
+  .filter-btn:hover,.filter-btn.active{background:#fbbf24;color:black;border-color:#fbbf24}
+  
+  .drag-over-overlay{position:absolute;inset:0;background:rgba(251,191,36,0.1);border:2px dashed #fbbf24;border-radius:inherit;z-index:50;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  
+  .grid-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem}
   
   @media(max-width:768px){
-    .grid-files { grid-template-columns: 1fr!important; gap: 1rem; }
+    .grid-files{grid-template-columns:1fr!important; gap: 1rem;}
   }
+
+  .video-thumb-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+  .video-thumb-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+  }
+  .video-thumb-container .video-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  .video-thumb-container .play-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .video-thumb-container .type-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+  }
+
+  .control-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .control-btn:hover { background: rgba(255,255,255,0.1); }
+  .time-display { color: white; font-size: 12px; font-family: monospace; margin-left: 8px; }
+
+  img[loading="lazy"] { opacity: 0; transition: opacity 0.3s; }
+  img[loading="lazy"].loaded { opacity: 1; }
 </style>
 </head>
 <body>
+
+<div id="loading-skeleton">
+  <div class="sk-logo"></div>
+  <div class="sk-text"></div>
+  <div class="sk-sub"></div>
+</div>
+
 <div id="root"></div>
 
-<script type="text/babel">
-const { useState, useEffect, useRef, useCallback } = React;
+<script>
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var sk = document.getElementById('loading-skeleton');
+    if (sk) sk.classList.add('hidden');
+  }, 300);
+});
+</script>
 
+<script>
+const { useState, useEffect, useRef, useCallback } = React;
+const h = React.createElement;
 const API_BASE = "";
 
-// ============================================================================
-// ICONS (Mapped to simulate lucide-react imports)
-// ============================================================================
-const SVG = (props) => <svg width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>{props.children}</svg>;
+const SVG = function(props) {
+  return h('svg', {
+    width: props.size || 24,
+    height: props.size || 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 2,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    ...props
+  }, props.children);
+};
 
-const InfinityIcon = (p) => <SVG {...p}><path d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"/></SVG>;
-const LayoutGrid = (p) => <SVG {...p}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></SVG>;
-const CloudUpload = (p) => <SVG {...p}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></SVG>;
-const FolderSearch = (p) => <SVG {...p}><path d="M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"/><path d="M13.4 13.4 11 16"/><circle cx="16.5" cy="16.5" r="2.5"/><path d="m21 21-1.4-1.4"/></SVG>;
-const LockKeyhole = (p) => <SVG {...p}><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></SVG>;
-const Database = (p) => <SVG {...p}><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></SVG>;
-const Upload = (p) => <SVG {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></SVG>;
-const Plus = (p) => <SVG {...p}><path d="M5 12h14"/><path d="M12 5v14"/></SVG>;
-const FileCheck = (p) => <SVG {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m9 15 2 2 4-4"/></SVG>;
-const Check = (p) => <SVG {...p}><path d="M20 6 9 17l-5-5"/></SVG>;
-const ZapOff = (p) => <SVG {...p}><path d="M10.5 16.5 2 22"/><path d="M16 22 2 8"/><path d="M17 15l-4.5-4.5"/><path d="M2 2l20 20"/><path d="M7 7 2 12"/><path d="M22 2 10.5 13.5"/></SVG>;
-const Inbox = (p) => <SVG {...p}><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></SVG>;
-const FileText = (p) => <SVG {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></SVG>;
-const Copy = (p) => <SVG {...p}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></SVG>;
-const CheckCircle2 = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></SVG>;
-const Play = (p) => <SVG {...p}><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" fill="currentColor"/></SVG>;
-const Pause = (p) => <SVG {...p}><rect x="6" y="4" width="4" height="16" fill="currentColor"/><rect x="14" y="4" width="4" height="16" fill="currentColor"/></SVG>;
-const X = (p) => <SVG {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></SVG>;
-const Maximize = (p) => <SVG {...p}><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></SVG>;
-const Minimize = (p) => <SVG {...p}><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></SVG>;
-const ExternalLink = (p) => <SVG {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></SVG>;
-const Link2 = (p) => <SVG {...p}><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></SVG>;
-const Loader = (p) => <SVG {...p}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></SVG>;
-const LogIn = (p) => <SVG {...p}><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></SVG>;
-const User = (p) => <SVG {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></SVG>;
-const Sparkles = (p) => <SVG {...p}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M9 5H5"/><path d="M19 15v4"/><path d="M19 19h4"/></SVG>;
-const Trash2 = (p) => <SVG {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></SVG>;
-const HardDrive = (p) => <SVG {...p}><line x1="22" x2="2" y1="12" y2="12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/><line x1="6" x2="6.01" y1="16" y2="16"/><line x1="10" x2="10.01" y1="16" y2="16"/></SVG>;
-const Globe = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></SVG>;
-const Clock = (p) => <SVG {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></SVG>;
-const Search = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></SVG>;
-const Film = (p) => <SVG {...p}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><path d="M17 2v5"/><path d="M7 2v5"/><path d="M2 12h20"/></SVG>;
-const ImageIcon = (p) => <SVG {...p}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></SVG>;
-const Music = (p) => <SVG {...p}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></SVG>;
-const Grid3x3 = (p) => <SVG {...p}><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/></SVG>;
-const List = (p) => <SVG {...p}><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></SVG>;
-const ZoomIn = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></SVG>;
-const ZoomOut = (p) => <SVG {...p}><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></SVG>;
-const RotateCcw = (p) => <SVG {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></SVG>;
-const RefreshCw = (p) => <SVG {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></SVG>;
-const Volume2 = (p) => <SVG {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></SVG>;
-const VolumeX = (p) => <SVG {...p}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" x2="17" y1="9" y2="15"/><line x1="17" x2="23" y1="9" y2="15"/></SVG>;
-const SkipBack = (p) => <SVG {...p}><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" x2="5" y1="19" y2="5"/></SVG>;
-const SkipForward = (p) => <SVG {...p}><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></SVG>;
+const InfinityIcon = function(p) { return h(SVG, {...p}, h('path', {d:"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"})); };
+const LayoutGrid = function(p) { return h(SVG, {...p}, h('rect', {x:3,y:3,width:7,height:7}), h('rect', {x:14,y:3,width:7,height:7}), h('rect', {x:14,y:14,width:7,height:7}), h('rect', {x:3,y:14,width:7,height:7})); };
+const CloudUpload = function(p) { return h(SVG, {...p}, h('path', {d:"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}), h('path', {d:"M12 12v9"}), h('path', {d:"m16 16-4-4-4 4"})); };
+const FolderSearch = function(p) { return h(SVG, {...p}, h('path', {d:"M11 20H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5"}), h('path', {d:"M13.4 13.4 11 16"}), h('circle', {cx:16.5,cy:16.5,r:2.5}), h('path', {d:"m21 21-1.4-1.4"})); };
+const LockKeyhole = function(p) { return h(SVG, {...p}, h('circle', {cx:12,cy:16,r:1}), h('rect', {x:3,y:10,width:18,height:12,rx:2}), h('path', {d:"M7 10V7a5 5 0 0 1 10 0v3"})); };
+const Database = function(p) { return h(SVG, {...p}, h('ellipse', {cx:12,cy:5,rx:9,ry:3}), h('path', {d:"M3 5V19A9 3 0 0 0 21 19V5"}), h('path', {d:"M3 12A9 3 0 0 0 21 12"})); };
+const Upload = function(p) { return h(SVG, {...p}, h('path', {d:"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"}), h('polyline', {points:"17 8 12 3 7 8"}), h('line', {x1:12,x2:12,y1:3,y2:15})); };
+const Plus = function(p) { return h(SVG, {...p}, h('path', {d:"M5 12h14"}), h('path', {d:"M12 5v14"})); };
+const FileCheck = function(p) { return h(SVG, {...p}, h('path', {d:"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"}), h('path', {d:"M14 2v4a2 2 0 0 0 2 2h4"}), h('path', {d:"m9 15 2 2 4-4"})); };
+const Check = function(p) { return h(SVG, {...p}, h('path', {d:"M20 6 9 17l-5-5"})); };
+const ZapOff = function(p) { return h(SVG, {...p}, h('path', {d:"M10.5 16.5 2 22"}), h('path', {d:"M16 22 2 8"}), h('path', {d:"M17 15l-4.5-4.5"}), h('path', {d:"M2 2l20 20"}), h('path', {d:"M7 7 2 12"}), h('path', {d:"M22 2 10.5 13.5"})); };
+const Inbox = function(p) { return h(SVG, {...p}, h('polyline', {points:"22 12 16 12 14 15 10 15 8 12 2 12"}), h('path', {d:"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"})); };
+const FileText = function(p) { return h(SVG, {...p}, h('path', {d:"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"}), h('path', {d:"M14 2v4a2 2 0 0 0 2 2h4"}), h('path', {d:"M10 9H8"}), h('path', {d:"M16 13H8"}), h('path', {d:"M16 17H8"})); };
+const Copy = function(p) { return h(SVG, {...p}, h('rect', {width:14,height:14,x:8,y:8,rx:2,ry:2}), h('path', {d:"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"})); };
+const CheckCircle2 = function(p) { return h(SVG, {...p}, h('circle', {cx:12,cy:12,r:10}), h('path', {d:"m9 12 2 2 4-4"})); };
+const Play = function(p) { return h(SVG, {...p}, h('path', {d:"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z", fill:"currentColor"})); };
+const Pause = function(p) { return h(SVG, {...p}, h('rect', {x:6,y:4,width:4,height:16,fill:"currentColor"}), h('rect', {x:14,y:4,width:4,height:16,fill:"currentColor"})); };
+const X = function(p) { return h(SVG, {...p}, h('path', {d:"M18 6 6 18"}), h('path', {d:"m6 6 12 12"})); };
+const Maximize = function(p) { return h(SVG, {...p}, h('path', {d:"M15 3h6v6"}), h('path', {d:"M9 21H3v-6"}), h('path', {d:"M21 3l-7 7"}), h('path', {d:"M3 21l7-7"})); };
+const Minimize = function(p) { return h(SVG, {...p}, h('path', {d:"M8 3v3a2 2 0 0 1-2 2H3"}), h('path', {d:"M21 8h-3a2 2 0 0 1-2-2V3"}), h('path', {d:"M3 16h3a2 2 0 0 1 2 2v3"}), h('path', {d:"M16 21v-3a2 2 0 0 1 2-2h3"})); };
+const ExternalLink = function(p) { return h(SVG, {...p}, h('path', {d:"M15 3h6v6"}), h('path', {d:"M10 14 21 3"}), h('path', {d:"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"})); };
+const Link2 = function(p) { return h(SVG, {...p}, h('path', {d:"M9 17H7A5 5 0 0 1 7 7h2"}), h('path', {d:"M15 7h2a5 5 0 1 1 0 10h-2"}), h('line', {x1:8,x2:16,y1:12,y2:12})); };
+const Loader = function(p) { return h(SVG, {...p}, h('path', {d:"M21 12a9 9 0 1 1-6.219-8.56"})); };
+const LogIn = function(p) { return h(SVG, {...p}, h('path', {d:"M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"}), h('polyline', {points:"10 17 15 12 10 7"}), h('line', {x1:15,x2:3,y1:12,y2:12})); };
+const User = function(p) { return h(SVG, {...p}, h('path', {d:"M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"}), h('circle', {cx:12,cy:7,r:4})); };
+const Sparkles = function(p) { return h(SVG, {...p}, h('path', {d:"m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"}), h('path', {d:"M5 3v4"}), h('path', {d:"M9 5H5"}), h('path', {d:"M19 15v4"}), h('path', {d:"M19 19h4"})); };
+const Trash2 = function(p) { return h(SVG, {...p}, h('path', {d:"M3 6h18"}), h('path', {d:"M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"}), h('path', {d:"M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"}), h('line', {x1:10,x2:10,y1:11,y2:17}), h('line', {x1:14,x2:14,y1:11,y2:17})); };
+const HardDrive = function(p) { return h(SVG, {...p}, h('line', {x1:22,x2:2,y1:12,y2:12}), h('path', {d:"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"}), h('line', {x1:6,x2:6.01,y1:16,y2:16}), h('line', {x1:10,x2:10.01,y1:16,y2:16})); };
+const Globe = function(p) { return h(SVG, {...p}, h('circle', {cx:12,cy:12,r:10}), h('path', {d:"M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"}), h('path', {d:"M2 12h20"})); };
+const Clock = function(p) { return h(SVG, {...p}, h('circle', {cx:12,cy:12,r:10}), h('polyline', {points:"12 6 12 12 16 14"})); };
+const Search = function(p) { return h(SVG, {...p}, h('circle', {cx:11,cy:11,r:8}), h('path', {d:"m21 21-4.3-4.3"})); };
+const Film = function(p) { return h(SVG, {...p}, h('rect', {width:20,height:15,x:2,y:7,rx:2,ry:2}), h('path', {d:"M17 2v5"}), h('path', {d:"M7 2v5"}), h('path', {d:"M2 12h20"})); };
+const ImageIcon = function(p) { return h(SVG, {...p}, h('rect', {width:18,height:18,x:3,y:3,rx:2,ry:2}), h('circle', {cx:9,cy:9,r:2}), h('path', {d:"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"})); };
+const Music = function(p) { return h(SVG, {...p}, h('path', {d:"M9 18V5l12-2v13"}), h('circle', {cx:6,cy:18,r:3}), h('circle', {cx:18,cy:16,r:3})); };
+const Grid3x3 = function(p) { return h(SVG, {...p}, h('rect', {width:18,height:18,x:3,y:3,rx:2}), h('path', {d:"M3 9h18"}), h('path', {d:"M3 15h18"}), h('path', {d:"M9 3v18"}), h('path', {d:"M15 3v18"})); };
+const List = function(p) { return h(SVG, {...p}, h('line', {x1:8,x2:21,y1:6,y2:6}), h('line', {x1:8,x2:21,y1:12,y2:12}), h('line', {x1:8,x2:21,y1:18,y2:18}), h('line', {x1:3,x2:3.01,y1:6,y2:6}), h('line', {x1:3,x2:3.01,y1:12,y2:12}), h('line', {x1:3,x2:3.01,y1:18,y2:18})); };
+const ZoomIn = function(p) { return h(SVG, {...p}, h('circle', {cx:11,cy:11,r:8}), h('line', {x1:21,x2:16.65,y1:21,y2:16.65}), h('line', {x1:11,x2:11,y1:8,y2:14}), h('line', {x1:8,x2:14,y1:11,y2:11})); };
+const ZoomOut = function(p) { return h(SVG, {...p}, h('circle', {cx:11,cy:11,r:8}), h('line', {x1:21,x2:16.65,y1:21,y2:16.65}), h('line', {x1:8,x2:14,y1:11,y2:11})); };
+const RotateCcw = function(p) { return h(SVG, {...p}, h('path', {d:"M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"}), h('path', {d:"M3 3v5h5"})); };
+const RefreshCw = function(p) { return h(SVG, {...p}, h('path', {d:"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"}), h('path', {d:"M21 3v5h-5"}), h('path', {d:"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"}), h('path', {d:"M8 16H3v5"})); };
+const Volume2 = function(p) { return h(SVG, {...p}, h('polygon', {points:"11 5 6 9 2 9 2 15 6 15 11 19 11 5"}), h('path', {d:"M15.54 8.46a5 5 0 0 1 0 7.07"}), h('path', {d:"M19.07 4.93a10 10 0 0 1 0 14.14"})); };
+const VolumeX = function(p) { return h(SVG, {...p}, h('polygon', {points:"11 5 6 9 2 9 2 15 6 15 11 19 11 5"}), h('line', {x1:23,x2:17,y1:9,y2:15}), h('line', {x1:17,x2:23,y1:9,y2:15})); };
+const SkipBack = function(p) { return h(SVG, {...p}, h('polygon', {points:"19 20 9 12 19 4 19 20"}), h('line', {x1:5,x2:5,y1:19,y2:5})); };
+const SkipForward = function(p) { return h(SVG, {...p}, h('polygon', {points:"5 4 15 12 5 20 5 4"}), h('line', {x1:19,x2:19,y1:5,y2:19})); };
 
-// ============================================================================
-// OPTIMIZED ANIMATION COMPONENTS
-// ============================================================================
-
-const ElectricBorder = ({ children, color = "#EAB308", speed = 2, thickness = 2, radius = 24, className = "" }) => {
-  return (
-    <div className={`relative overflow-hidden ${className}`} style={{ borderRadius: radius, padding: thickness }}>
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0"
-        style={{ background: `conic-gradient(from 0deg, transparent 70%, ${color} 100%)`, animationDuration: `${speed}s`, animation: `spin ${speed}s linear infinite` }}
-      />
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0 blur-xl opacity-60"
-        style={{ background: `conic-gradient(from 0deg, transparent 60%, ${color} 100%)`, animationDuration: `${speed}s`, animation: `spin ${speed}s linear infinite` }}
-      />
-      <div className="relative z-10 w-full h-full bg-[#0a0a0c] overflow-hidden" style={{ borderRadius: radius - thickness }}>
-        {children}
-      </div>
-    </div>
+const ElectricBorder = function({ children, color, speed, thickness, radius, className }) {
+  color = color || "#EAB308";
+  speed = speed || 2;
+  thickness = thickness || 2;
+  radius = radius || 24;
+  className = className || "";
+  return h('div', { className: "relative overflow-hidden " + className, style: { borderRadius: radius, padding: thickness }},
+    h('div', {
+      className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0",
+      style: { background: "conic-gradient(from 0deg, transparent 70%, " + color + " 100%)", animationDuration: speed + "s", animation: "spin " + speed + "s linear infinite" }
+    }),
+    h('div', {
+      className: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250%] h-[250%] animate-[spin_linear_infinite] z-0 blur-xl opacity-60",
+      style: { background: "conic-gradient(from 0deg, transparent 60%, " + color + " 100%)", animationDuration: speed + "s", animation: "spin " + speed + "s linear infinite" }
+    }),
+    h('div', { className: "relative z-10 w-full h-full bg-[#0a0a0c] overflow-hidden", style: { borderRadius: radius - thickness }}, children)
   );
 };
 
-const ScrollReveal = ({ children, className = "" }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
+const ScrollReveal = function({ children, baseOpacity, enableBlur, baseRotation, blurStrength, className }) {
+  baseOpacity = baseOpacity || 0.1;
+  enableBlur = enableBlur !== false;
+  baseRotation = baseRotation || 3;
+  blurStrength = blurStrength || 4;
+  className = className || "";
+  var ref = useRef(null);
+  var [isVisible, setIsVisible] = useState(false);
+  useEffect(function() {
+    var observer = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) { setIsVisible(true); observer.unobserve(entries[0].target); }
+    }, { threshold: 0.2, rootMargin: "0px 0px -20px 0px" });
+    if (ref.current) observer.observe(ref.current);
+    return function() { if (ref.current) observer.unobserve(ref.current); };
+  }, []);
+  var text = typeof children === 'string' ? children : '';
+  var words = text.split(" ");
+  return h('p', { ref: ref, className: "flex flex-wrap gap-x-[0.25em] " + className },
+    words.map(function(word, i) {
+      return h('span', {
+        key: i,
+        className: "inline-block transition-all duration-[800ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+        style: {
+          opacity: isVisible ? 1 : baseOpacity,
+          filter: isVisible ? 'blur(0px)' : (enableBlur ? "blur(" + blurStrength + "px)" : 'none'),
+          transform: isVisible ? 'translateY(0) rotate(0)' : "translateY(12px) rotate(" + baseRotation + "deg)",
+          transitionDelay: (i * 0.03) + "s"
+        }
+      }, word);
+    })
+  );
+};
+
+const Reveal = function({ children, delay, className }) {
+  delay = delay || 0;
+  className = className || "";
+  var ref = useRef(null);
+  var [isVisible, setIsVisible] = useState(false);
+  useEffect(function() {
+    var observer = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) { setIsVisible(true); observer.unobserve(entries[0].target); }
     }, { threshold: 0.1 });
     if (ref.current) observer.observe(ref.current);
-    return () => { if (ref.current) observer.unobserve(ref.current); };
+    return function() { if (ref.current) observer.unobserve(ref.current); };
   }, []);
-
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-out ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"} ${className}`}>
-      {children}
-    </div>
-  );
+  return h('div', {
+    ref: ref,
+    className: "transition-all duration-[1000ms] ease-[cubic-bezier(0.16,1,0.3,1)] " +
+      (isVisible ? "opacity-100 translate-y-0 blur-none scale-100 " : "opacity-0 translate-y-12 blur-[4px] scale-[0.98] ") + className,
+    style: { transitionDelay: delay + "s" }
+  }, children);
 };
 
-const Reveal = ({ children, delay = 0, className = "" }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef(null);
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setIsVisible(true); observer.unobserve(entry.target); }
-    }, { threshold: 0.1 });
-    if (ref.current) observer.observe(ref.current);
-    return () => { if (ref.current) observer.unobserve(ref.current); };
-  }, []);
-  return (
-    <div ref={ref} className={`transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${isVisible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-8 scale-[0.98]"} ${className}`} style={{ transitionDelay: `${delay}s` }}>
-      {children}
-    </div>
-  );
-};
-
-const Typewriter = ({ words, typingSpeed = 100, deletingSpeed = 50, delay = 2000 }) => {
-  const [text, setText] = useState('');
-  const [wordIndex, setWordIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-  useEffect(() => {
-    const currentWord = words[wordIndex] || "";
-    let timer;
+const Typewriter = function({ words, typingSpeed, deletingSpeed, delay }) {
+  typingSpeed = typingSpeed || 100;
+  deletingSpeed = deletingSpeed || 50;
+  delay = delay || 2000;
+  var [text, setText] = useState('');
+  var [wordIndex, setWordIndex] = useState(0);
+  var [isDeleting, setIsDeleting] = useState(false);
+  useEffect(function() {
+    var currentWord = words[wordIndex] || "";
+    var timer;
     if (isDeleting) {
-      timer = setTimeout(() => {
+      timer = setTimeout(function() {
         setText(currentWord.substring(0, text.length - 1));
-        if (text.length === 0) { setIsDeleting(false); setWordIndex((prev) => (prev + 1) % words.length); }
+        if (text.length === 0) { setIsDeleting(false); setWordIndex(function(prev) { return (prev + 1) % words.length; }); }
       }, deletingSpeed);
     } else {
-      timer = setTimeout(() => {
+      timer = setTimeout(function() {
         setText(currentWord.substring(0, text.length + 1));
-        if (text.length === currentWord.length) setTimeout(() => setIsDeleting(true), delay);
+        if (text.length === currentWord.length) setTimeout(function() { setIsDeleting(true); }, delay);
       }, typingSpeed);
     }
-    return () => clearTimeout(timer);
+    return function() { clearTimeout(timer); };
   }, [text, isDeleting, wordIndex, words, typingSpeed, deletingSpeed, delay]);
-  return <span className="border-r-2 border-amber-500 pr-1 cursor-blink text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-display">{text}</span>;
+  return h('span', { className: "border-r-2 border-amber-500 pr-1 cursor-blink text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600 font-display" }, text);
 };
 
-// ============================================================================
-// MAIN APP COMPONENT
-// ============================================================================
+function formatSize(b) {
+  if (!b || b === 0) return '0 B';
+  var i = Math.floor(Math.log(b) / Math.log(1024));
+  return (b / Math.pow(1024, i)).toFixed(1) + ' ' + ['B','KB','MB','GB'][i];
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '-';
+  var d = new Date(dateStr);
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function isVideo(mime) { return mime && mime.startsWith('video/'); }
+function isImage(mime) { return mime && mime.startsWith('image/'); }
+function isAudio(mime) { return mime && mime.startsWith('audio/'); }
+
+function VideoThumbnail({ src, name, size, onClick }) {
+  var videoRef = useRef(null);
+  var canvasRef = useRef(null);
+  var [posterUrl, setPosterUrl] = useState(null);
+  var [hasError, setHasError] = useState(false);
+
+  useEffect(function() {
+    var video = videoRef.current;
+    var canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    var handleLoaded = function() {
+      try {
+        var seekTime = video.duration ? Math.min(1, video.duration * 0.1) : 1;
+        video.currentTime = seekTime;
+      } catch(e) {}
+    };
+
+    var handleSeeked = function() {
+      try {
+        canvas.width = 640;
+        canvas.height = 360;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, 640, 360);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setPosterUrl(dataUrl);
+      } catch(e) {
+        setHasError(true);
+      }
+    };
+
+    var handleError = function() {
+      setHasError(true);
+    };
+
+    video.addEventListener('loadedmetadata', handleLoaded);
+    video.addEventListener('seeked', handleSeeked);
+    video.addEventListener('error', handleError);
+
+    return function() {
+      video.removeEventListener('loadedmetadata', handleLoaded);
+      video.removeEventListener('seeked', handleSeeked);
+      video.removeEventListener('error', handleError);
+    };
+  }, [src]);
+
+  return h('div', { className: "video-thumb-container", onClick: onClick },
+    h('video', {
+      ref: videoRef,
+      src: src,
+      style: { display: 'none' },
+      preload: "metadata",
+      crossOrigin: "anonymous"
+    }),
+    h('canvas', { ref: canvasRef, style: { display: 'none' } }),
+    posterUrl ? h('img', {
+      src: posterUrl,
+      className: "video-poster",
+      alt: name,
+      loading: "lazy",
+      onLoad: function(e) { e.target.classList.add('loaded'); }
+    }) : null,
+    !posterUrl ? h('div', { className: "video-poster", style: { background: 'linear-gradient(135deg, #1a1a1a, #0a0a0a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }},
+      h(Film, { size: 40, style: { color: '#333' } })
+    ) : null,
+    h('div', { className: "play-overlay" },
+      h('div', { className: "w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10" },
+        h(Play, { size: 20, style: { marginLeft: '2px' } })
+      )
+    ),
+    h('span', { className: "type-badge bg-black/80 px-2 py-1 rounded text-[9px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md" }, "VIDEO")
+  );
+}
+
+function CustomVideoPlayer({ file, onClose }) {
+  var videoRef = useRef(null);
+  var containerRef = useRef(null);
+  var [isPlaying, setIsPlaying] = useState(false);
+  var [currentTime, setCurrentTime] = useState(0);
+  var [duration, setDuration] = useState(0);
+  var [volume, setVolume] = useState(1);
+  var [isMuted, setIsMuted] = useState(false);
+  var [isFullscreen, setIsFullscreen] = useState(false);
+  var [showControls, setShowControls] = useState(true);
+  var [playbackRate, setPlaybackRate] = useState(1);
+  var controlsTimeoutRef = useRef(null);
+  var [isDragging, setIsDragging] = useState(false);
+
+  useEffect(function() {
+    var video = videoRef.current;
+    if (!video) return;
+    var updateTime = function() { setCurrentTime(video.currentTime); };
+    var updateDuration = function() { setDuration(video.duration); };
+    var onEnded = function() { setIsPlaying(false); };
+    video.addEventListener('timeupdate', updateTime);
+    video.addEventListener('loadedmetadata', updateDuration);
+    video.addEventListener('ended', onEnded);
+    return function() {
+      video.removeEventListener('timeupdate', updateTime);
+      video.removeEventListener('loadedmetadata', updateDuration);
+      video.removeEventListener('ended', onEnded);
+    };
+  }, []);
+
+  var togglePlay = function() {
+    var video = videoRef.current;
+    if (!video) return;
+    if (video.paused) { video.play(); setIsPlaying(true); }
+    else { video.pause(); setIsPlaying(false); }
+  };
+
+  var handleSeek = function(e) {
+    var video = videoRef.current;
+    if (!video || !duration) return;
+    var rect = e.currentTarget.getBoundingClientRect();
+    var pos = (e.clientX - rect.left) / rect.width;
+    video.currentTime = pos * duration;
+  };
+
+  var toggleMute = function() {
+    var video = videoRef.current;
+    if (!video) return;
+    video.muted = !video.muted;
+    setIsMuted(video.muted);
+  };
+
+  var handleVolumeChange = function(e) {
+    var video = videoRef.current;
+    if (!video) return;
+    var val = parseFloat(e.target.value);
+    video.volume = val;
+    setVolume(val);
+    if (val > 0 && video.muted) { video.muted = false; setIsMuted(false); }
+  };
+
+  var toggleFullscreen = function() {
+    var container = containerRef.current;
+    if (!container) return;
+    if (!document.fullscreenElement) {
+      container.requestFullscreen().then(function() { setIsFullscreen(true); }).catch(function() {});
+    } else {
+      document.exitFullscreen().then(function() { setIsFullscreen(false); }).catch(function() {});
+    }
+  };
+
+  var handleMouseMove = function() {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    controlsTimeoutRef.current = setTimeout(function() { if (isPlaying) setShowControls(false); }, 3000);
+  };
+
+  var fmtTime = function(seconds) {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    var mins = Math.floor(seconds / 60);
+    var secs = Math.floor(seconds % 60);
+    return mins + ':' + secs.toString().padStart(2, '0');
+  };
+
+  var changePlaybackRate = function() {
+    var rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    var nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
+    if (videoRef.current) videoRef.current.playbackRate = nextRate;
+    setPlaybackRate(nextRate);
+  };
+
+  var skip = function(seconds) {
+    if (videoRef.current) videoRef.current.currentTime = Math.max(0, Math.min(videoRef.current.currentTime + seconds, duration));
+  };
+
+  return h('div', {
+    className: "fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in",
+    onClick: onClose
+  },
+    h('div', {
+      ref: containerRef,
+      className: "relative w-full max-w-6xl bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10",
+      onClick: function(e) { e.stopPropagation(); },
+      onMouseMove: handleMouseMove
+    },
+      h('div', { className: "video-container", style: { borderRadius: '2.5rem' } },
+        h('video', {
+          ref: videoRef,
+          src: file.url,
+          className: "w-full",
+          style: { maxHeight: '70vh', objectFit: 'contain' },
+          onClick: togglePlay,
+          preload: "metadata",
+          playsInline: true
+        }),
+        h('div', { className: "absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1 rounded-md text-[10px] font-bold text-amber-500 border border-amber-500/30 z-20" },
+          formatSize(file.size) + " \u2022 " + (file.type ? file.type.split('/')[1].toUpperCase() : 'VIDEO')
+        ),
+        h('div', {
+          className: "video-controls-overlay",
+          style: { opacity: showControls ? 1 : 0 }
+        },
+          h('div', { className: "progress-bar", onClick: handleSeek, onMouseDown: function() { setIsDragging(true); }, onMouseUp: function() { setIsDragging(false); } },
+            h('div', { className: "progress-fill", style: { width: (duration ? (currentTime / duration) * 100 : 0) + "%" } })
+          ),
+          h('div', { className: "flex items-center gap-2 md:gap-4" },
+            h('button', { className: "control-btn", onClick: togglePlay }, isPlaying ? h(Pause, { size: 20 }) : h(Play, { size: 20 })),
+            h('button', { className: "control-btn", onClick: function() { skip(-10); } }, h(SkipBack, { size: 18 })),
+            h('button', { className: "control-btn", onClick: function() { skip(10); } }, h(SkipForward, { size: 18 })),
+            h('button', { className: "control-btn hidden sm:flex", onClick: toggleMute }, isMuted ? h(VolumeX, { size: 18 }) : h(Volume2, { size: 18 })),
+            h('input', { type: "range", min: 0, max: 1, step: 0.1, value: isMuted ? 0 : volume, onChange: handleVolumeChange, className: "volume-slider hidden sm:block" }),
+            h('span', { className: "time-display" }, fmtTime(currentTime) + " / " + fmtTime(duration)),
+            h('button', { className: "control-btn ml-auto", onClick: changePlaybackRate, style: { fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-display)' } }, playbackRate + "x"),
+            h('button', { className: "control-btn", onClick: toggleFullscreen }, isFullscreen ? h(Minimize, { size: 18 }) : h(Maximize, { size: 18 }))
+          )
+        )
+      ),
+      h('div', { className: "absolute top-6 left-6 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 max-w-[60%] truncate border border-white/10 z-50" },
+        h(Film, { size: 14, className: "text-amber-500 shrink-0" }), h('span', { className: "truncate" }, file.name)
+      ),
+      h('button', {
+        onClick: onClose,
+        className: "absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent z-50"
+      }, h(X, { size: 20 }))
+    )
+  );
+}
+
+function ImageViewer({ file, onClose }) {
+  var [scale, setScale] = useState(1);
+  var [rotation, setRotation] = useState(0);
+  var [position, setPosition] = useState({ x: 0, y: 0 });
+  var [isDragging, setIsDragging] = useState(false);
+  var [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  var zoomIn = function() { setScale(function(s) { return Math.min(s + 0.25, 4); }); };
+  var zoomOut = function() { setScale(function(s) { return Math.max(s - 0.25, 0.5); }); };
+  var rotate = function() { setRotation(function(r) { return r + 90; }); };
+  var reset = function() { setScale(1); setRotation(0); setPosition({ x: 0, y: 0 }); };
+
+  var handleMouseDown = function(e) {
+    if (scale > 1) { setIsDragging(true); setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y }); }
+  };
+  var handleMouseMove = function(e) {
+    if (!isDragging) return; setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
+  };
+
+  return h('div', {
+    className: "fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 bg-black/95 backdrop-blur-xl animate-scale-in",
+    onClick: onClose
+  },
+    h('div', {
+      className: "relative max-w-6xl w-full max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2",
+      onClick: function(e) { e.stopPropagation(); }
+    },
+      h('img', {
+        src: file.url,
+        className: "max-w-full w-full max-h-[85vh] object-contain rounded-[2rem] cursor-move",
+        alt: file.name,
+        style: {
+          transform: "translate(" + position.x + "px, " + position.y + "px) scale(" + scale + ") rotate(" + rotation + "deg)",
+          transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)'
+        },
+        onMouseDown: handleMouseDown,
+        onMouseMove: handleMouseMove,
+        onMouseUp: function() { setIsDragging(false); },
+        onMouseLeave: function() { setIsDragging(false); },
+        draggable: false
+      }),
+      h('div', { className: "absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 md:gap-4 w-max max-w-[80%] truncate border border-white/10" },
+        h(ImageIcon, { size: 14, className: "text-amber-500 shrink-0" }),
+        h('span', { className: "truncate" }, file.name + " \u2014 " + formatSize(file.size))
+      ),
+      h('div', { className: "absolute top-6 right-6 flex flex-wrap justify-end gap-2 max-w-[200px]" },
+        h('button', { onClick: zoomIn, className: "p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10" }, h(ZoomIn, { size: 16 })),
+        h('button', { onClick: zoomOut, className: "p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10" }, h(ZoomOut, { size: 16 })),
+        h('button', { onClick: rotate, className: "p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10" }, h(RotateCcw, { size: 16 })),
+        h('button', { onClick: reset, className: "p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10" }, h(RefreshCw, { size: 16 })),
+        h('button', { onClick: onClose, className: "p-2 md:p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10" }, h(X, { size: 16 }))
+      )
+    )
+  );
+}
+
+function AudioPlayer({ file, onClose }) {
+  return h('div', {
+    className: "fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in",
+    onClick: onClose
+  },
+    h('div', {
+      className: "relative bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-zinc-800 w-full max-w-lg p-8 md:p-12 flex flex-col items-center gap-8",
+      onClick: function(e) { e.stopPropagation(); }
+    },
+      h('div', { className: "w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30 relative shrink-0" },
+        h('div', { className: "absolute inset-0 bg-amber-500/20 rounded-full animate-pulse" }),
+        h(Music, { size: 32, className: "text-amber-500 relative z-10" })
+      ),
+      h('h3', { className: "text-xl md:text-2xl font-display font-black text-white text-center truncate w-full" }, file.name),
+      h('audio', { src: file.url, autoPlay: true, controls: true, className: "w-full custom-audio" }),
+      h('button', {
+        onClick: onClose,
+        className: "absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent"
+      }, h(X, { size: 20 }))
+    )
+  );
+}
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [currentUser, setCurrentUser] = useState(localStorage.getItem('ins_username') || '');
-  const [files, setFiles] = useState(JSON.parse(localStorage.getItem('ins_unlimited') || '[]'));
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [inputUsername, setInputUsername] = useState('');
-  const [pendingTab, setPendingTab] = useState('');
-  const [uploadState, setUploadState] = useState('idle');
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadedUrls, setUploadedUrls] = useState({ public: '', fix: '' });
-  const [toast, setToast] = useState({ show: false, msg: '' });
-  const [activeMedia, setActiveMedia] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [viewMode, setViewMode] = useState('grid');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState('all');
-  const [isDragOver, setIsDragOver] = useState(false);
-  const fileInputRef = useRef(null);
-  const dropzoneRef = useRef(null);
-  
-  const [isEmbedPlayer, setIsEmbedPlayer] = useState(false);
-  const [embedVideoUrl, setEmbedVideoUrl] = useState('');
+  var [activeTab, setActiveTab] = useState('dashboard');
+  var [currentUser, setCurrentUser] = useState(localStorage.getItem('ins_username') || '');
+  var [files, setFiles] = useState(JSON.parse(localStorage.getItem('ins_unlimited') || '[]'));
+  var [showLoginModal, setShowLoginModal] = useState(false);
+  var [inputUsername, setInputUsername] = useState('');
+  var [pendingTab, setPendingTab] = useState('');
+  var [uploadState, setUploadState] = useState('idle');
+  var [uploadProgress, setUploadProgress] = useState(0);
+  var [selectedFile, setSelectedFile] = useState(null);
+  var [uploadedUrls, setUploadedUrls] = useState({ public: '', fix: '', player: '' });
+  var [toast, setToast] = useState({ show: false, msg: '' });
+  var [activeMedia, setActiveMedia] = useState(null);
+  var [isLoading, setIsLoading] = useState(false);
+  var [viewMode, setViewMode] = useState('grid');
+  var [searchQuery, setSearchQuery] = useState('');
+  var [filterType, setFilterType] = useState('all');
+  var [isDragOver, setIsDragOver] = useState(false);
+  var fileInputRef = useRef(null);
+  var dropzoneRef = useRef(null);
+  var [isEmbedPlayer, setIsEmbedPlayer] = useState(false);
+  var [embedVideoUrl, setEmbedVideoUrl] = useState('');
 
-  // Mode Embed Player Check
-  useEffect(() => {
-    const path = window.location.pathname;
+  useEffect(function() {
+    var path = window.location.pathname;
     if (path.startsWith('/player/')) {
       setIsEmbedPlayer(true);
-      const parts = path.split('/');
+      var parts = path.split('/');
       if (parts.length >= 5) {
-        const uId = parts[2];
-        const fName = parts.slice(4).join('/');
-        setEmbedVideoUrl(`/${uId}/media/${fName}`);
+        var uId = parts[2];
+        var fName = parts.slice(4).join('/');
+        setEmbedVideoUrl('/' + uId + '/media/' + fName);
       }
     } else {
       if (currentUser) syncWithServer();
-      const hash = window.location.hash.slice(1);
-      if (['dashboard', 'upload', 'history'].includes(hash)) setActiveTab(hash);
+      var hash = window.location.hash.slice(1);
+      if (['dashboard', 'upload', 'history'].indexOf(hash) !== -1) setActiveTab(hash);
     }
   }, [currentUser]);
 
-  // Drag & Drop
-  useEffect(() => {
+  useEffect(function() {
     if (isEmbedPlayer) return;
-    const dz = dropzoneRef.current;
+    var dz = dropzoneRef.current;
     if (!dz) return;
-    const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
-    const handleDragLeave = (e) => { e.preventDefault(); setIsDragOver(false); };
-    const handleDrop = (e) => {
+    var handleDragOver = function(e) { e.preventDefault(); setIsDragOver(true); };
+    var handleDragLeave = function(e) { e.preventDefault(); setIsDragOver(false); };
+    var handleDrop = function(e) {
       e.preventDefault();
       setIsDragOver(false);
       if (e.dataTransfer.files.length > 0) {
@@ -294,58 +715,63 @@ function App() {
     dz.addEventListener('dragover', handleDragOver);
     dz.addEventListener('dragleave', handleDragLeave);
     dz.addEventListener('drop', handleDrop);
-    return () => {
+    return function() {
       dz.removeEventListener('dragover', handleDragOver);
       dz.removeEventListener('dragleave', handleDragLeave);
       dz.removeEventListener('drop', handleDrop);
     };
   }, [activeTab, isEmbedPlayer]);
 
-  const syncWithServer = async () => {
+  var syncWithServer = useCallback(function() {
     if (!currentUser) return;
     setIsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/${currentUser}.json`);
-      if (res.ok) {
-        const json = await res.json();
-        const serverFiles = (json.files || []).map(f => ({
-          id: f.id,
-          name: f.original_name || f.name,
-          url: f.fix_url || f.user_media_url || `${window.location.origin}/${currentUser}/media/${encodeURIComponent(f.original_name || f.name)}`,
-          rawUrl: f.url || f.public_url,
-          size: f.file_size || f.size || 0,
-          type: f.mime_type || f.type || 'application/octet-stream',
-          uploaded_at: f.uploaded_at,
-          file_type: f.file_type,
-          evo_data: f.evo_data
-        }));
+    fetch(API_BASE + "/" + currentUser + ".json")
+      .then(function(res) {
+        if (res.ok) return res.json();
+        throw new Error('Sync failed');
+      })
+      .then(function(json) {
+        var serverFiles = (json.files || []).map(function(f) {
+          return {
+            id: f.id,
+            name: f.original_name || f.name,
+            url: f.fix_url || f.user_media_url || (window.location.origin + "/" + currentUser + "/media/" + encodeURIComponent(f.original_name || f.name)),
+            rawUrl: f.url || f.public_url,
+            size: f.file_size || f.size || 0,
+            type: f.mime_type || f.type || 'application/octet-stream',
+            uploaded_at: f.uploaded_at,
+            file_type: f.file_type,
+            evo_data: f.evo_data
+          };
+        });
         setFiles(serverFiles);
         localStorage.setItem('ins_unlimited', JSON.stringify(serverFiles));
-      }
-    } catch (e) {
-      console.error("Sync error:", e);
-      showToast("Gagal sinkronisasi");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      })
+      .catch(function(e) {
+        console.error("Sync error:", e);
+        showToast("Gagal sinkronisasi");
+      })
+      .finally(function() {
+        setIsLoading(false);
+      });
+  }, [currentUser]);
 
-  const showToast = (msg) => {
-    setToast({ show: true, msg });
-    setTimeout(() => setToast({ show: false, msg: '' }), 2500);
-  };
+  var showToast = useCallback(function(msg) {
+    setToast({ show: true, msg: msg });
+    setTimeout(function() { setToast({ show: false, msg: '' }); }, 2500);
+  }, []);
 
-  const copyToClipboard = (text) => {
+  var copyToClipboard = useCallback(function(text) {
     navigator.clipboard.writeText(text);
     showToast("Link Tersalin!");
-  };
+  }, [showToast]);
 
-  const copyPlayerLink = (userId, fileName) => {
-    const link = `${window.location.origin}/player/${userId}/media/${encodeURIComponent(fileName)}`;
+  var copyPlayerLink = useCallback(function(userId, fileName) {
+    var link = window.location.origin + "/player/" + userId + "/media/" + encodeURIComponent(fileName);
     copyToClipboard(link);
-  };
+  }, [copyToClipboard]);
 
-  const handleTabSwitch = (tab) => {
+  var handleTabSwitch = useCallback(function(tab) {
     if (tab === 'upload' && !currentUser) {
       setPendingTab(tab);
       setShowLoginModal(true);
@@ -353,12 +779,12 @@ function App() {
     }
     setActiveTab(tab);
     window.location.hash = tab;
-  };
+  }, [currentUser]);
 
-  const handleLoginSubmit = (e) => {
+  var handleLoginSubmit = useCallback(function(e) {
     e.preventDefault();
     if (inputUsername.trim()) {
-      const u = inputUsername.trim().toLowerCase();
+      var u = inputUsername.trim().toLowerCase();
       setCurrentUser(u);
       localStorage.setItem('ins_username', u);
       setShowLoginModal(false);
@@ -368,9 +794,9 @@ function App() {
         setPendingTab('');
       }
     }
-  };
+  }, [inputUsername, pendingTab]);
 
-  const handleLogout = () => {
+  var handleLogout = useCallback(function() {
     setCurrentUser('');
     setFiles([]);
     localStorage.removeItem('ins_username');
@@ -378,40 +804,40 @@ function App() {
     setActiveTab('dashboard');
     window.location.hash = 'dashboard';
     showToast("Logout Berhasil");
-  };
+  }, [showToast]);
 
-  const handleFileSelect = (e) => {
+  var handleFileSelect = useCallback(function(e) {
     if (e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
       setUploadState('selected');
     }
-  };
+  }, []);
 
-  const startUpload = () => {
+  var startUpload = useCallback(function() {
     if (!selectedFile || !currentUser) return;
     setUploadState('uploading');
-    const formData = new FormData();
+    var formData = new FormData();
     formData.append("file", selectedFile);
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${API_BASE}/upload-send`);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", API_BASE + "/upload-send");
     xhr.setRequestHeader("x-user-id", currentUser);
     xhr.setRequestHeader("x-filename", selectedFile.name);
 
-    xhr.upload.onprogress = (ev) => {
+    xhr.upload.onprogress = function(ev) {
       if (ev.lengthComputable) setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
     };
 
-    xhr.onload = async () => {
+    xhr.onload = function() {
       if (xhr.status === 200) {
         try {
-          const res = JSON.parse(xhr.responseText);
+          var res = JSON.parse(xhr.responseText);
           if (res.success) {
-            await syncWithServer();
+            syncWithServer();
             setUploadedUrls({
               public: res.public_url || res.url,
               fix: res.fix_url || res.user_media_url,
-              player: `${window.location.origin}/player/${currentUser}/media/${encodeURIComponent(res.filename)}`
+              player: window.location.origin + "/player/" + currentUser + "/media/" + encodeURIComponent(res.filename)
             });
             setUploadState('success');
             showToast("File Tersimpan!");
@@ -427,773 +853,520 @@ function App() {
         showToast("Gagal upload");
       }
     };
-    xhr.onerror = () => { setUploadState('idle'); showToast("Error jaringan"); };
+    xhr.onerror = function() { setUploadState('idle'); showToast("Error jaringan"); };
     xhr.send(formData);
-  };
+  }, [selectedFile, currentUser, syncWithServer, showToast]);
 
-  const deleteFile = async (fileId) => {
-    const updated = files.filter(f => f.id !== fileId);
+  var deleteFile = useCallback(function(fileId) {
+    var updated = files.filter(function(f) { return f.id !== fileId; });
     setFiles(updated);
     localStorage.setItem('ins_unlimited', JSON.stringify(updated));
     showToast("File dihapus");
-  };
+  }, [files, showToast]);
 
-  const formatSize = (b) => {
-    if (!b || b === 0) return '0 B';
-    const i = Math.floor(Math.log(b) / Math.log(1024));
-    return (b / Math.pow(1024, i)).toFixed(1) + ' ' + ['B','KB','MB','GB'][i];
-  };
-
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  };
-
-  const clearHistory = () => {
+  var clearHistory = useCallback(function() {
     if (window.confirm('Hapus cache lokal? Server aman.')) {
       setFiles([]);
       localStorage.setItem('ins_unlimited', '[]');
       showToast('Cache dibersihkan');
     }
-  };
+  }, [showToast]);
 
-  const isVideo = (mime) => mime?.startsWith('video/');
-  const isImage = (mime) => mime?.startsWith('image/');
-  const isAudio = (mime) => mime?.startsWith('audio/');
+  var totalSize = files.reduce(function(acc, f) { return acc + (f.size || 0); }, 0);
 
-  const totalSize = files.reduce((acc, f) => acc + (f.size || 0), 0);
-
-  const filteredFiles = files.filter(f => {
-    const matchesSearch = (f.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === 'all' || f.file_type === filterType;
+  var filteredFiles = files.filter(function(f) {
+    var matchesSearch = (f.name || '').toLowerCase().includes(searchQuery.toLowerCase());
+    var matchesType = filterType === 'all' || f.file_type === filterType;
     return matchesSearch && matchesType;
   });
 
-  // Dedicated Fullscreen Embed Video Player
-  const DedicatedEmbedPlayer = ({ src }) => {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center z-[9999]">
-        <video src={src} controls autoPlay playsInline className="w-full h-full max-h-screen object-contain outline-none" />
-      </div>
+  var DedicatedEmbedPlayer = function({ src }) {
+    return h('div', { className: "fixed inset-0 bg-black flex items-center justify-center z-[9999]" },
+      h('video', { src: src, controls: true, autoPlay: true, playsInline: true, className: "w-full h-full max-h-screen object-contain outline-none" })
     );
   };
 
   if (isEmbedPlayer) {
-    if (!embedVideoUrl) return <div className="text-white p-4">Invalid Player URL</div>;
-    return <DedicatedEmbedPlayer src={embedVideoUrl} />;
+    if (!embedVideoUrl) return h('div', { className: "text-white p-4" }, "Invalid Player URL");
+    return h(DedicatedEmbedPlayer, { src: embedVideoUrl });
   }
 
-  // --- MODAL & PLAYER COMPONENTS ---
-  const CustomVideoPlayer = ({ file, onClose }) => {
-    const videoRef = useRef(null);
-    const containerRef = useRef(null);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
-    const [volume, setVolume] = useState(1);
-    const [isMuted, setIsMuted] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
-    const [showControls, setShowControls] = useState(true);
-    const [playbackRate, setPlaybackRate] = useState(1);
-    const controlsTimeoutRef = useRef(null);
-    const [isDragging, setIsDragging] = useState(false);
-
-    useEffect(() => {
-      const video = videoRef.current;
-      if (!video) return;
-      const updateTime = () => setCurrentTime(video.currentTime);
-      const updateDuration = () => setDuration(video.duration);
-      const onEnded = () => setIsPlaying(false);
-      video.addEventListener('timeupdate', updateTime);
-      video.addEventListener('loadedmetadata', updateDuration);
-      video.addEventListener('ended', onEnded);
-      return () => {
-        video.removeEventListener('timeupdate', updateTime);
-        video.removeEventListener('loadedmetadata', updateDuration);
-        video.removeEventListener('ended', onEnded);
-      };
-    }, []);
-
-    const togglePlay = () => {
-      const video = videoRef.current;
-      if (!video) return;
-      if (video.paused) { video.play(); setIsPlaying(true); }
-      else { video.pause(); setIsPlaying(false); }
-    };
-
-    const handleSeek = (e) => {
-      const video = videoRef.current;
-      if (!video || !duration) return;
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      video.currentTime = pos * duration;
-    };
-
-    const toggleMute = () => {
-      const video = videoRef.current;
-      if (!video) return;
-      video.muted = !video.muted;
-      setIsMuted(video.muted);
-    };
-
-    const handleVolumeChange = (e) => {
-      const video = videoRef.current;
-      if (!video) return;
-      const val = parseFloat(e.target.value);
-      video.volume = val;
-      setVolume(val);
-      if (val > 0 && video.muted) { video.muted = false; setIsMuted(false); }
-    };
-
-    const toggleFullscreen = () => {
-      const container = containerRef.current;
-      if (!container) return;
-      if (!document.fullscreenElement) {
-        container.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-      } else {
-        document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-      }
-    };
-
-    const handleMouseMove = () => {
-      setShowControls(true);
-      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
-      controlsTimeoutRef.current = setTimeout(() => { if (isPlaying) setShowControls(false); }, 3000);
-    };
-
-    const formatTime = (seconds) => {
-      if (!seconds || isNaN(seconds)) return '0:00';
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs.toString().padStart(2, '0')}`;
-    };
-
-    const changePlaybackRate = () => {
-      const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
-      const nextRate = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
-      if (videoRef.current) videoRef.current.playbackRate = nextRate;
-      setPlaybackRate(nextRate);
-    };
-
-    const skip = (seconds) => {
-      if (videoRef.current) videoRef.current.currentTime = Math.max(0, Math.min(videoRef.current.currentTime + seconds, duration));
-    };
-
-    return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
-        <div ref={containerRef} className="relative w-full max-w-6xl bg-black rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10" onClick={(e) => e.stopPropagation()} onMouseMove={handleMouseMove}>
-          <div className="video-container" style={{ borderRadius: '2.5rem' }}>
-            <video ref={videoRef} src={file.url} className="w-full" style={{ maxHeight: '70vh', objectFit: 'contain' }} onClick={togglePlay} preload="metadata" playsInline />
-            <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-md px-3 py-1 rounded-md text-[10px] font-bold text-amber-500 border border-amber-500/30 z-20">
-              {formatSize(file.size)} • {file.type?.split('/')[1]?.toUpperCase() || 'VIDEO'}
-            </div>
-
-            <div className={`video-controls-overlay ${showControls ? 'show-controls' : ''}`} style={{ opacity: showControls ? 1 : 0 }}>
-              <div className="progress-bar" onClick={handleSeek} onMouseDown={() => setIsDragging(true)} onMouseUp={() => setIsDragging(false)}>
-                <div className="progress-fill" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
-                <div className="progress-handle" style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%`, opacity: isDragging ? 1 : undefined }}></div>
-              </div>
-
-              <div className="flex items-center gap-2 md:gap-4">
-                <button className="control-btn" onClick={togglePlay}>{isPlaying ? <Pause size={20} /> : <Play size={20} />}</button>
-                <button className="control-btn" onClick={() => skip(-10)}><SkipBack size={18} /></button>
-                <button className="control-btn" onClick={() => skip(10)}><SkipForward size={18} /></button>
-                <button className="control-btn hidden sm:flex" onClick={toggleMute}>{isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
-                <input type="range" min="0" max="1" step="0.1" value={isMuted ? 0 : volume} onChange={handleVolumeChange} className="volume-slider hidden sm:block" />
-                <span className="time-display">{formatTime(currentTime)} / {formatTime(duration)}</span>
-                <button className="control-btn ml-auto" onClick={changePlaybackRate} style={{ fontSize: '11px', fontWeight: 'bold', fontFamily: 'var(--font-display)' }}>{playbackRate}x</button>
-                <button className="control-btn" onClick={toggleFullscreen}>{isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}</button>
-              </div>
-            </div>
-          </div>
-
-          <div className="absolute top-6 left-6 bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 max-w-[60%] truncate border border-white/10 z-50">
-            <Film size={14} className="text-amber-500 shrink-0" /> <span className="truncate">{file.name}</span>
-          </div>
-
-          <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent z-50">
-            <X size={20} />
-          </button>
-        </div>
-      </div>
-    );
+  var FileBadge = function({ type }) {
+    var colorClass = type === 'video' ? 'text-red-400' : type === 'image' ? 'text-blue-400' : type === 'audio' ? 'text-green-400' : 'text-zinc-400';
+    return h('span', { className: "badge-type " + colorClass }, type);
   };
 
-  const ImageViewer = ({ file, onClose }) => {
-    const [scale, setScale] = useState(1);
-    const [rotation, setRotation] = useState(0);
-    const [position, setPosition] = useState({ x: 0, y: 0 });
-    const [isDragging, setIsDragging] = useState(false);
-    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  return h('div', { className: "min-h-screen flex flex-col lg:flex-row bg-[#050505] text-[#fafafa] relative overflow-hidden" },
+    h('div', { className: "absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none animate-blob" }),
+    h('div', { className: "absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none animate-blob", style: { animationDelay: '3s' } }),
 
-    const zoomIn = () => setScale(s => Math.min(s + 0.25, 4));
-    const zoomOut = () => setScale(s => Math.max(s - 0.25, 0.5));
-    const rotate = () => setRotation(r => r + 90);
-    const reset = () => { setScale(1); setRotation(0); setPosition({ x: 0, y: 0 }); };
+    h('div', {
+      className: "fixed top-8 left-1/2 -translate-x-1/2 z-[200] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 " +
+        (toast.show ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 -translate-y-4 pointer-events-none")
+    },
+      h(CheckCircle2, { size: 20 }),
+      h('span', { className: "font-display tracking-wide text-sm" }, toast.msg)
+    ),
 
-    const handleMouseDown = (e) => {
-      if (scale > 1) { setIsDragging(true); setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y }); }
-    };
-    const handleMouseMove = (e) => {
-      if (!isDragging) return; setPosition({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
-    };
+    showLoginModal && h('div', { className: "fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl" },
+      h('div', { className: "glass rounded-[2.5rem] p-8 w-full max-w-md border border-amber-500/20 shadow-[0_0_80px_rgba(251,191,36,0.1)] animate-scale-in relative overflow-hidden" },
+        h('div', { className: "absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50" }),
+        h('button', { onClick: function() { setShowLoginModal(false); }, className: "absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors" }, h(X, { size: 24 })),
+        h('div', { className: "w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group shrink-0" },
+          h('div', { className: "absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:scale-150 transition-transform" }),
+          h(LogIn, { size: 32, className: "relative z-10" })
+        ),
+        h('h3', { className: "text-3xl font-display font-black text-center mb-2 tracking-tighter" }, "Otorisasi Akses"),
+        h('p', { className: "text-zinc-400 text-center text-sm mb-8 font-medium leading-relaxed" }, "Masukkan ID Database Anda untuk mulai mengunggah file ke cloud."),
+        h('form', { onSubmit: handleLoginSubmit, className: "flex flex-col gap-5" },
+          h('div', { className: "relative group" },
+            h(User, { size: 20, className: "absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-amber-500 transition-colors" }),
+            h('input', { type: "text", autoFocus: true, required: true, placeholder: "Misal: ins_sanjaya", value: inputUsername,
+              onChange: function(e) { setInputUsername(e.target.value); },
+              className: "w-full bg-black/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white font-bold placeholder:text-zinc-700 focus:outline-none focus:border-amber-500/50 focus:bg-zinc-900/50 transition-all font-display tracking-wide" })
+          ),
+          h('button', { type: "submit", className: "relative overflow-hidden w-full bg-amber-500 text-black py-4 rounded-2xl font-display font-black text-sm uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(251,191,36,0.2)]" },
+            h('div', { className: "animate-shimmer" }),
+            h('span', { className: "relative z-10" }, "Masuk / Buat ID")
+          )
+        )
+      )
+    ),
 
-    return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 md:p-6 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
-        <div className="relative max-w-6xl w-full max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-white/10 bg-black/50 p-2" onClick={(e) => e.stopPropagation()}>
-          <img src={file.url} className="max-w-full w-full max-h-[85vh] object-contain rounded-[2rem] cursor-move" alt={file.name}
-            style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`, transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.16,1,0.3,1)' }}
-            onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)} draggable={false}
-          />
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-md px-4 py-2 md:px-6 md:py-3 rounded-full text-xs md:text-sm text-zinc-300 font-display flex items-center gap-2 md:gap-4 w-max max-w-[80%] truncate border border-white/10">
-            <ImageIcon size={14} className="text-amber-500 shrink-0" />
-            <span className="truncate">{file.name} &mdash; {formatSize(file.size)}</span>
-          </div>
-          <div className="absolute top-6 right-6 flex flex-wrap justify-end gap-2 max-w-[200px]">
-            <button onClick={zoomIn} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><ZoomIn size={16} /></button>
-            <button onClick={zoomOut} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><ZoomOut size={16} /></button>
-            <button onClick={rotate} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><RotateCcw size={16} /></button>
-            <button onClick={reset} className="p-2 md:p-2.5 bg-black/50 hover:bg-amber-500 rounded-xl text-white hover:text-black transition-all backdrop-blur-md border border-white/10"><RefreshCw size={16} /></button>
-            <button onClick={onClose} className="p-2 md:p-2.5 bg-black/50 hover:bg-red-500 rounded-xl text-white transition-all backdrop-blur-md border border-white/10"><X size={16} /></button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+    h('aside', { className: "w-full lg:w-72 glass border-b lg:border-b-0 lg:border-r border-zinc-900/50 p-6 lg:p-8 flex flex-col gap-8 lg:gap-10 z-20 relative" },
+      h('div', { className: "flex items-center gap-4" },
+        h(Reveal, { delay: 0 },
+          h('div', { className: "relative shrink-0" },
+            h('div', { className: "absolute inset-0 bg-amber-500/30 blur-xl rounded-full" }),
+            h('div', { className: "w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10" },
+              h(InfinityIcon, { size: 28, className: "text-black" })
+            )
+          )
+        ),
+        h(Reveal, { delay: 0.1 },
+          h('div', { className: "min-w-0" },
+            h('span', { className: "block text-2xl font-display font-black tracking-tighter leading-none truncate" }, "INS CLOUD"),
+                        h('span', { className: "text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display truncate block" }, currentUser ? "USER: " + currentUser : "Guest Mode")
+          )
+        )
+      ),
 
-  const AudioPlayer = ({ file, onClose }) => {
-    return (
-      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl animate-scale-in" onClick={onClose}>
-        <div className="relative bg-zinc-900 rounded-[2.5rem] overflow-hidden shadow-[0_0_80px_rgba(251,191,36,0.1)] border border-zinc-800 w-full max-w-lg p-8 md:p-12 flex flex-col items-center gap-8" onClick={(e) => e.stopPropagation()}>
-          <div className="w-24 h-24 bg-amber-500/10 rounded-full flex items-center justify-center border border-amber-500/30 relative shrink-0">
-            <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-pulse"></div>
-            <Music size={32} className="text-amber-500 relative z-10" />
-          </div>
-          <h3 className="text-xl md:text-2xl font-display font-black text-white text-center truncate w-full">{file.name}</h3>
-          <audio src={file.url} autoPlay controls className="w-full custom-audio" />
-          <button onClick={onClose} className="absolute top-6 right-6 p-3 bg-black/50 hover:bg-red-500 rounded-full text-white backdrop-blur-md transition-all border border-white/10 hover:border-transparent">
-            <X size={20} />
-          </button>
-        </div>
-      </div>
-    );
-  };
+      h('nav', { className: "flex flex-col gap-2 w-full flex-1" },
+        [
+          { id: 'dashboard', icon: LayoutGrid, label: 'Dashboard' },
+          { id: 'upload', icon: CloudUpload, label: 'Upload' },
+          { id: 'history', icon: FolderSearch, label: 'My Files' }
+        ].map(function(item, i) {
+          return h(Reveal, { key: item.id, delay: 0.1 + (i * 0.1), className: "w-full" },
+            h('button', {
+              onClick: function() { handleTabSwitch(item.id); },
+              className: "w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl transition-all font-semibold font-display tracking-wide text-base " +
+                (activeTab === item.id ? "bg-amber-400 text-black shadow-[0_0_24px_rgba(251,191,36,0.15)]" : "text-zinc-400 hover:text-white hover:bg-white/5")
+            },
+              h(item.icon, { size: 20, className: "shrink-0" }),
+              h('span', null, item.label)
+            )
+          );
+        })
+      ),
 
-  const FileBadge = ({ type }) => {
-    let colorClass = 'text-zinc-400 border-zinc-500/30 bg-zinc-500/10';
-    if (type === 'video') colorClass = 'text-red-400 border-red-500/30 bg-red-500/10';
-    else if (type === 'image') colorClass = 'text-blue-400 border-blue-500/30 bg-blue-500/10';
-    else if (type === 'audio') colorClass = 'text-green-400 border-green-500/30 bg-green-500/10';
-    
-    return <span className={`text-[9px] font-display font-bold uppercase tracking-widest px-2 py-1 rounded-md border ${colorClass}`}>{type}</span>;
-  };
-
-  // --- RENDER APP ---
-  return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#050505] text-[#fafafa] relative overflow-hidden">
-      
-      {/* Background Orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-amber-600/10 rounded-full blur-[120px] pointer-events-none animate-blob"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] bg-orange-600/10 rounded-full blur-[100px] pointer-events-none animate-blob" style={{ animationDelay: '3s' }}></div>
-
-      {/* TOAST */}
-      <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[200] glass px-6 py-3 rounded-full border border-amber-500/30 text-amber-500 font-bold shadow-[0_10px_40px_rgba(251,191,36,0.15)] flex items-center gap-3 transition-all duration-400 ${toast.show ? 'scale-100 opacity-100 translate-y-0' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}`}>
-        <CheckCircle2 size={20} />
-        <span className="font-display tracking-wide text-sm">{toast.msg}</span>
-      </div>
-
-      {/* LOGIN MODAL */}
-      {showLoginModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl">
-          <div className="glass rounded-[2.5rem] p-8 w-full max-w-md border border-amber-500/20 shadow-[0_0_80px_rgba(251,191,36,0.1)] animate-scale-in relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-50"></div>
-            <button onClick={() => setShowLoginModal(false)} className="absolute top-6 right-6 text-zinc-500 hover:text-white transition-colors"><X size={24} /></button>
-            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-center mb-6 text-amber-500 mx-auto relative group shrink-0">
-              <div className="absolute inset-0 bg-amber-500/20 blur-xl rounded-full group-hover:scale-150 transition-transform"></div>
-              <LogIn size={32} className="relative z-10" />
-            </div>
-            <h3 className="text-3xl font-display font-black text-center mb-2 tracking-tighter">Otorisasi Akses</h3>
-            <p className="text-zinc-400 text-center text-sm mb-8 font-medium leading-relaxed">Masukkan ID Database Anda untuk mulai mengunggah file ke cloud.</p>
-            <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
-              <div className="relative group">
-                <User size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-amber-500 transition-colors" />
-                <input type="text" autoFocus required placeholder="Misal: ins_sanjaya" value={inputUsername} onChange={(e) => setInputUsername(e.target.value)}
-                  className="w-full bg-black/50 border border-zinc-800 rounded-2xl py-4 pl-12 pr-4 text-white font-bold placeholder:text-zinc-700 focus:outline-none focus:border-amber-500/50 focus:bg-zinc-900/50 transition-all font-display tracking-wide" />
-              </div>
-              <button type="submit" className="relative overflow-hidden w-full bg-amber-500 text-black py-4 rounded-2xl font-display font-black text-sm uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(251,191,36,0.2)]">
-                <div className="animate-shimmer"></div>
-                <span className="relative z-10">Masuk / Buat ID</span>
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* BOTTOM NAVIGATION (MOBILE) */}
-      <nav className="lg:hidden fixed bottom-0 left-0 w-full bg-[#0a0a0c]/95 backdrop-blur-xl border-t border-zinc-800/80 z-[100] pb-[max(12px,env(safe-area-inset-bottom))]">
-        <div className="flex justify-around items-center px-2 py-3">
-          {[
-            { id: 'dashboard', icon: LayoutGrid, label: 'Dashboard' },
-            { id: 'upload', icon: CloudUpload, label: 'Upload' },
-            { id: 'history', icon: FolderSearch, label: 'Library' }
-          ].map((item) => (
-            <button key={item.id} onClick={() => handleTabSwitch(item.id)} className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-2xl transition-all font-display tracking-wide text-[10px] font-bold flex-1 ${activeTab === item.id ? 'text-amber-400' : 'text-zinc-500 hover:text-zinc-300'}`}>
-              <item.icon size={22} className={`${activeTab === item.id ? 'drop-shadow-[0_0_10px_rgba(251,191,36,0.5)]' : ''} shrink-0`} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* SIDEBAR (DESKTOP) */}
-      <aside className="hidden lg:flex w-72 glass border-r border-zinc-900/50 p-8 flex-col gap-10 z-20 relative">
-        <div className="flex items-center gap-4">
-          <Reveal delay={0}>
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 bg-amber-500/30 blur-xl rounded-full"></div>
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-xl relative z-10">
-                <InfinityIcon size={28} className="text-black" />
-              </div>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <div className="min-w-0">
-              <span className="block text-2xl font-display font-black tracking-tighter leading-none truncate">INS CLOUD</span>
-              <span className="text-[10px] text-amber-500 font-bold tracking-[0.2em] uppercase font-display truncate block">{currentUser ? `USER: ${currentUser}` : "Guest Mode"}</span>
-            </div>
-          </Reveal>
-        </div>
-
-        <nav className="flex flex-col gap-2 w-full flex-1">
-          {[
-            { id: 'dashboard', icon: LayoutGrid, label: 'Dashboard' },
-            { id: 'upload', icon: CloudUpload, label: 'Upload Center' },
-            { id: 'history', icon: FolderSearch, label: 'My Files' }
-          ].map((item, i) => (
-            <Reveal key={item.id} delay={0.1 + (i * 0.1)} className="w-full">
-              <button onClick={() => handleTabSwitch(item.id)}
-                className={`w-full flex items-center justify-start gap-4 px-5 py-4 rounded-2xl transition-all font-semibold font-display tracking-wide text-base ${activeTab === item.id ? 'bg-amber-400 text-black shadow-[0_0_24px_rgba(251,191,36,0.15)]' : 'text-zinc-400 hover:text-white hover:bg-white/5'}`}
-              >
-                <item.icon size={20} className="shrink-0" />
-                <span>{item.label}</span>
-              </button>
-            </Reveal>
-          ))}
-        </nav>
-
-        <div className="mt-auto pt-4">
-          <Reveal delay={0.4}>
-            <ElectricBorder color="#fbbf24" speed={3} thickness={1.5} radius={32}>
-              <div className="p-6 flex flex-col items-center text-center">
-                <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner shrink-0">
-                  <LockKeyhole size={16} className="text-amber-500" />
-                </div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1">Status Akun</p>
-                <h4 className="text-sm font-display font-black text-white mb-3 uppercase tracking-wide">Unlimited Capacity</h4>
-                <div className="px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5">
-                  <Sparkles size={12} className="shrink-0"/> PRO EDITION
-                </div>
-              </div>
-            </ElectricBorder>
-          </Reveal>
-
-          {currentUser && (
-            <Reveal delay={0.5} className="mt-4">
-              <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-3 rounded-2xl border border-zinc-800 hover:border-red-500/30">
-                <LogIn size={16} className="rotate-180 shrink-0" /> Logout
-              </button>
-            </Reveal>
-          )}
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT AREA */}
-      <main className="flex-1 p-6 pb-32 lg:pb-14 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto">
-        
-        {/* DASHBOARD */}
-        {activeTab === 'dashboard' && (
-          <section>
-            <Reveal delay={0}>
-              <header className="mb-10 lg:mb-14 mt-4 lg:mt-0">
-                <h1 className="text-4xl lg:text-7xl font-display font-black tracking-tighter mb-2 lg:mb-4 leading-[1.1]">
-                  Halo, <Typewriter words={currentUser ? [currentUser, "Master", "Administrator"] : ["Guest", "Pengguna"]} />.
-                </h1>
-                <ScrollReveal className="text-zinc-400 font-medium text-sm lg:text-xl max-w-2xl leading-relaxed mt-2">
-                  Kelola database cloud Anda dalam satu genggaman. Cepat, aman, dan tanpa batas kapasitas.
-                </ScrollReveal>
-              </header>
-            </Reveal>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12">
-              <Reveal delay={0.1} className="h-full">
-                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
-                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0">
-                    <Database size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-4xl lg:text-5xl font-display font-black leading-none mb-2">{files.length}</h3>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total File Saya</p>
-                  </div>
-                </div>
-              </Reveal>
-
-              <Reveal delay={0.2} className="h-full">
-                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 border border-amber-500/30 bg-amber-500/[0.03] hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_40px_rgba(251,191,36,0.05)] group h-full">
-                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 shrink-0">
-                    <InfinityIcon size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white">Unlimited</h3>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-amber-500/80 uppercase tracking-widest">Kapasitas Sisa</p>
-                  </div>
-                </div>
-              </Reveal>
-
-              <Reveal delay={0.3} className="h-full">
-                <div className="glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full">
-                  <div className="w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0">
-                    <HardDrive size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white">{formatSize(totalSize)}</h3>
-                    <p className="text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">Total Storage</p>
-                  </div>
-                </div>
-              </Reveal>
-            </div>
-
-            <Reveal delay={0.4}>
-              <div className="bg-zinc-900/60 rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 justify-between relative overflow-hidden text-center lg:text-left">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]"></div>
-                <div className="max-w-md relative z-10">
-                  <h2 className="text-2xl lg:text-3xl font-display font-black mb-2 lg:mb-4 tracking-tight">Butuh Link Instan?</h2>
-                  <ScrollReveal className="text-zinc-400 text-sm lg:text-base leading-relaxed justify-center lg:justify-start">
-                    Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik.
-                  </ScrollReveal>
-                </div>
-                <button onClick={() => handleTabSwitch('upload')} className="relative overflow-hidden z-10 bg-white text-black px-8 py-4 lg:px-10 lg:py-5 rounded-xl lg:rounded-3xl font-display font-black text-sm lg:text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0 w-full lg:w-auto">
-                  <div className="animate-shimmer"></div>
-                  <span className="relative z-10">UPLOAD SEKARANG</span>
-                </button>
-              </div>
-            </Reveal>
-          </section>
-        )}
-
-        {/* UPLOAD CENTER */}
-        {activeTab === 'upload' && (
-          <section>
-            <Reveal delay={0}>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-8 text-center sm:text-left mt-4 lg:mt-0">
-                <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0 mx-auto sm:mx-0">
-                  <Upload size={24} className="text-amber-500" />
-                </div>
-                <h2 className="text-3xl md:text-5xl font-display font-black tracking-tighter">Upload Center</h2>
-              </div>
-            </Reveal>
-
-            {(uploadState === 'idle' || uploadState === 'selected') && (
-              <Reveal delay={0.1}>
-                <ElectricBorder color="#fbbf24" speed={4} thickness={2} radius={32} className="cursor-pointer group">
-                  <div onClick={() => fileInputRef.current?.click()}
-                    className="p-10 lg:p-24 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full text-center"
-                    style={{ borderRadius: '1.9rem' }}>
-                    
-                    <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} />
-
-                    {uploadState === 'idle' ? (
-                      <div className="flex flex-col items-center relative z-10">
-                        <div className="w-20 h-20 lg:w-24 lg:h-24 bg-black/50 backdrop-blur-md rounded-2xl lg:rounded-3xl flex items-center justify-center mb-6 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2 shrink-0">
-                          <Plus size={32} />
-                        </div>
-                        <h3 className="text-2xl lg:text-3xl font-display font-black mb-2 tracking-tight group-hover:text-amber-400 transition-colors">Pilih / Tarik File</h3>
-                        <ScrollReveal className="text-zinc-500 text-xs lg:text-base font-medium tracking-wide justify-center">
-                          Mendukung format gambar, video, audio, dan dokumen.
-                        </ScrollReveal>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center w-full max-w-lg z-10">
-                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 px-4 py-4 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl text-center sm:text-left">
-                          <div className="p-3 bg-amber-500/10 rounded-xl shrink-0">
-                            <FileCheck size={28} className="text-amber-500" />
-                          </div>
-                          <div className="flex-1 min-w-0 w-full">
-                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">File Terpilih</p>
-                            <span className="text-sm md:text-lg font-display font-bold truncate block">{selectedFile?.name}</span>
-                            <span className="text-xs text-zinc-600">{formatSize(selectedFile?.size)}</span>
-                          </div>
-                        </div>
-                        <button onClick={(e) => { e.stopPropagation(); startUpload(); }} className="relative overflow-hidden mt-6 bg-amber-500 text-black px-8 py-4 rounded-xl md:rounded-2xl font-display font-black text-sm md:text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn">
-                          <div className="animate-shimmer"></div>
-                          <span className="relative z-10 flex items-center justify-center gap-2">Upload ke Cloud <CloudUpload size={20} className="group-hover/btn:animate-bounce shrink-0" /></span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </ElectricBorder>
-              </Reveal>
-            )}
-
-            {uploadState === 'uploading' && (
-              <Reveal delay={0}>
-                <div className="glass rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 border border-amber-500/20 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                  <div className="flex justify-between items-end mb-6 relative z-10">
-                    <div>
-                      <p className="text-[10px] lg:text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-1 lg:mb-2 flex items-center gap-2">
-                        <Loader size={14} className="animate-spin" /> Proses
-                      </p>
-                      <h4 className="text-2xl lg:text-3xl font-display font-bold tracking-tight">Mengunggah...</h4>
-                    </div>
-                    <span className="text-4xl lg:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600">{uploadProgress}%</span>
-                  </div>
-                  <div className="w-full h-3 lg:h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10">
-                    <div className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative" style={{ width: `${uploadProgress}%` }}>
-                      <div className="absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
-                    </div>
-                  </div>
-                  <p className="text-zinc-500 text-xs lg:text-sm mt-4 text-center truncate">{selectedFile?.name}</p>
-                </div>
-              </Reveal>
-            )}
-
-            {uploadState === 'success' && (
-              <Reveal delay={0}>
-                <div className="glass rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden">
-                  <div className="w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-amber-500/20 transform rotate-3 shrink-0">
-                    <Check size={40} />
-                  </div>
-                  <h3 className="text-2xl lg:text-4xl font-display font-black mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight">File Siap Digunakan</h3>
-
-                  <div className="space-y-4 lg:space-y-6 max-w-3xl mx-auto relative z-10">
-                    <div className="bg-black/40 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-zinc-800/50">
-                      <label className="text-[10px] font-display font-black uppercase text-zinc-400 ml-1 mb-2 block tracking-[0.2em] flex items-center gap-2">
-                        <Globe size={12} className="shrink-0"/> URL Publik (Raw)
-                      </label>
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <input value={uploadedUrls.public} readOnly className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-4 py-3 text-xs lg:text-sm font-medium text-zinc-300 focus:outline-none font-display" />
-                        <button onClick={() => copyToClipboard(uploadedUrls.public)} className="w-full sm:w-auto bg-zinc-800 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-2">
-                          <Copy size={16} className="shrink-0" /> Salin
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="bg-amber-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-amber-500/30 shadow-inner relative overflow-hidden">
-                      <label className="text-[10px] font-display font-black uppercase text-amber-500 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2">
-                        <Link2 size={12} className="shrink-0"/> URL User (Fast CDN)
-                      </label>
-                      <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                        <input value={uploadedUrls.fix} readOnly className="flex-1 bg-black/80 border border-amber-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-amber-400 focus:outline-none font-display" />
-                        <button onClick={() => copyToClipboard(uploadedUrls.fix)} className="w-full sm:w-auto relative overflow-hidden bg-amber-500 text-black px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center justify-center gap-2">
-                          <div className="animate-shimmer"></div>
-                          <Copy size={16} className="relative z-10 shrink-0" /> <span className="relative z-10">Salin</span>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    {selectedFile && selectedFile.type.startsWith('video/') && (
-                      <div className="bg-blue-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-blue-500/30 shadow-inner relative overflow-hidden mt-4">
-                        <label className="text-[10px] font-display font-black uppercase text-blue-400 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2">
-                          <Play size={12} className="shrink-0" /> URL Embed Player
-                        </label>
-                        <div className="flex flex-col sm:flex-row gap-3 relative z-10">
-                          <input value={uploadedUrls.player} readOnly className="flex-1 bg-black/80 border border-blue-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-blue-400 focus:outline-none font-display" />
-                          <button onClick={() => copyToClipboard(uploadedUrls.player)} className="w-full sm:w-auto bg-blue-500 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2">
-                            <Copy size={16} className="shrink-0" /> Salin
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <button onClick={() => { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); }} className="w-full max-w-md mx-auto mt-8 block bg-zinc-900 border border-zinc-800 text-white py-4 rounded-xl font-display font-black text-xs uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center">
-                    Upload File Lainnya
-                  </button>
-                </div>
-              </Reveal>
-            )}
-          </section>
-        )}
-
-        {/* HISTORY / LIBRARY */}
-        {activeTab === 'history' && (
-          <section>
-            <Reveal delay={0}>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 lg:gap-6 mb-8 mt-4 lg:mt-0">
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20 shrink-0">
-                    <FolderSearch size={24} className="text-amber-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-3xl lg:text-5xl font-display font-black tracking-tighter mb-1">My Library</h2>
-                    <ScrollReveal className="text-zinc-400 text-xs sm:text-sm">
-                      Semua media yang tersinkronisasi.
-                    </ScrollReveal>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col w-full md:w-auto gap-4">
-                  {/* Search Bar Mobile Fix */}
-                  <div className="relative w-full sm:w-64 lg:w-80 ml-auto">
-                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
-                    <input 
-                      type="text" 
-                      placeholder="Cari file..." 
-                      value={searchQuery} 
-                      onChange={(e) => setSearchQuery(e.target.value)} 
-                      className="w-full bg-[#0a0a0c]/80 border border-zinc-800 rounded-xl py-2.5 pl-11 pr-4 text-white text-sm focus:outline-none focus:border-amber-500/50 transition-all font-display placeholder:text-zinc-600" 
-                    />
-                  </div>
-
-                  {/* Horizontal Scrollable Filters */}
-                  <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar w-full sm:w-auto ml-auto">
-                    {['all', 'image', 'video', 'audio', 'file'].map(t => (
-                      <button key={t} onClick={() => setFilterType(t)} 
-                        className={`shrink-0 px-4 py-2 rounded-xl text-[10px] font-bold font-display uppercase tracking-widest transition-all border ${filterType === t ? 'bg-amber-500 border-amber-500 text-black shadow-[0_0_15px_rgba(251,191,36,0.3)]' : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:text-amber-500 hover:border-zinc-700'}`}>
-                        {t === 'all' ? 'Semua' : t}
-                      </button>
-                    ))}
-                    <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="shrink-0 p-2 px-3 bg-zinc-900/50 border border-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-all flex items-center justify-center">
-                      {viewMode === 'grid' ? <Grid3x3 size={14} /> : <List size={14} />}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <div className="flex flex-wrap gap-2 mb-6 border-t border-zinc-800/50 pt-4">
-                <button onClick={syncWithServer} disabled={isLoading} className="flex items-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-4 py-2.5 rounded-lg border border-amber-500/20 hover:border-amber-500/40 w-auto">
-                  <Loader size={14} className={`shrink-0 ${isLoading ? 'animate-spin' : ''}`} /> {isLoading ? 'Syncing...' : 'Sync'}
-                </button>
-                <button onClick={clearHistory} className="flex items-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-2.5 rounded-lg border border-zinc-800 hover:border-red-500/30 w-auto">
-                  <ZapOff size={14} className="shrink-0" /> Clear Cache
-                </button>
-              </div>
-            </Reveal>
-
-            {filteredFiles.length > 0 ? (
-              viewMode === 'grid' ? (
-                <div className="grid-files">
-                  {filteredFiles.map((file, idx) => (
-                    <Reveal key={file.id} delay={(idx % 8) * 0.05}>
-                      <div className="file-card glass rounded-[1.5rem] p-4 flex flex-col group cursor-pointer relative overflow-hidden h-full" onClick={() => setActiveMedia(file)}>
-                        <div className="w-full h-40 bg-black rounded-xl mb-4 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner">
-                          {isVideo(file.type) ? (
-                            <>
-                              <video src={`${file.url}#t=0.1`} className="w-full h-full object-cover opacity-60 group-hover:scale-105 group-hover:opacity-40 transition-all duration-700" preload="metadata" muted playsInline />
-                              <div className="absolute w-12 h-12 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center group-hover:scale-110 transition-transform group-hover:bg-amber-500 text-white group-hover:text-black border border-white/10">
-                                <Play size={20} className="ml-1 fill-current shrink-0" />
-                              </div>
-                              <span className="absolute top-2 left-2 bg-black/80 px-2 py-1 rounded text-[9px] font-display font-bold text-white tracking-[0.2em] border border-white/10 backdrop-blur-md">VIDEO</span>
-                            </>
-                          ) : isImage(file.type) ? (
-                            <img src={file.url} className="w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700" alt={file.name} loading="lazy" />
-                          ) : isAudio(file.type) ? (
-                            <div className="w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center shrink-0">
-                              <Music size={24} className="text-amber-500" />
-                            </div>
-                          ) : (
-                            <FileText size={40} className="text-zinc-800 group-hover:text-amber-500 transition-colors shrink-0" />
-                          )}
-
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-[2px]">
-                            {isVideo(file.type) && (
-                              <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500 rounded-lg text-white hover:scale-110 transition-all" title="Embed URL">
-                                <Film size={14} />
-                              </button>
-                            )}
-                            <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-amber-500 rounded-lg text-black hover:scale-110 transition-all">
-                              <Copy size={14} />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-white rounded-lg text-black hover:scale-110 transition-all">
-                              <ExternalLink size={14} />
-                            </button>
-                            <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-red-500 rounded-lg text-white hover:scale-110 transition-all">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
-
-                        <h4 className="font-semibold text-xs md:text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide">{file.name}</h4>
-                        <div className="flex items-center gap-2 text-[9px] text-zinc-600 mb-2 px-1">
-                          <Clock size={10} className="shrink-0" /> <span>{formatDate(file.uploaded_at)}</span>
-                        </div>
-                        <div className="mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-3 px-1">
-                          <span className="text-[9px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-1 rounded-md border border-zinc-800">{formatSize(file.size)}</span>
-                          <FileBadge type={file.file_type || 'file'} />
-                        </div>
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
-              ) : (
-                <div className="glass rounded-[1.5rem] overflow-hidden border border-zinc-800">
-                  {filteredFiles.map((file, idx) => (
-                    <Reveal key={file.id} delay={(idx % 10) * 0.05}>
-                      <div className="list-item flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer" onClick={() => setActiveMedia(file)}>
-                        <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
-                          <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center border border-zinc-800 shrink-0">
-                            {isVideo(file.type) ? <Film size={16} className="text-red-400" /> :
-                             isImage(file.type) ? <ImageIcon size={16} className="text-blue-400" /> :
-                             isAudio(file.type) ? <Music size={16} className="text-green-400" /> :
-                             <FileText size={16} className="text-zinc-500" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-xs md:text-sm truncate text-zinc-200">{file.name}</h4>
-                            <div className="flex flex-wrap items-center gap-2 text-[9px] md:text-[10px] text-zinc-500 mt-1">
-                              <span>{formatSize(file.size)}</span> <span className="hidden sm:inline">•</span> <span>{formatDate(file.uploaded_at)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2 self-end sm:self-center bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800">
-                          {isVideo(file.type) && (
-                            <button onClick={(e) => { e.stopPropagation(); copyPlayerLink(currentUser, file.name); }} className="p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
-                              <Film size={14} />
-                            </button>
-                          )}
-                          <button onClick={(e) => { e.stopPropagation(); copyToClipboard(file.url); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-amber-500 transition-all">
-                            <Copy size={14} />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); window.open(file.url, '_blank'); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all">
-                            <ExternalLink size={14} />
-                          </button>
-                          <button onClick={(e) => { e.stopPropagation(); deleteFile(file.id); }} className="p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-all">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </Reveal>
-                  ))}
-                </div>
+      h('div', { className: "mt-auto pt-4" },
+        h(Reveal, { delay: 0.4 },
+          h(ElectricBorder, { color: "#fbbf24", speed: 3, thickness: 1.5, radius: 32 },
+            h('div', { className: "p-6 flex flex-col items-center text-center" },
+              h('div', { className: "w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center mb-3 border border-zinc-800 shadow-inner shrink-0" },
+                h(LockKeyhole, { size: 16, className: "text-amber-500" })
+              ),
+              h('p', { className: "text-[10px] text-zinc-500 font-bold uppercase tracking-[0.2em] mb-1" }, "Status Akun"),
+              h('h4', { className: "text-sm font-display font-black text-white mb-3 uppercase tracking-wide" }, "Unlimited Capacity"),
+              h('div', { className: "px-4 py-1.5 bg-amber-500/10 text-amber-500 rounded-full text-[10px] font-display font-black border border-amber-500/20 tracking-widest flex items-center gap-1.5" },
+                h(Sparkles, { size: 12, className: "shrink-0" }), "PRO EDITION"
               )
-            ) : (
-              <Reveal delay={0.2}>
-                <div className="py-24 text-center glass rounded-[2.5rem] border border-zinc-900 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent"></div>
-                  <div className="w-20 h-20 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-zinc-800 relative z-10 shadow-inner shrink-0">
-                    <Inbox size={32} className="text-zinc-600" />
-                  </div>
-                  <h3 className="text-2xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10">Library Kosong</h3>
-                  <p className="text-zinc-600 text-sm font-medium mt-2 relative z-10">Mulai unggah media pertama Anda ke cloud.</p>
-                </div>
-              </Reveal>
-            )}
-          </section>
-        )}
-      </main>
+            )
+          )
+        ),
+        currentUser && h(Reveal, { delay: 0.5, className: "mt-4" },
+          h('button', {
+            onClick: handleLogout,
+            className: "w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[11px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-3 rounded-2xl border border-zinc-800 hover:border-red-500/30"
+          }, h(LogIn, { size: 16, className: "rotate-180 shrink-0" }), "Logout")
+        )
+      )
+    ),
 
-      {/* MEDIA MODALS */}
-      {activeMedia && isImage(activeMedia.type) && <ImageViewer file={activeMedia} onClose={() => setActiveMedia(null)} />}
-      {activeMedia && isVideo(activeMedia.type) && <CustomVideoPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />}
-      {activeMedia && isAudio(activeMedia.type) && <AudioPlayer file={activeMedia} onClose={() => setActiveMedia(null)} />}
-    </div>
+    h('main', { className: "flex-1 p-6 lg:p-14 max-w-7xl mx-auto w-full z-10 overflow-y-auto" },
+
+      activeTab === 'dashboard' && h('section', null,
+        h(Reveal, { delay: 0 },
+          h('header', { className: "mb-10 lg:mb-14" },
+            h('h1', { className: "text-4xl lg:text-7xl font-display font-black tracking-tighter mb-2 lg:mb-4 leading-[1.1]" },
+              "Halo, ", h(Typewriter, { words: currentUser ? [currentUser, "Master", "Administrator"] : ["Guest", "Pengguna"] }), "."
+            ),
+            h(ScrollReveal, { baseOpacity: 0.1, enableBlur: true, baseRotation: 3, blurStrength: 4, className: "text-zinc-400 font-medium text-sm lg:text-xl max-w-2xl leading-relaxed mt-2" },
+              "Kelola database cloud Anda dalam satu genggaman. Cepat, aman, dan tanpa batas kapasitas."
+            )
+          )
+        ),
+
+        h('div', { className: "grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8 lg:mb-12" },
+          h(Reveal, { delay: 0.1, className: "h-full" },
+            h('div', { className: "glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full" },
+              h('div', { className: "w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-amber-500 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0" },
+                h(Database, { size: 24 })
+              ),
+              h('div', null,
+                h('h3', { className: "text-4xl lg:text-5xl font-display font-black leading-none mb-2" }, files.length),
+                h('p', { className: "text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest" }, "Total File Saya")
+              )
+            )
+          ),
+
+          h(Reveal, { delay: 0.2, className: "h-full" },
+            h('div', { className: "glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 border border-amber-500/30 bg-amber-500/[0.03] hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 shadow-[0_0_40px_rgba(251,191,36,0.05)] group h-full" },
+              h('div', { className: "w-12 h-12 lg:w-14 lg:h-14 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-xl lg:rounded-2xl flex items-center justify-center shadow-lg shadow-amber-500/40 shrink-0" },
+                h(InfinityIcon, { size: 24 })
+              ),
+              h('div', null,
+                h('h3', { className: "text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white" }, "Unlimited"),
+                h('p', { className: "text-[10px] lg:text-[11px] font-bold text-amber-500/80 uppercase tracking-widest" }, "Kapasitas Sisa")
+              )
+            )
+          ),
+
+          h(Reveal, { delay: 0.3, className: "h-full" },
+            h('div', { className: "glass p-6 lg:p-8 rounded-[2rem] lg:rounded-[2.5rem] flex flex-col gap-4 lg:gap-5 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 group h-full" },
+              h('div', { className: "w-12 h-12 lg:w-14 lg:h-14 bg-zinc-900 rounded-xl lg:rounded-2xl flex items-center justify-center text-blue-400 shadow-inner border border-zinc-800 group-hover:bg-zinc-800 transition-colors shrink-0" },
+                h(HardDrive, { size: 24 })
+              ),
+              h('div', null,
+                h('h3', { className: "text-3xl lg:text-4xl font-display font-black leading-none mb-2 text-white" }, formatSize(totalSize)),
+                h('p', { className: "text-[10px] lg:text-[11px] font-bold text-zinc-500 uppercase tracking-widest" }, "Total Storage")
+              )
+            )
+          )
+        ),
+
+        h(Reveal, { delay: 0.4 },
+          h('div', { className: "bg-zinc-900/60 rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-10 border border-zinc-800/50 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 justify-between relative overflow-hidden text-center lg:text-left" },
+            h('div', { className: "absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/10 to-transparent w-[200%] animate-[shimmer_3s_infinite_linear]" }),
+            h('div', { className: "max-w-md relative z-10" },
+              h('h2', { className: "text-2xl lg:text-3xl font-display font-black mb-2 lg:mb-4 tracking-tight" }, "Butuh Link Instan?"),
+              h(ScrollReveal, { baseOpacity: 0, blurStrength: 6, className: "text-zinc-400 text-sm lg:text-base leading-relaxed justify-center lg:justify-start" },
+                "Unggah file Anda dan dapatkan High-Speed CDN link pribadi yang bisa diakses selamanya secara publik."
+              )
+            ),
+            h('button', {
+              onClick: function() { handleTabSwitch('upload'); },
+              className: "relative overflow-hidden z-10 bg-white text-black px-8 py-4 lg:px-10 lg:py-5 rounded-xl lg:rounded-3xl font-display font-black text-sm lg:text-lg hover:scale-105 hover:bg-amber-400 transition-all shadow-[0_10px_30px_rgba(255,255,255,0.1)] active:scale-95 tracking-wide flex-shrink-0 w-full lg:w-auto"
+            },
+              h('div', { className: "animate-shimmer" }),
+              h('span', { className: "relative z-10" }, "UPLOAD SEKARANG")
+            )
+          )
+        )
+      ),
+
+      activeTab === 'upload' && h('section', null,
+        h(Reveal, { delay: 0 },
+          h('div', { className: "flex flex-col sm:flex-row sm:items-center gap-4 mb-8 text-center sm:text-left" },
+            h('div', { className: "w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-amber-500/20 shrink-0 mx-auto sm:mx-0" },
+              h(Upload, { size: 24, className: "text-amber-500" })
+            ),
+            h('h2', { className: "text-3xl md:text-5xl font-display font-black tracking-tighter" }, "Upload Center")
+          )
+        ),
+
+        (uploadState === 'idle' || uploadState === 'selected') && h(Reveal, { delay: 0.1 },
+          h(ElectricBorder, { color: "#fbbf24", speed: 4, thickness: 2, radius: 32, className: "cursor-pointer group" },
+            h('div', {
+              onClick: function() { if (fileInputRef.current) fileInputRef.current.click(); },
+              className: "p-10 lg:p-24 flex flex-col items-center justify-center transition-all bg-[#08080a] hover:bg-zinc-900/40 relative overflow-hidden h-full w-full text-center",
+              style: { borderRadius: '1.9rem' }
+            },
+              h('input', { type: "file", ref: fileInputRef, className: "hidden", onChange: handleFileSelect }),
+
+              uploadState === 'idle' ? h('div', { className: "flex flex-col items-center relative z-10" },
+                h('div', { className: "w-20 h-20 lg:w-24 lg:h-24 bg-black/50 backdrop-blur-md rounded-2xl lg:rounded-3xl flex items-center justify-center mb-6 border border-zinc-800 group-hover:bg-amber-500 group-hover:text-black transition-all duration-300 shadow-2xl group-hover:-translate-y-2 shrink-0" },
+                  h(Plus, { size: 32 })
+                ),
+                h('h3', { className: "text-2xl lg:text-3xl font-display font-black mb-2 tracking-tight group-hover:text-amber-400 transition-colors" }, "Pilih / Tarik File"),
+                h(ScrollReveal, { baseOpacity: 0.5, blurStrength: 2, className: "text-zinc-500 text-xs lg:text-base font-medium tracking-wide justify-center" },
+                  "Mendukung format gambar, video, audio, dan dokumen."
+                )
+              ) : h('div', { className: "flex flex-col items-center w-full max-w-lg z-10" },
+                h('div', { className: "flex flex-col sm:flex-row items-center sm:items-start gap-4 px-4 py-4 bg-black/80 rounded-2xl border border-amber-500/30 w-full shadow-2xl backdrop-blur-xl text-center sm:text-left" },
+                  h('div', { className: "p-3 bg-amber-500/10 rounded-xl shrink-0" },
+                    h(FileCheck, { size: 28, className: "text-amber-500" })
+                  ),
+                  h('div', { className: "flex-1 min-w-0 w-full" },
+                    h('p', { className: "text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1" }, "File Terpilih"),
+                    h('span', { className: "text-sm md:text-lg font-display font-bold truncate block" }, selectedFile ? selectedFile.name : ''),
+                    h('span', { className: "text-xs text-zinc-600" }, selectedFile ? formatSize(selectedFile.size) : '')
+                  )
+                ),
+                h('button', {
+                  onClick: function(e) { e.stopPropagation(); startUpload(); },
+                  className: "relative overflow-hidden mt-6 bg-amber-500 text-black px-8 py-4 rounded-xl md:rounded-2xl font-display font-black text-sm md:text-lg hover:shadow-[0_0_40px_rgba(251,191,36,0.3)] hover:-translate-y-1 transition-all w-full uppercase tracking-widest group/btn"
+                },
+                  h('div', { className: "animate-shimmer" }),
+                  h('span', { className: "relative z-10 flex items-center justify-center gap-2" }, "Upload ke Cloud ", h(CloudUpload, { size: 20, className: "group-hover/btn:animate-bounce shrink-0" }))
+                )
+              )
+            )
+          )
+        ),
+
+        uploadState === 'uploading' && h(Reveal, { delay: 0 },
+          h('div', { className: "glass rounded-[2rem] lg:rounded-[3rem] p-8 lg:p-16 border border-amber-500/20 relative overflow-hidden" },
+            h('div', { className: "absolute top-0 right-0 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none" }),
+            h('div', { className: "flex justify-between items-end mb-6 relative z-10" },
+              h('div', null,
+                h('p', { className: "text-[10px] lg:text-[11px] font-display font-black text-amber-500 uppercase tracking-[0.2em] mb-1 lg:mb-2 flex items-center gap-2" },
+                  h(Loader, { size: 14, className: "animate-spin" }), " Proses"
+                ),
+                h('h4', { className: "text-2xl lg:text-3xl font-display font-bold tracking-tight" }, "Mengunggah...")
+              ),
+              h('span', { className: "text-4xl lg:text-6xl font-display font-black text-transparent bg-clip-text bg-gradient-to-br from-amber-300 to-amber-600" }, uploadProgress + "%")
+            ),
+            h('div', { className: "w-full h-3 lg:h-4 bg-black/50 rounded-full overflow-hidden border border-zinc-800/80 shadow-inner relative z-10" },
+              h('div', { className: "h-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-500 transition-all duration-300 relative", style: { width: uploadProgress + "%" } },
+                h('div', { className: "absolute inset-0 bg-white/20 w-full animate-[pulse_1s_ease-in-out_infinite]" })
+              )
+            ),
+            h('p', { className: "text-zinc-500 text-xs lg:text-sm mt-4 text-center truncate" }, selectedFile ? selectedFile.name : '')
+          )
+        ),
+
+        uploadState === 'success' && h(Reveal, { delay: 0 },
+          h('div', { className: "glass rounded-[2rem] lg:rounded-[3rem] p-6 lg:p-16 border border-amber-500/30 shadow-[0_0_60px_rgba(251,191,36,0.1)] relative overflow-hidden" },
+            h('div', { className: "w-20 h-20 lg:w-24 lg:h-24 bg-gradient-to-br from-amber-400 to-amber-600 text-black rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-amber-500/20 transform rotate-3 shrink-0" },
+              h(Check, { size: 40 })
+            ),
+            h('h3', { className: "text-2xl lg:text-4xl font-display font-black mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500 uppercase tracking-tight" }, "File Siap Digunakan"),
+
+            h('div', { className: "space-y-4 lg:space-y-6 max-w-3xl mx-auto relative z-10" },
+              h('div', { className: "bg-black/40 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-zinc-800/50" },
+                h('label', { className: "text-[10px] font-display font-black uppercase text-zinc-400 ml-1 mb-2 block tracking-[0.2em] flex items-center gap-2" },
+                  h(Globe, { size: 12, className: "shrink-0" }), " URL Publik (Raw)"
+                ),
+                h('div', { className: "flex flex-col sm:flex-row gap-3" },
+                  h('input', { value: uploadedUrls.public, readOnly: true, className: "flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-4 py-3 text-xs lg:text-sm font-medium text-zinc-300 focus:outline-none font-display" }),
+                  h('button', {
+                    onClick: function() { copyToClipboard(uploadedUrls.public); },
+                    className: "w-full sm:w-auto bg-zinc-800 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:bg-zinc-700 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  }, h(Copy, { size: 16, className: "shrink-0" }), " Salin")
+                )
+              ),
+
+              h('div', { className: "bg-amber-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-amber-500/30 shadow-inner relative overflow-hidden" },
+                h('label', { className: "text-[10px] font-display font-black uppercase text-amber-500 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2" },
+                  h(Link2, { size: 12, className: "shrink-0" }), " URL User (Fast CDN)"
+                ),
+                h('div', { className: "flex flex-col sm:flex-row gap-3 relative z-10" },
+                  h('input', { value: uploadedUrls.fix, readOnly: true, className: "flex-1 bg-black/80 border border-amber-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-amber-400 focus:outline-none font-display" }),
+                  h('button', {
+                    onClick: function() { copyToClipboard(uploadedUrls.fix); },
+                    className: "w-full sm:w-auto relative overflow-hidden bg-amber-500 text-black px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(251,191,36,0.2)] active:scale-95 flex items-center justify-center gap-2"
+                  },
+                    h('div', { className: "animate-shimmer" }),
+                    h(Copy, { size: 16, className: "relative z-10 shrink-0" }), h('span', { className: "relative z-10" }, "Salin")
+                  )
+                )
+              ),
+              
+              selectedFile && selectedFile.type && selectedFile.type.startsWith('video/') && h('div', { className: "bg-blue-500/5 backdrop-blur-md p-4 lg:p-6 rounded-2xl lg:rounded-3xl border border-blue-500/30 shadow-inner relative overflow-hidden mt-4" },
+                h('label', { className: "text-[10px] font-display font-black uppercase text-blue-400 ml-1 mb-2 block tracking-[0.2em] relative z-10 flex items-center gap-2" },
+                  h(Play, { size: 12, className: "shrink-0" }), " URL Embed Player"
+                ),
+                h('div', { className: "flex flex-col sm:flex-row gap-3 relative z-10" },
+                  h('input', { value: uploadedUrls.player, readOnly: true, className: "flex-1 bg-black/80 border border-blue-500/30 rounded-xl px-4 py-3 text-xs lg:text-sm font-bold text-blue-400 focus:outline-none font-display" }),
+                  h('button', {
+                    onClick: function() { copyToClipboard(uploadedUrls.player); },
+                    className: "w-full sm:w-auto bg-blue-500 text-white px-6 py-3 rounded-xl font-display font-black text-xs uppercase hover:scale-105 transition-all shadow-[0_0_20px_rgba(59,130,246,0.3)] active:scale-95 flex items-center justify-center gap-2"
+                  }, h(Copy, { size: 16, className: "shrink-0" }), " Salin")
+                )
+              )
+            ),
+
+            h('button', {
+              onClick: function() { setUploadState('idle'); setSelectedFile(null); setUploadProgress(0); },
+              className: "w-full max-w-md mx-auto mt-8 block bg-zinc-900 border border-zinc-800 text-white py-4 rounded-xl font-display font-black text-xs uppercase hover:bg-white hover:text-black transition-all duration-300 active:scale-95 tracking-widest text-center"
+            }, "Upload File Lainnya")
+          )
+        )
+      ),
+
+      activeTab === 'history' && h('section', null,
+        h(Reveal, { delay: 0 },
+          h('div', { className: "flex flex-col md:flex-row justify-between items-start md:items-center gap-4 lg:gap-6 mb-8" },
+            h('div', { className: "flex items-center gap-4" },
+              h('div', { className: "w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20 shrink-0" },
+                h(FolderSearch, { size: 24, className: "text-amber-500" })
+              ),
+              h('div', null,
+                h('h2', { className: "text-3xl lg:text-5xl font-display font-black tracking-tighter mb-1" }, "My Library"),
+                h(ScrollReveal, { baseOpacity: 0, blurStrength: 3, className: "text-zinc-400 text-sm" },
+                  "Semua media yang tersinkronisasi."
+                )
+              )
+            ),
+            
+            h('div', { className: "flex flex-col w-full md:w-auto gap-4" },
+              h('div', { className: "relative w-full" },
+                h(Search, { size: 16, className: "absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" }),
+                h('input', { type: "text", placeholder: "Cari file...", value: searchQuery,
+                  onChange: function(e) { setSearchQuery(e.target.value); },
+                  className: "search-input pl-9" })
+              ),
+              h('div', { className: "flex gap-2 flex-wrap items-center" },
+                ['all', 'image', 'video', 'audio', 'file'].map(function(t) {
+                  return h('button', {
+                    key: t,
+                    onClick: function() { setFilterType(t); },
+                    className: "filter-btn " + (filterType === t ? 'active' : '')
+                  }, t === 'all' ? 'Semua' : t);
+                }),
+                h('button', {
+                  onClick: function() { setViewMode(viewMode === 'grid' ? 'list' : 'grid'); },
+                  className: "filter-btn shrink-0 p-2"
+                }, viewMode === 'grid' ? h(Grid3x3, { size: 14 }) : h(List, { size: 14 }))
+              )
+            )
+          )
+        ),
+
+        h(Reveal, { delay: 0.1 },
+          h('div', { className: "flex flex-wrap gap-2 mb-6 border-t border-zinc-800/50 pt-4" },
+            h('button', {
+              onClick: syncWithServer,
+              disabled: isLoading,
+              className: "flex items-center gap-2 text-amber-500 hover:text-amber-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-amber-500/10 px-4 py-2.5 rounded-lg border border-amber-500/20 hover:border-amber-500/40 w-auto"
+            }, h(Loader, { size: 14, className: "shrink-0 " + (isLoading ? 'animate-spin' : '') }), isLoading ? 'Syncing...' : 'Sync'),
+            h('button', {
+              onClick: clearHistory,
+              className: "flex items-center gap-2 text-zinc-500 hover:text-red-400 font-display font-bold text-[10px] transition-all uppercase tracking-[0.2em] bg-zinc-900/50 px-4 py-2.5 rounded-lg border border-zinc-800 hover:border-red-500/30 w-auto"
+            }, h(ZapOff, { size: 14, className: "shrink-0" }), " Clear Cache")
+          )
+        ),
+
+        filteredFiles.length > 0 ? (
+          viewMode === 'grid' ? h('div', { className: "grid-files" },
+            filteredFiles.map(function(file, idx) {
+              return h(Reveal, { key: file.id, delay: (idx % 8) * 0.05 },
+                h('div', {
+                  className: "file-card glass rounded-[1.5rem] p-4 flex flex-col group cursor-pointer relative overflow-hidden h-full",
+                  onClick: function() { setActiveMedia(file); }
+                },
+                  h('div', { className: "w-full h-40 bg-black rounded-xl mb-4 overflow-hidden border border-zinc-800 flex items-center justify-center relative shadow-inner" },
+                    isVideo(file.type) ? h(VideoThumbnail, { src: file.url, name: file.name, size: file.size, onClick: function() { setActiveMedia(file); } }) :
+                    isImage(file.type) ? h('img', {
+                      src: file.url,
+                      className: "w-full h-full object-cover group-hover:scale-110 group-hover:opacity-50 transition-all duration-700",
+                      alt: file.name,
+                      loading: "lazy",
+                      onLoad: function(e) { e.target.classList.add('loaded'); }
+                    }) :
+                    isAudio(file.type) ? h('div', { className: "w-14 h-14 bg-amber-500/10 rounded-full flex items-center justify-center shrink-0" },
+                      h(Music, { size: 24, className: "text-amber-500" })
+                    ) :
+                    h(FileText, { size: 40, className: "text-zinc-800 group-hover:text-amber-500 transition-colors shrink-0" }),
+
+                    h('div', { className: "absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 backdrop-blur-[2px]" },
+                      isVideo(file.type) && h('button', {
+                        onClick: function(e) { e.stopPropagation(); copyPlayerLink(currentUser, file.name); },
+                        className: "p-2 bg-blue-500 rounded-lg text-white hover:scale-110 transition-all",
+                        title: "Embed URL"
+                      }, h(Film, { size: 14 })),
+                      h('button', {
+                        onClick: function(e) { e.stopPropagation(); copyToClipboard(file.url); },
+                        className: "p-2 bg-amber-500 rounded-lg text-black hover:scale-110 transition-all"
+                      }, h(Copy, { size: 14 })),
+                      h('button', {
+                        onClick: function(e) { e.stopPropagation(); window.open(file.url, '_blank'); },
+                        className: "p-2 bg-white rounded-lg text-black hover:scale-110 transition-all"
+                      }, h(ExternalLink, { size: 14 })),
+                      h('button', {
+                        onClick: function(e) { e.stopPropagation(); deleteFile(file.id); },
+                        className: "p-2 bg-red-500 rounded-lg text-white hover:scale-110 transition-all"
+                      }, h(Trash2, { size: 14 }))
+                    )
+                  ),
+
+                  h('h4', { className: "font-semibold text-xs md:text-sm truncate mb-2 px-1 text-zinc-200 group-hover:text-amber-400 transition-colors tracking-wide" }, file.name),
+                  h('div', { className: "flex items-center gap-2 text-[9px] text-zinc-600 mb-2 px-1" },
+                    h(Clock, { size: 10, className: "shrink-0" }), h('span', null, formatDate(file.uploaded_at))
+                  ),
+                  h('div', { className: "mt-auto flex justify-between items-center border-t border-zinc-800/50 pt-3 px-1" },
+                    h('span', { className: "text-[9px] font-display font-black text-zinc-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-1 rounded-md border border-zinc-800" }, formatSize(file.size)),
+                    h(FileBadge, { type: file.file_type || 'file' })
+                  )
+                )
+              );
+            })
+          ) : h('div', { className: "glass rounded-[1.5rem] overflow-hidden border border-zinc-800" },
+            filteredFiles.map(function(file, idx) {
+              return h(Reveal, { key: file.id, delay: (idx % 10) * 0.05 },
+                h('div', {
+                  className: "list-item flex flex-col sm:flex-row sm:items-center gap-4 p-4 border-b border-zinc-800/50 cursor-pointer",
+                  onClick: function() { setActiveMedia(file); }
+                },
+                  h('div', { className: "flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0" },
+                    h('div', { className: "w-10 h-10 bg-black rounded-lg flex items-center justify-center border border-zinc-800 shrink-0" },
+                      isVideo(file.type) ? h(Film, { size: 16, className: "text-red-400" }) :
+                      isImage(file.type) ? h(ImageIcon, { size: 16, className: "text-blue-400" }) :
+                      isAudio(file.type) ? h(Music, { size: 16, className: "text-green-400" }) :
+                      h(FileText, { size: 16, className: "text-zinc-500" })
+                    ),
+                    h('div', { className: "flex-1 min-w-0" },
+                      h('h4', { className: "font-semibold text-xs md:text-sm truncate text-zinc-200" }, file.name),
+                      h('div', { className: "flex flex-wrap items-center gap-2 text-[9px] md:text-[10px] text-zinc-500 mt-1" },
+                        h('span', null, formatSize(file.size)), h('span', { className: "hidden sm:inline" }, "\u2022"), h('span', null, formatDate(file.uploaded_at))
+                      )
+                    )
+                  ),
+                  h('div', { className: "flex gap-2 self-end sm:self-center bg-zinc-900/50 p-1.5 rounded-xl border border-zinc-800" },
+                    isVideo(file.type) && h('button', {
+                      onClick: function(e) { e.stopPropagation(); copyPlayerLink(currentUser, file.name); },
+                      className: "p-2 bg-blue-500/10 rounded-lg text-blue-400 hover:bg-blue-500 hover:text-white transition-all"
+                    }, h(Film, { size: 14 })),
+                    h('button', {
+                      onClick: function(e) { e.stopPropagation(); copyToClipboard(file.url); },
+                      className: "p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-amber-500 transition-all"
+                    }, h(Copy, { size: 14 })),
+                    h('button', {
+                      onClick: function(e) { e.stopPropagation(); window.open(file.url, '_blank'); },
+                      className: "p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-all"
+                    }, h(ExternalLink, { size: 14 })),
+                    h('button', {
+                      onClick: function(e) { e.stopPropagation(); deleteFile(file.id); },
+                      className: "p-2 bg-zinc-800 rounded-lg text-zinc-400 hover:text-red-500 transition-all"
+                    }, h(Trash2, { size: 14 }))
+                  )
+                )
+              );
+            })
+          )
+        ) : h(Reveal, { delay: 0.2 },
+          h('div', { className: "py-24 text-center glass rounded-[2.5rem] border border-zinc-900 relative overflow-hidden" },
+            h('div', { className: "absolute inset-0 bg-gradient-to-b from-zinc-900/20 to-transparent" }),
+            h('div', { className: "w-20 h-20 bg-black/50 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-6 border border-zinc-800 relative z-10 shadow-inner shrink-0" },
+              h(Inbox, { size: 32, className: "text-zinc-600" })
+            ),
+            h('h3', { className: "text-2xl font-display font-black text-zinc-500 uppercase tracking-tighter relative z-10" }, "Library Kosong"),
+            h('p', { className: "text-zinc-600 text-sm font-medium mt-2 relative z-10" }, "Mulai unggah media pertama Anda ke cloud.")
+          )
+        )
+      )
+    ),
+
+    activeMedia && isImage(activeMedia.type) && h(ImageViewer, { file: activeMedia, onClose: function() { setActiveMedia(null); } }),
+    activeMedia && isVideo(activeMedia.type) && h(CustomVideoPlayer, { file: activeMedia, onClose: function() { setActiveMedia(null); } }),
+    activeMedia && isAudio(activeMedia.type) && h(AudioPlayer, { file: activeMedia, onClose: function() { setActiveMedia(null); } })
   );
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+var root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(h(App));
 </script>
 </body>
 </html>
